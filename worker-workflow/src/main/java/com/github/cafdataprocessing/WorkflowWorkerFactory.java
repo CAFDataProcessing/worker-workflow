@@ -27,23 +27,11 @@ import org.slf4j.LoggerFactory;
 /**
  * A factory to create workflow workers, passing them a configuration instance.
  */
-public class WorkflowWorkerFactory implements DocumentWorkerFactory {
+public final class WorkflowWorkerFactory implements DocumentWorkerFactory {
     private final static Logger LOG = LoggerFactory.getLogger(WorkflowWorkerFactory.class);
-    private WorkflowWorkerConfiguration workflowWorkerConfiguration = null;
 
     @Override
     public DocumentWorker createDocumentWorker(final Application application) {
-        if(workflowWorkerConfiguration == null) {
-            try {
-                workflowWorkerConfiguration = application
-                        .getService(ConfigurationSource.class)
-                        .getConfiguration(WorkflowWorkerConfiguration.class);
-            } catch (ConfigurationException e) {
-                LOG.warn("Unable to load WorkflowWorkerConfiguration. Specific Workflow Worker Worker configuration "
-                        + "will not be passed to the worker.");
-                workflowWorkerConfiguration = new WorkflowWorkerConfiguration();
-            }
-        }
-        return new WorkflowWorker(workflowWorkerConfiguration, application.getService(DataStore.class));
+        return new WorkflowWorker(application);
     }
 }

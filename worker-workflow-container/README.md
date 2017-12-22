@@ -10,19 +10,19 @@ The input task this worker receives should be a composite document task as defin
 
 ### Input Task Custom Data
 
-Properties specific to this worker that should be provided on the custom data of the input task are described below;
+Properties specific to this worker that can be provided on the custom data of the input task are described below;
 
 #### outputPartialReference
 
-The data store partial reference to use when storing the generated workflow.
+The data store partial reference to use when storing the generated workflow. This is optional.
 
 #### projectId
 
-The project ID that the workflow to transform is associated with.
+The project ID that the workflow to transform is associated with. This is required.
 
 #### workflowId
 
-The ID of the workflow to transform.
+The ID of the workflow to transform. This is required.
 
 ### Output Custom Data
 
@@ -48,13 +48,11 @@ Further Workflow Worker container configuration that can be controlled through e
 | failureQueue  |  `CAF_WORKER_FAILURE_QUEUE`          |             |
 | threads       |  `CAF_WORKFLOW_WORKER_THREADS`          |      1       |
 |               |  `CAF_WORKER_THREADS`          |             |
-| maxBatchSize  |  `CAF_WORKER_MAX_BATCH_SIZE`          |             |
-| maxBatchTime  |  `CAF_WORKER_MAX_BATCH_TIME`          |             |
 
 
 #### WorkflowWorkerConfiguration
 
-| Property | Checked Environment Variables                        | Default               |
-|----------|------------------------------------------------------|-----------------------|
-| processingApiUrl   |  `CAF_WORKFLOW_WORKER_PROCESSING_API_URL`  |                       |
-| workflowCachePeriod | `CAF_WORKFLOW_WORKER_CACHE_PERIOD`        | PT5M                  |
+| Property | Checked Environment Variables                        | Default               | Example Value                                                     |
+|----------|------------------------------------------------------|-----------------------|--------------------------------------------------------------------
+| processingApiUrl   |  `CAF_WORKFLOW_WORKER_PROCESSING_API_URL`  |                       | http://processing-service:8080/data-processing-service/v1         |
+| workflowCachePeriod | `CAF_WORKFLOW_WORKER_CACHE_PERIOD`        | PT5M                  |                                                                   |

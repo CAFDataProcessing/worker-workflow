@@ -18,7 +18,7 @@ package com.github.cafdataprocessing;
 /**
  * Holds information about a transformed workflow
  */
-public class TransformWorkflowResult
+final class TransformWorkflowResult
 {
     private final String transformedWorkflow;
     private final String workflowStorageRef;

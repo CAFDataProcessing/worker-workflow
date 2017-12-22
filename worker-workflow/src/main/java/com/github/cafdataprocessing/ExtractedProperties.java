@@ -19,7 +19,7 @@ package com.github.cafdataprocessing;
  * Represents workflow worker properties extracted from custom data of a document, including whether the properties are
  * valid.
  */
-class ExtractedProperties
+final class ExtractedProperties
 {
     private final boolean valid;
     private final String outputPartialReference;
@@ -33,7 +33,8 @@ class ExtractedProperties
      * @param projectId the project ID workflow is associated with.
      * @param workflowId the workflow ID to retrieve for the document.
      */
-    public ExtractedProperties(boolean valid, String outputPartialReference, String projectId, long workflowId) {
+    public ExtractedProperties(final boolean valid, final String outputPartialReference, final String projectId,
+                               final long workflowId) {
         this.valid = valid;
         this.outputPartialReference = outputPartialReference;
         this.projectId = projectId;

@@ -22,7 +22,7 @@ import javax.validation.constraints.NotNull;
  * Configuration specific to the workflow worker
  */
 @Configuration
-public class WorkflowWorkerConfiguration {
+public final class WorkflowWorkerConfiguration {
     /**
      * URL to a processing API that workflows should be retrieved via.
      */
@@ -42,9 +42,9 @@ public class WorkflowWorkerConfiguration {
         return workflowCachePeriod;
     }
 
-    public void setProcessingApiUrl(String processingApiUrl) {
+    public void setProcessingApiUrl(final String processingApiUrl) {
         this.processingApiUrl = processingApiUrl;
     }
 
-    public void setWorkflowCachePeriod(String workflowCachePeriod) { this.workflowCachePeriod = workflowCachePeriod; }
+    public void setWorkflowCachePeriod(final String workflowCachePeriod) { this.workflowCachePeriod = workflowCachePeriod; }
 }

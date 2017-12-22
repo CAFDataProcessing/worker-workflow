@@ -18,7 +18,10 @@ package com.github.cafdataprocessing.workflow.constants;
 /**
  * Constant values relating to the Workflow Worker
  */
-public class WorkflowWorkerConstants {
+public final class WorkflowWorkerConstants {
+
+    private WorkflowWorkerConstants(){}
+
     /**
      * Key values used for custom data on worker tasks.
      */

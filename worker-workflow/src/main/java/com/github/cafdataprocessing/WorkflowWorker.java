@@ -21,16 +21,21 @@ import com.github.cafdataprocessing.processing.service.client.api.AdminApi;
 import com.github.cafdataprocessing.workflow.constants.WorkflowWorkerConstants;
 import com.github.cafdataprocessing.workflow.transform.WorkflowTransformer;
 import com.github.cafdataprocessing.workflow.transform.WorkflowTransformerException;
+import com.hpe.caf.api.ConfigurationException;
+import com.hpe.caf.api.ConfigurationSource;
 import com.hpe.caf.api.worker.DataStore;
 import com.hpe.caf.api.worker.DataStoreException;
 import com.hpe.caf.worker.document.exceptions.DocumentWorkerTransientException;
 import com.hpe.caf.worker.document.exceptions.PostProcessingFailedException;
 import com.hpe.caf.worker.document.extensibility.DocumentWorker;
-import com.hpe.caf.worker.document.model.*;
+import com.hpe.caf.worker.document.model.Application;
+import com.hpe.caf.worker.document.model.Document;
+import com.hpe.caf.worker.document.model.HealthMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -38,7 +43,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * a JavaScript representation of the workflow that the Document can be executed against to determine the action to perform
  * on the document.
  */
-public class WorkflowWorker implements DocumentWorker
+public final class WorkflowWorker implements DocumentWorker
 {
     private static final Logger LOG = LoggerFactory.getLogger(WorkflowWorker.class);
     private final DataStore dataStore;
@@ -49,16 +54,14 @@ public class WorkflowWorker implements DocumentWorker
     /**
      * Instantiates a WorkflowWorker instance to process documents, evaluating them against the workflow referred to by
      * the document.
-     * @param workflowWorkerConfiguration configuration for this worker.
-     * @param dataStore data store to use when storing data.
+     * @param application application context for this worker, used to derive configuration and data store for the worker.
      */
-    public WorkflowWorker(final WorkflowWorkerConfiguration workflowWorkerConfiguration, final DataStore dataStore)
+    public WorkflowWorker(final Application application)
     {
-        this.dataStore = dataStore;
+        this.dataStore = application.getService(DataStore.class);
+        final WorkflowWorkerConfiguration workflowWorkerConfiguration = getWorkflowWorkerConfiguration(application);
         this.processingApiUrl = workflowWorkerConfiguration.getProcessingApiUrl();
-        final ApiClient apiClient = new ApiClient();
-        apiClient.setBasePath(this.processingApiUrl);
-        this.workflowAdminApi = new AdminApi(apiClient);
+        this.workflowAdminApi = getWorkflowAdminApi();
         this.workflowCache = new TransformedWorkflowCache(workflowWorkerConfiguration.getWorkflowCachePeriod());
     }
 
@@ -73,9 +76,30 @@ public class WorkflowWorker implements DocumentWorker
     {
         try {
             workflowAdminApi.healthCheck();
-        } catch (ApiException e) {
+        } catch (final ApiException e) {
             LOG.error("Problem encountered when contacting Processing API to check health: ", e);
             healthMonitor.reportUnhealthy("Processing API communication is unhealthy: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Retrieves a new AdminApi instance configured to talk to the currently set processing API for this worker.
+     * @return AdminApi pointing to configured processing API for the worker.
+     */
+    private AdminApi getWorkflowAdminApi() {
+        final ApiClient apiClient = new ApiClient();
+        apiClient.setBasePath(this.processingApiUrl);
+        return new AdminApi(apiClient);
+    }
+
+    private static WorkflowWorkerConfiguration getWorkflowWorkerConfiguration(final Application application) {
+        try {
+            return application
+                    .getService(ConfigurationSource.class)
+                    .getConfiguration(WorkflowWorkerConfiguration.class);
+        } catch (final ConfigurationException e) {
+            LOG.warn("Unable to load WorkflowWorkerConfiguration.");
+            return new WorkflowWorkerConfiguration();
         }
     }
 
@@ -130,7 +154,7 @@ public class WorkflowWorker implements DocumentWorker
         {
             WorkflowEvaluator.evaluate(document, transformWorkflowResult.getTransformedWorkflow(),
                     transformWorkflowResult.getWorkflowStorageRef());
-        } catch (PostProcessingFailedException e) {
+        } catch (final PostProcessingFailedException e) {
             LOG.error("A failure occurred trying to evaluate document against transformed Workflow.", e);
             document.addFailure(WorkflowWorkerConstants.ErrorCodes.WORKFLOW_EVALUATION_FAILED, e.getMessage());
         }
@@ -146,7 +170,7 @@ public class WorkflowWorker implements DocumentWorker
     private String storeWorkflow(String workflowJavaScript, String outputPartialReference)
             throws DataStoreException
     {
-        return dataStore.store(workflowJavaScript.getBytes(Charset.forName("UTF-8")), outputPartialReference);
+        return dataStore.store(workflowJavaScript.getBytes(StandardCharsets.UTF_8), outputPartialReference);
     }
 
     /**
@@ -162,7 +186,7 @@ public class WorkflowWorker implements DocumentWorker
             workflowJavaScript = WorkflowTransformer.retrieveAndTransformWorkflowToJavaScript(
                     extractedProperties.getWorkflowId(), extractedProperties.getProjectId(),
                     processingApiUrl);
-        } catch (ApiException | WorkflowTransformerException e) {
+        } catch (final ApiException | WorkflowTransformerException e) {
             LOG.error("A failure occurred trying to transform Workflow to JavaScript representation.", e);
             document.addFailure(WorkflowWorkerConstants.ErrorCodes.WORKFLOW_TRANSFORM_FAILED, e.getMessage());
             return null;
@@ -172,7 +196,7 @@ public class WorkflowWorker implements DocumentWorker
         try {
             workflowStorageRef = storeWorkflow(workflowJavaScript, extractedProperties.getOutputPartialReference());
         }
-        catch(DataStoreException e) {
+        catch(final DataStoreException e) {
             LOG.error("A failure occurred trying to store transformed workflow.", e);
             document.addFailure(WorkflowWorkerConstants.ErrorCodes.STORE_WORKFLOW_FAILED, e.getMessage());
             return null;

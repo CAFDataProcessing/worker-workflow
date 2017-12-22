@@ -132,12 +132,12 @@ public class WorkflowTransformer {
         final Transformer transformer;
         try {
             transformer = TransformerFactory.newInstance().newTransformer(new StreamSource(defaultXsltStream));
-        } catch (TransformerConfigurationException e) {
+        } catch (final TransformerConfigurationException e) {
             throw new WorkflowTransformerException("Failed to create Transformer from XSLT file input.", e);
         }
         try {
             transformer.transform(xmlInputStream, outputStream);
-        } catch (TransformerException e) {
+        } catch (final TransformerException e) {
             throw new WorkflowTransformerException("Failed to transform and output workflow XML input.", e);
         }
 

@@ -44,12 +44,18 @@
     <properties>
         <caf.worker-document-framework.version>3.3.0-SNAPSHOT</caf.worker-document-framework.version>
         <corePolicyVersion>1.1.0-SNAPSHOT</corePolicyVersion>
-        <corePolicyElasticsearchContainerName>cafinternal/prereleases:policy-admin-elasticsearch-${corePolicyVersion}</corePolicyElasticsearchContainerName>
+        <corePolicyElasticsearchContainerName>
+            cafinternal/prereleases:policy-admin-elasticsearch-1.1.0-SNAPSHOT
+        </corePolicyElasticsearchContainerName>
         <dockerHubOrganization>cafdataprocessing</dockerHubOrganization>
-        <dockerCafDataProcessingOrg>${dockerImagePrefix}${dockerHubOrganization}${dockerOrgSeperator}</dockerCafDataProcessingOrg>
+        <dockerCafDataProcessingOrg>
+            ${dockerImagePrefix}${dockerHubOrganization}${dockerOrgSeperator}
+        </dockerCafDataProcessingOrg>
         <dockerProjectVersion>${dockerVersionSeperator}${project.version}</dockerProjectVersion>
         <processingServiceVersion>1.4.0-SNAPSHOT</processingServiceVersion>
-        <processingServiceContainerName>cafinternal/prereleases:processing-service-${processingServiceVersion}</processingServiceContainerName>
+        <processingServiceContainerName>
+            cafinternal/prereleases:processing-service-1.4.0-SNAPSHOT
+        </processingServiceContainerName>
     </properties>
 
     <developers>
@@ -92,12 +98,12 @@
             <dependency>
                 <groupId>com.github.cafdataprocessing</groupId>
                 <artifactId>workflow-to-js-transformer</artifactId>
-                <version>${project.version}</version>
+                <version>1.0.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>com.github.cafdataprocessing</groupId>
                 <artifactId>worker-workflow-constants</artifactId>
-                <version>${project.version}</version>
+                <version>1.0.0-SNAPSHOT</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

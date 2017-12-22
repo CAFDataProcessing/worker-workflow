@@ -27,8 +27,10 @@ import java.util.Map;
 /**
  * Evaluates a JavaScript workflow against a document, updating document based on matched actions in the workflow
  */
-public class WorkflowEvaluator
+final class WorkflowEvaluator
 {
+    private WorkflowEvaluator(){}
+
     /**
      * Evaluates the provided document against the JavaScript workflow and records the workflow storage reference on
      * the document for execution in post processing.
@@ -40,7 +42,7 @@ public class WorkflowEvaluator
      *                           if none is already set.
      * @throws PostProcessingFailedException if there is a failure in workflow script execution.
      */
-    public static void evaluate(Document document, String workflowAsJavaScript, String workflowStorageRef)
+    public static void evaluate(final Document document, final String workflowAsJavaScript, final String workflowStorageRef)
             throws PostProcessingFailedException
     {
         final JavaScriptDocumentPostProcessor jsPostProcessor = new JavaScriptDocumentPostProcessor(workflowAsJavaScript);
@@ -54,17 +56,14 @@ public class WorkflowEvaluator
      * @param document Document to set post processing information on.
      * @param workflowStorageReference DataStore reference for a workflow that can be executed in post processing.
      */
-    private static void setWorkflowPostProcessingScript(Document document, String workflowStorageReference){
+    private static void setWorkflowPostProcessingScript(final Document document, final String workflowStorageReference){
         final ResponseOptions responseOptions = document.getTask().getResponseOptions();
-        if(responseOptions.getCustomData()==null){
-            final Map<String, String> customData = new HashMap<>();
-            customData.put(DocumentWorkerConstants.POST_PROCESSING_SCRIPT_CUSTOM_DATA, workflowStorageReference);
-            responseOptions.setCustomData(customData);
+        final Map<String, String> customData = new HashMap<>();
+        if(responseOptions.getCustomData()!=null){
+            customData.putAll(responseOptions.getCustomData());
         }
-        else {
-            responseOptions.getCustomData().put(DocumentWorkerConstants.POST_PROCESSING_SCRIPT_CUSTOM_DATA, workflowStorageReference);
-        }
+        customData.put(DocumentWorkerConstants.POST_PROCESSING_SCRIPT_CUSTOM_DATA, workflowStorageReference);
+        responseOptions.setCustomData(customData);
+
     }
-
-
 }

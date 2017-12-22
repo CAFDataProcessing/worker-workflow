@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Given a document this class returns specified properties from the document's custom data.
  */
-class CustomDataExtractor
+final class CustomDataExtractor
 {
     private final static Logger LOG = LoggerFactory.getLogger(CustomDataExtractor.class);
 
@@ -45,10 +45,7 @@ class CustomDataExtractor
 
         outputPartialReference = CustomDataExtractor.getOutputPartialReference(document);
         if(outputPartialReference==null || outputPartialReference.isEmpty()) {
-            LOG.error("No output partial reference value passed to worker in custom data.");
-            document.addFailure(WorkflowWorkerConstants.ErrorCodes.INVALID_CUSTOM_DATA,
-                    "No output partial reference value passed to worker in custom data.");
-            customDataValid = false;
+            LOG.debug("No output partial reference value passed to worker in custom data.");
         }
 
         projectId = CustomDataExtractor.getProjectId(document);
@@ -71,7 +68,7 @@ class CustomDataExtractor
                 workflowId = extractedWorkflowId;
             }
         }
-        catch(NumberFormatException e) {
+        catch(final NumberFormatException e) {
             LOG.error("Failed to read passed workflow ID as a number.", e);
             document.addFailure(WorkflowWorkerConstants.ErrorCodes.INVALID_CUSTOM_DATA, e.getMessage());
             customDataValid = false;

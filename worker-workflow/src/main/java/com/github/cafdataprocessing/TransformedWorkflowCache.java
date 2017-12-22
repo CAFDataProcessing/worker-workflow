@@ -28,10 +28,10 @@ import java.util.concurrent.locks.ReentrantLock;
 /**
  * Caches transformed workflow representations for reuse.
  */
-public class TransformedWorkflowCache
+final class TransformedWorkflowCache
 {
-    private static final ConcurrentHashMap<String, ReentrantLock> TRANSFORM_WORKFLOW_LOCKS = new ConcurrentHashMap<>();
-    private final Cache<String, TransformWorkflowResult> workflowCache;
+    private final ConcurrentHashMap<TransformedWorkflowCacheKey, ReentrantLock> TRANSFORM_WORKFLOW_LOCKS = new ConcurrentHashMap<>();
+    private final Cache<TransformedWorkflowCacheKey, TransformWorkflowResult> workflowCache;
 
     /**
      * Initialize a TransformedWorkflowCache instance with each entry set to expire after the provided duration.
@@ -57,7 +57,7 @@ public class TransformedWorkflowCache
      */
     public void addTransformWorkflowResult(final long workflowId, final String projectId,
                                            final TransformWorkflowResult transformWorkflowResult) {
-        workflowCache.asMap().putIfAbsent(buildCacheKey(workflowId, projectId), transformWorkflowResult);
+        workflowCache.put(buildCacheKey(workflowId, projectId), transformWorkflowResult);
     }
 
     /**
@@ -87,10 +87,10 @@ public class TransformedWorkflowCache
     /**
      * Builds a cache key from the provided workflow ID and project ID.
      * @param workflowId workflow ID to use in cache key construction.
-     * @param projectId project ID to use cache key construction.
+     * @param projectId project ID to use in cache key construction.
      * @return constructed cache key.
      */
-    private static String buildCacheKey(final long workflowId, final String projectId) {
-        return Long.toString(workflowId) + projectId;
+    private static TransformedWorkflowCacheKey buildCacheKey(final long workflowId, final String projectId) {
+        return new TransformedWorkflowCacheKey(projectId, workflowId);
     }
 }
