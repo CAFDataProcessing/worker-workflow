@@ -52,7 +52,7 @@ Further Workflow Worker container configuration that can be controlled through e
 
 #### WorkflowWorkerConfiguration
 
-| Property | Checked Environment Variables                        | Default               | Example Value                                                     |
-|----------|------------------------------------------------------|-----------------------|--------------------------------------------------------------------
-| processingApiUrl   |  `CAF_WORKFLOW_WORKER_PROCESSING_API_URL`  |                       | http://processing-service:8080/data-processing-service/v1         |
-| workflowCachePeriod | `CAF_WORKFLOW_WORKER_CACHE_PERIOD`        | PT5M                  |                                                                   |
+| Property | Description | Checked Environment Variables                        | Default               |
+|----------|--------|------------------------------------------------------|-----------------------|
+| processingApiUrl   | URL to a Processing Service that the worker will use to retrieve workflows e.g. http://processing-service:8080/data-processing-service/v1 |  `CAF_WORKFLOW_WORKER_PROCESSING_API_URL`  |                       |
+| workflowCachePeriod | The period of time that a transformed workflow script should remain cached after it is created. This should be in IS0-8601 time duration format e.g. PT5M. | `CAF_WORKFLOW_WORKER_CACHE_PERIOD`        | PT5M                  |

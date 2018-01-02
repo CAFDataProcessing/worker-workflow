@@ -18,8 +18,9 @@ package com.github.cafdataprocessing;
 import com.github.cafdataprocessing.processing.service.client.ApiClient;
 import com.github.cafdataprocessing.processing.service.client.ApiException;
 import com.github.cafdataprocessing.processing.service.client.api.AdminApi;
+import com.github.cafdataprocessing.processing.service.client.model.HealthStatus;
+import com.github.cafdataprocessing.processing.service.client.model.HealthStatusDependencies;
 import com.github.cafdataprocessing.workflow.constants.WorkflowWorkerConstants;
-import com.github.cafdataprocessing.workflow.transform.WorkflowTransformer;
 import com.github.cafdataprocessing.workflow.transform.WorkflowTransformerException;
 import com.hpe.caf.api.ConfigurationException;
 import com.hpe.caf.api.ConfigurationSource;
@@ -34,9 +35,7 @@ import com.hpe.caf.worker.document.model.HealthMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Worker that will examine task received for a workflow ID, retrieve that workflow using a processing API and generate
@@ -46,7 +45,6 @@ import java.util.concurrent.locks.ReentrantLock;
 public final class WorkflowWorker implements DocumentWorker
 {
     private static final Logger LOG = LoggerFactory.getLogger(WorkflowWorker.class);
-    private final DataStore dataStore;
     private final String processingApiUrl;
     private final AdminApi workflowAdminApi;
     private final TransformedWorkflowCache workflowCache;
@@ -58,11 +56,12 @@ public final class WorkflowWorker implements DocumentWorker
      */
     public WorkflowWorker(final Application application)
     {
-        this.dataStore = application.getService(DataStore.class);
+        final DataStore dataStore = application.getService(DataStore.class);
         final WorkflowWorkerConfiguration workflowWorkerConfiguration = getWorkflowWorkerConfiguration(application);
         this.processingApiUrl = workflowWorkerConfiguration.getProcessingApiUrl();
         this.workflowAdminApi = getWorkflowAdminApi();
-        this.workflowCache = new TransformedWorkflowCache(workflowWorkerConfiguration.getWorkflowCachePeriod());
+        this.workflowCache = new TransformedWorkflowCache(workflowWorkerConfiguration.getWorkflowCachePeriod(), dataStore,
+                processingApiUrl);
     }
 
     /**
@@ -75,7 +74,19 @@ public final class WorkflowWorker implements DocumentWorker
     public void checkHealth(final HealthMonitor healthMonitor)
     {
         try {
-            workflowAdminApi.healthCheck();
+            final HealthStatus healthStatus = workflowAdminApi.healthCheck();
+            if(HealthStatus.StatusEnum.HEALTHY.equals(healthStatus.getStatus())){
+                return;
+            }
+            final StringBuilder dependenciesStatusBuilder = new StringBuilder();
+            for(final HealthStatusDependencies healthDependency: healthStatus.getDependencies()) {
+                dependenciesStatusBuilder.append(" ");
+                dependenciesStatusBuilder.append(healthDependency.getName());
+                dependenciesStatusBuilder.append(":");
+                dependenciesStatusBuilder.append(healthDependency.getStatus().toString());
+            }
+            healthMonitor.reportUnhealthy("Processing API communication is unhealthy. Service dependencies:"
+                    +dependenciesStatusBuilder.toString());
         } catch (final ApiException e) {
             LOG.error("Problem encountered when contacting Processing API to check health: ", e);
             healthMonitor.reportUnhealthy("Processing API communication is unhealthy: " + e.getMessage());
@@ -122,30 +133,13 @@ public final class WorkflowWorker implements DocumentWorker
                     "proceed for this worker.");
             return;
         }
-        final String projectId = extractedProperties.getProjectId();
-        final long workflowId = extractedProperties.getWorkflowId();
 
         // Get the specified workflow and transform it to a JavaScript representation
-        TransformWorkflowResult transformWorkflowResult = workflowCache.getTransformWorkflowResult(workflowId, projectId);
-        if(transformWorkflowResult==null) {
-            ReentrantLock transformWorkflowLock = workflowCache.getTransformWorkflowLock(workflowId, projectId);
-            transformWorkflowLock.lock();
-            try {
-                transformWorkflowResult = workflowCache.getTransformWorkflowResult(workflowId, projectId);
-                if (transformWorkflowResult == null) {
-                    transformWorkflowResult = transformWorkflow(document, extractedProperties);
-                    if (transformWorkflowResult == null) {
-                        LOG.warn("Failure during workflow transformation. Processing of this document will not proceed " +
-                                "for this worker.");
-                        return;
-                    }
-                    // Cache the transform result
-                    workflowCache.addTransformWorkflowResult(workflowId, projectId, transformWorkflowResult);
-                }
-            }
-            finally {
-                transformWorkflowLock.unlock();
-            }
+        final TransformWorkflowResult transformWorkflowResult = transformWorkflow(extractedProperties, document);
+        if(transformWorkflowResult==null){
+            LOG.warn("Failure during workflow transformation. Processing of this document will not proceed " +
+                    "for this worker.");
+            return;
         }
 
         // Evaluate the document against the workflow to execute the first matching action. If document has to be sent to another
@@ -161,46 +155,47 @@ public final class WorkflowWorker implements DocumentWorker
     }
 
     /**
-     * Store the provided workflow in the data store.
-     * @param workflowJavaScript workflow to store.
-     * @param outputPartialReference partial reference to use when storing.
-     * @return storage reference for stored workflow.
-     * @throws DataStoreException if there is a failure storing workflow.
+     * Retrieves transformed workflow result based on extracted properties passed. If unable to retrieve a result then
+     * a failure will be added to the passed {@code document} and {@code null} returned.
+     * @param extractedProperties properties to use in workflow retrieval and transformation.
+     * @param document document to update with failure details in event of any issues.
+     * @return the transformed workflow result matching provided properties or null if there is a failure retrieving the
+     * transformed workflow result.
+     * @throws DocumentWorkerTransientException if there is a transient failure during workflow transformation.
      */
-    private String storeWorkflow(String workflowJavaScript, String outputPartialReference)
-            throws DataStoreException
-    {
-        return dataStore.store(workflowJavaScript.getBytes(StandardCharsets.UTF_8), outputPartialReference);
-    }
-
-    /**
-     * Retrieves a workflow referenced in @{code extractedProperties} and creates a script representing that workflow,
-     * storing it in the data store.
-     * @param document the current document being processed. Any failures during transformation will be recorded on the document.
-     * @param extractedProperties contains the properties required in order to transform and store the workflow.
-     * @return the result of the workflow transformation or null if a failure occurred.
-     */
-    private TransformWorkflowResult transformWorkflow(final Document document, final ExtractedProperties extractedProperties) {
-        final String workflowJavaScript;
+    private TransformWorkflowResult transformWorkflow(final ExtractedProperties extractedProperties, final Document document)
+            throws DocumentWorkerTransientException {
         try {
-            workflowJavaScript = WorkflowTransformer.retrieveAndTransformWorkflowToJavaScript(
-                    extractedProperties.getWorkflowId(), extractedProperties.getProjectId(),
-                    processingApiUrl);
-        } catch (final ApiException | WorkflowTransformerException e) {
-            LOG.error("A failure occurred trying to transform Workflow to JavaScript representation.", e);
-            document.addFailure(WorkflowWorkerConstants.ErrorCodes.WORKFLOW_TRANSFORM_FAILED, e.getMessage());
-            return null;
+            try {
+                return workflowCache.getTransformWorkflowResult(extractedProperties.getWorkflowId(),
+                        extractedProperties.getProjectId(), extractedProperties.getOutputPartialReference());
+            } catch (final ApiException firstApiException) {
+                // may have been a transient API issue, check if the API is healthy
+                try {
+                    final HealthStatus processingApiHealth = workflowAdminApi.healthCheck();
+                    if (!HealthStatus.StatusEnum.HEALTHY.equals(processingApiHealth.getStatus())) {
+                        // processing API is unhealthy, throw a transient exception
+                        LOG.info("Unable to transform workflow as processing API is unhealthy.");
+                        throw new DocumentWorkerTransientException(
+                                "Unable to transform workflow. Processing API is unhealthy.");
+                    }
+                } catch (final ApiException secondApiException) {
+                    LOG.info("Unable to transform workflow as processing API is unhealthy.", secondApiException);
+                    throw new DocumentWorkerTransientException("Unable to transform workflow. Processing API is unhealthy.",
+                            secondApiException);
+                }
+                // API is healthy so attempt to retrieve transform result one more time (in case it was temporarily
+                // unhealthy previously).
+                LOG.info("Attempting to get transformed workflow a second time after ApiException was thrown.");
+                return workflowCache.getTransformWorkflowResult(extractedProperties.getWorkflowId(),
+                        extractedProperties.getProjectId(), extractedProperties.getOutputPartialReference());
+            }
         }
-        // Store the generated JavaScript in data store so it can be passed to other workers in a compact form
-        final String workflowStorageRef;
-        try {
-            workflowStorageRef = storeWorkflow(workflowJavaScript, extractedProperties.getOutputPartialReference());
-        }
-        catch(final DataStoreException e) {
-            LOG.error("A failure occurred trying to store transformed workflow.", e);
+        catch (final DataStoreException e) {
             document.addFailure(WorkflowWorkerConstants.ErrorCodes.STORE_WORKFLOW_FAILED, e.getMessage());
-            return null;
+        } catch (final ApiException | ExecutionException | WorkflowTransformerException e) {
+            document.addFailure(WorkflowWorkerConstants.ErrorCodes.WORKFLOW_TRANSFORM_FAILED, e.getMessage());
         }
-        return new TransformWorkflowResult(workflowJavaScript, workflowStorageRef);
+        return null;
     }
 }

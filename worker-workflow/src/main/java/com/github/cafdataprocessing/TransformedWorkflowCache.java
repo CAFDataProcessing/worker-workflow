@@ -15,82 +15,156 @@
  */
 package com.github.cafdataprocessing;
 
-import com.google.common.cache.Cache;
+import com.github.cafdataprocessing.processing.service.client.ApiException;
+import com.github.cafdataprocessing.workflow.transform.WorkflowTransformer;
+import com.github.cafdataprocessing.workflow.transform.WorkflowTransformerException;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.hpe.caf.api.worker.DataStore;
+import com.hpe.caf.api.worker.DataStoreException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Caches transformed workflow representations for reuse.
  */
 final class TransformedWorkflowCache
 {
-    private final ConcurrentHashMap<TransformedWorkflowCacheKey, ReentrantLock> TRANSFORM_WORKFLOW_LOCKS = new ConcurrentHashMap<>();
-    private final Cache<TransformedWorkflowCacheKey, TransformWorkflowResult> workflowCache;
+    private static final Logger LOG = LoggerFactory.getLogger(TransformedWorkflowCache.class);
+
+    private final DataStore dataStore;
+    private final String processingApiUrl;
+    private final LoadingCache<TransformedWorkflowCacheKey, TransformWorkflowResult> workflowCache;
 
     /**
      * Initialize a TransformedWorkflowCache instance with each entry set to expire after the provided duration.
      * @param workflowCachePeriodAsStr an ISO-8601 time duration string. If passed as {@code null} or empty a default value of
      *                                 5 minutes will be used.
+     * @param dataStore data store to use when storing transformed workflows.
+     * @param processingApiUrl URL of a processing API that can be contacted when loading a workflow for transformation.
      * @throws DateTimeParseException if {@code workflowCachePeriodAsStr} is not a valid Java time duration.
      */
-    public TransformedWorkflowCache(final String workflowCachePeriodAsStr) throws DateTimeParseException {
+    public TransformedWorkflowCache(final String workflowCachePeriodAsStr,
+                                    final DataStore dataStore,
+                                    final String processingApiUrl) throws DateTimeParseException {
         final Duration workflowCachePeriod = workflowCachePeriodAsStr==null || workflowCachePeriodAsStr.isEmpty()
                 ? Duration.parse("PT5M")
                 : Duration.parse(workflowCachePeriodAsStr);
+        this.dataStore = dataStore;
+        this.processingApiUrl = processingApiUrl;
         workflowCache = CacheBuilder.newBuilder()
                 .expireAfterWrite(workflowCachePeriod.get(ChronoUnit.SECONDS), TimeUnit.SECONDS)
-                .build();
+                .build(new CacheLoader<TransformedWorkflowCacheKey, TransformWorkflowResult>() {
+                    @Override
+                    public TransformWorkflowResult load(TransformedWorkflowCacheKey key)
+                            throws ApiException, DataStoreException, WorkflowTransformerException {
+                        return transformWorkflow(key);
+                    }
+                });
     }
 
     /**
-     * Store a transformed workflow in the cache, using the provided workflow ID and project ID as the key it will be
-     * retrievable by.
-     * @param workflowId ID of the workflow the transformed object represents.
-     * @param projectId project ID of the workflow the transformed object represents.
-     * @param transformWorkflowResult transform result to store in cache for later retrieval.
-     */
-    public void addTransformWorkflowResult(final long workflowId, final String projectId,
-                                           final TransformWorkflowResult transformWorkflowResult) {
-        workflowCache.put(buildCacheKey(workflowId, projectId), transformWorkflowResult);
-    }
-
-    /**
-     * Retrieve a lock object associated with a cache entry using the combination of the provided workflow ID and project ID
-     * as the key for the lock.
-     * @param workflowId ID of workflow associated with the lock.
-     * @param projectId project ID associated with the lock.
-     * @return the lock for the project ID and workflow ID combination. If no entry exists for the constructed
-     * key then it will be created.
-     */
-    public ReentrantLock getTransformWorkflowLock(final long workflowId, final String projectId) {
-            return TRANSFORM_WORKFLOW_LOCKS.computeIfAbsent(buildCacheKey(workflowId, projectId), key -> new ReentrantLock());
-    }
-
-    /**
-     * Retrieves the result of a workflow transformation using combination of the provided workflow ID and project ID
-     * as a key.
+     * Retrieves the result of a workflow transformation using combination of the provided workflow ID, project ID and
+     * partial storage reference as a key. If no entry is found for the key then an attempt will be made to transform the
+     * workflow with that result being returned.
      * @param workflowId ID of workflow indicating the transformed workflow result to retrieve.
      * @param projectId project ID indicating the transformed workflow result to retrieve.
-     * @return returns the transformed workflow result associated with the workflow ID and project ID or {@code null} if
-     * there is no match found.
+     * @param outputPartialReference partial reference used in storing transformed workflow.
+     * @return returns the transformed workflow result associated with the workflow ID, project ID & partial reference.
+     * @throws ApiException if a failure occurs communicating with processing API during load of transformed workflow result.
+     * @throws DataStoreException if a failure occurs storing a transformed workflow during load.
+     * @throws ExecutionException if a failure occurs during load of transformed workflow result that is not expected by
+     * this method.
+     * @throws WorkflowTransformerException if a failure occurs during transformation of workflow during load.
      */
-    public TransformWorkflowResult getTransformWorkflowResult(final long workflowId, final String projectId) {
-        return workflowCache.getIfPresent(buildCacheKey(workflowId, projectId));
+    public TransformWorkflowResult getTransformWorkflowResult(final long workflowId, final String projectId,
+                                                              final String outputPartialReference)
+            throws ApiException, ExecutionException, DataStoreException, WorkflowTransformerException {
+        final TransformedWorkflowCacheKey cacheKey = buildCacheKey(workflowId, projectId, outputPartialReference);
+        try {
+            return workflowCache.get(cacheKey);
+        }
+        catch(final ExecutionException e) {
+            // throw specific exception types that caused ExecutionException if they are known to be thrown during cache
+            // load
+            final Throwable cause = e.getCause();
+            if(cause instanceof ApiException ) {
+                LOG.error("Processing API exception when trying to retrieve workflow.", cause);
+                throw (ApiException) cause;
+            }
+            if(cause instanceof DataStoreException) {
+                throw (DataStoreException) cause;
+            }
+            if(cause instanceof WorkflowTransformerException) {
+                throw (WorkflowTransformerException) cause;
+            }
+            throw e;
+        }
     }
 
     /**
-     * Builds a cache key from the provided workflow ID and project ID.
+     * Builds a cache key from the provided workflow ID, project ID and partial storage reference.
      * @param workflowId workflow ID to use in cache key construction.
      * @param projectId project ID to use in cache key construction.
+     * @param outputPartialReference partial reference to use in cache key construction.
      * @return constructed cache key.
      */
-    private static TransformedWorkflowCacheKey buildCacheKey(final long workflowId, final String projectId) {
-        return new TransformedWorkflowCacheKey(projectId, workflowId);
+    private static TransformedWorkflowCacheKey buildCacheKey(final long workflowId, final String projectId,
+                                                             final String outputPartialReference) {
+        return new TransformedWorkflowCacheKey(outputPartialReference, projectId, workflowId);
+    }
+
+    /**
+     * Store the provided workflow in the data store.
+     * @param workflowJavaScript workflow to store.
+     * @param outputPartialReference partial reference to use when storing.
+     * @return storage reference for stored workflow.
+     * @throws DataStoreException if there is a failure storing workflow.
+     */
+    private String storeWorkflow(final String workflowJavaScript, final String outputPartialReference)
+            throws DataStoreException
+    {
+        return dataStore.store(workflowJavaScript.getBytes(StandardCharsets.UTF_8), outputPartialReference);
+    }
+
+    /**
+     * Retrieves a workflow referenced in @{code extractedProperties} and creates a script representing that workflow,
+     * storing it in the data store.
+     * @param cacheKey contains the properties required in order to transform and store the workflow.
+     * @return the result of the workflow transformation.
+     * @throws ApiException if a failure occurs during communication with processing API.
+     * @throws DataStoreException if a failure occurs storing transformed workflow.
+     * @throws WorkflowTransformerException if a failure occurs during transformation of the workflow.
+     * @throws
+     */
+    private TransformWorkflowResult transformWorkflow(final TransformedWorkflowCacheKey cacheKey)
+            throws ApiException, DataStoreException, WorkflowTransformerException {
+        final String workflowJavaScript;
+        try {
+            workflowJavaScript = WorkflowTransformer.retrieveAndTransformWorkflowToJavaScript(
+                    cacheKey.getWorkflowId(), cacheKey.getProjectId(),
+                    processingApiUrl);
+        } catch (final ApiException | WorkflowTransformerException e) {
+            LOG.error("A failure occurred trying to transform Workflow to JavaScript representation.", e);
+            throw e;
+        }
+        // Store the generated JavaScript in data store so it can be passed to other workers in a compact form
+        final String workflowStorageRef;
+        try {
+            workflowStorageRef = storeWorkflow(workflowJavaScript, cacheKey.getOutputPartialReference());
+        }
+        catch(final DataStoreException e) {
+            LOG.error("A failure occurred trying to store transformed workflow.", e);
+            throw e;
+        }
+        return new TransformWorkflowResult(workflowJavaScript, workflowStorageRef);
     }
 }

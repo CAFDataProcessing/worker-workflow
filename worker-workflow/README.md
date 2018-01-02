@@ -15,15 +15,7 @@ The Workflow Worker behaviour for a task message is as follows;
 
 ## Configuration
 
-The worker utilizes the following configuration properties. The environment variables to control these and defaults values can be seen in the container for the worker, [here](../worker-workflow-container).
-
-### processingApiUrl
-
-URL to a Processing Service that the worker will use to retrieve workflows e.g. http://processing-service:8080/data-processing-service/v1
-
-### workflowCachePeriod
-
-The period of time that a transformed workflow script should remain cached after it is created. This should be in IS0-8601 time duration format e.g. PT5M.
+The configuration properties for use with this worker can be seen in the container for the worker, [here](../worker-workflow-container).
 
 ## Health Check
 

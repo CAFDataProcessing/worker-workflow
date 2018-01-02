@@ -15,21 +15,14 @@
  */
 package com.github.cafdataprocessing;
 
-import com.hpe.caf.api.ConfigurationException;
-import com.hpe.caf.api.ConfigurationSource;
-import com.hpe.caf.api.worker.DataStore;
 import com.hpe.caf.worker.document.extensibility.DocumentWorker;
 import com.hpe.caf.worker.document.extensibility.DocumentWorkerFactory;
 import com.hpe.caf.worker.document.model.Application;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A factory to create workflow workers, passing them a configuration instance.
  */
 public final class WorkflowWorkerFactory implements DocumentWorkerFactory {
-    private final static Logger LOG = LoggerFactory.getLogger(WorkflowWorkerFactory.class);
-
     @Override
     public DocumentWorker createDocumentWorker(final Application application) {
         return new WorkflowWorker(application);
