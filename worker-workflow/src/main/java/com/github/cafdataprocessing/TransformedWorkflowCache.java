@@ -16,6 +16,7 @@
 package com.github.cafdataprocessing;
 
 import com.github.cafdataprocessing.processing.service.client.ApiException;
+import com.github.cafdataprocessing.workflow.transform.WorkflowRetrievalException;
 import com.github.cafdataprocessing.workflow.transform.WorkflowTransformer;
 import com.github.cafdataprocessing.workflow.transform.WorkflowTransformerException;
 import com.google.common.cache.CacheBuilder;
@@ -65,8 +66,9 @@ final class TransformedWorkflowCache
                 .expireAfterWrite(workflowCachePeriod.get(ChronoUnit.SECONDS), TimeUnit.SECONDS)
                 .build(new CacheLoader<TransformedWorkflowCacheKey, TransformWorkflowResult>() {
                     @Override
-                    public TransformWorkflowResult load(TransformedWorkflowCacheKey key)
-                            throws ApiException, DataStoreException, WorkflowTransformerException {
+                    public TransformWorkflowResult load(final TransformedWorkflowCacheKey key)
+                            throws ApiException, DataStoreException, WorkflowRetrievalException,
+                            WorkflowTransformerException {
                         return transformWorkflow(key);
                     }
                 });
@@ -80,17 +82,19 @@ final class TransformedWorkflowCache
      * @param projectId project ID indicating the transformed workflow result to retrieve.
      * @param outputPartialReference partial reference used in storing transformed workflow.
      * @return returns the transformed workflow result associated with the workflow ID, project ID & partial reference.
-     * @throws ApiException if a failure occurs communicating with processing API during load of transformed workflow result.
+     * @throws ApiException if certain failures occur communicating with the processing service to retrieve the workflow
+     * during load of workflow for transformation.
+     * e.g. Invalid requests will result in this exception.
+     * @throws WorkflowRetrievalException if certain failures occur communicating with the processing service to
+     * retrieve the workflow during load of workflow for transformation. e.g. The processing service not being contactable.
      * @throws DataStoreException if a failure occurs storing a transformed workflow during load.
-     * @throws ExecutionException if a checked exception occurs during load of transformed workflow result that is not
-     * expected by this method.
      * @throws UncheckedExecutionException if an unchecked exception occurs during load of transformed workflow result
      * that is not expected by this method.
      * @throws WorkflowTransformerException if a failure occurs during transformation of workflow during load.
      */
     public TransformWorkflowResult getTransformWorkflowResult(final long workflowId, final String projectId,
                                                               final String outputPartialReference)
-            throws ApiException, ExecutionException, DataStoreException, UncheckedExecutionException, WorkflowTransformerException {
+            throws ApiException, DataStoreException, WorkflowRetrievalException, WorkflowTransformerException {
         final TransformedWorkflowCacheKey cacheKey = buildCacheKey(workflowId, projectId, outputPartialReference);
         try {
             return workflowCache.get(cacheKey);
@@ -100,16 +104,18 @@ final class TransformedWorkflowCache
             // load
             final Throwable cause = e.getCause();
             if(cause instanceof ApiException ) {
-                LOG.error("Processing API exception when trying to retrieve workflow.", cause);
                 throw (ApiException) cause;
             }
             if(cause instanceof DataStoreException) {
                 throw (DataStoreException) cause;
             }
+            if(cause instanceof WorkflowRetrievalException) {
+                throw (WorkflowRetrievalException) cause;
+            }
             if(cause instanceof WorkflowTransformerException) {
                 throw (WorkflowTransformerException) cause;
             }
-            throw e;
+            throw new RuntimeException(e);
         }
     }
 
@@ -143,19 +149,21 @@ final class TransformedWorkflowCache
      * storing it in the data store.
      * @param cacheKey contains the properties required in order to transform and store the workflow.
      * @return the result of the workflow transformation.
-     * @throws ApiException if a failure occurs during communication with processing API.
+     * @throws ApiException if certain failures occur communicating with the processing service to retrieve the workflow
+     * e.g. Invalid requests will result in this exception.
      * @throws DataStoreException if a failure occurs storing transformed workflow.
      * @throws WorkflowTransformerException if a failure occurs during transformation of the workflow.
-     * @throws
+     * @throws WorkflowRetrievalException if certain failures occur communicating with the processing service to
+     * retrieve the workflow. e.g. The processing service not being contactable.
      */
     private TransformWorkflowResult transformWorkflow(final TransformedWorkflowCacheKey cacheKey)
-            throws ApiException, DataStoreException, WorkflowTransformerException {
+            throws ApiException, DataStoreException, WorkflowRetrievalException, WorkflowTransformerException {
         final String workflowJavaScript;
         try {
             workflowJavaScript = WorkflowTransformer.retrieveAndTransformWorkflowToJavaScript(
                     cacheKey.getWorkflowId(), cacheKey.getProjectId(),
                     processingApiUrl);
-        } catch (final ApiException | WorkflowTransformerException e) {
+        } catch (final ApiException | WorkflowRetrievalException | WorkflowTransformerException e) {
             LOG.error("A failure occurred trying to transform Workflow to JavaScript representation.", e);
             throw e;
         }

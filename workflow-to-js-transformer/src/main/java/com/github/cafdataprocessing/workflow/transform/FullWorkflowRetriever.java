@@ -32,6 +32,7 @@ import com.github.cafdataprocessing.processing.service.client.model.ProcessingRu
 import com.github.cafdataprocessing.workflow.transform.models.FullAction;
 import com.github.cafdataprocessing.workflow.transform.models.FullProcessingRule;
 import com.github.cafdataprocessing.workflow.transform.models.FullWorkflow;
+import com.sun.jersey.api.client.ClientHandlerException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,13 +65,23 @@ public class FullWorkflowRetriever {
      * @param projectId projectId value set for the workflow and children
      * @param workflowId ID of the workflow to return details for
      * @return the full details of the workflow with provided ID
-     * @throws ApiException if error occurs communicating with processing service
+     * @throws ApiException if certain failures occur communicating with the processing service to retrieve the workflow
+     * e.g. Invalid requests will result in this exception.
+     * @throws WorkflowRetrievalException if certain failures occur communicating with the processing service to
+     * retrieve the workflow. e.g. The processing service not being contactable.
      */
-    public FullWorkflow getFullWorkflow(String projectId, long workflowId) throws ApiException {
+    public FullWorkflow getFullWorkflow(String projectId, long workflowId) throws ApiException, WorkflowRetrievalException {
 
         final WorkflowsApi workflowsApi = this.apisProvider.getWorkflowsApi();
-        final ExistingWorkflow retrievedWorkflow = workflowsApi.getWorkflow(projectId, workflowId);
-        final List<FullProcessingRule> fullProcessingRules = buildFullProcessingRules(projectId, workflowId);
+        final ExistingWorkflow retrievedWorkflow;
+        final List<FullProcessingRule> fullProcessingRules;
+        try {
+            retrievedWorkflow = workflowsApi.getWorkflow(projectId, workflowId);
+            fullProcessingRules = buildFullProcessingRules(projectId, workflowId);
+        }
+        catch(final ClientHandlerException e) {
+            throw new WorkflowRetrievalException("Failure retrieving the full workflow using processing service.", e);
+        }
         return new FullWorkflow(retrievedWorkflow, fullProcessingRules);
     }
 

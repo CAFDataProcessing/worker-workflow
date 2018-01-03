@@ -57,11 +57,14 @@ public class WorkflowTransformer {
      * @param projectId Project ID associated with the workflow and its children.
      * @param processingApiUrl Contactable URL for a processing API web service that the workflow can be retrieved from.
      * @return JavaScript representation of the workflow logic.
-     * @throws ApiException if there is an error contacting the processing API
+     * @throws ApiException if certain failures occur communicating with the processing service to retrieve the workflow
+     * e.g. Invalid requests will result in this exception.
+     * @throws WorkflowRetrievalException if certain failures occur communicating with the processing service to
+     * retrieve the workflow. e.g. The processing service not being contactable.
      * @throws WorkflowTransformerException if there is an error transforming workflow returned to JavaScript representation
      */
     public static String retrieveAndTransformWorkflowToJavaScript(long workflowId, String projectId, String processingApiUrl)
-            throws ApiException, WorkflowTransformerException {
+            throws ApiException, WorkflowTransformerException, WorkflowRetrievalException {
         final String workflowAsXML = retrieveAndTransformWorkflowToXml(workflowId, projectId, processingApiUrl);
         return transformXmlWorkflowToJavaScript(workflowAsXML);
     }
@@ -73,11 +76,14 @@ public class WorkflowTransformer {
      * @param projectId Project ID associated with the workflow and its children.
      * @param processingApiUrl Contactable URL for a processing API web service that the workflow can be retrieved from.
      * @return XML representation of the workflow and its children.
-     * @throws ApiException if there is an error contacting the processing API
+     * @throws ApiException if certain failures occur communicating with the processing service to retrieve the workflow
+     * e.g. Invalid requests will result in this exception.
+     * @throws WorkflowRetrievalException if certain failures occur communicating with the processing service to
+     * retrieve the workflow. e.g. The processing service not being contactable.
      * @throws WorkflowTransformerException if there is an error transforming workflow returned to XML representation
      */
     public static String retrieveAndTransformWorkflowToXml(long workflowId, String projectId, String processingApiUrl)
-            throws ApiException, WorkflowTransformerException {
+            throws ApiException, WorkflowTransformerException, WorkflowRetrievalException {
         final ApiClient apiClient = new ApiClient();
         apiClient.setBasePath(processingApiUrl);
         final FullWorkflowRetriever workflowRetriever = new FullWorkflowRetriever(apiClient);

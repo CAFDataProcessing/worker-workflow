@@ -21,6 +21,7 @@ import com.github.cafdataprocessing.processing.service.client.api.AdminApi;
 import com.github.cafdataprocessing.processing.service.client.model.HealthStatus;
 import com.github.cafdataprocessing.processing.service.client.model.HealthStatusDependencies;
 import com.github.cafdataprocessing.workflow.constants.WorkflowWorkerConstants;
+import com.github.cafdataprocessing.workflow.transform.WorkflowRetrievalException;
 import com.github.cafdataprocessing.workflow.transform.WorkflowTransformerException;
 import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.hpe.caf.api.ConfigurationException;
@@ -170,21 +171,14 @@ public final class WorkflowWorker implements DocumentWorker
             try {
                 return workflowCache.getTransformWorkflowResult(extractedProperties.getWorkflowId(),
                         extractedProperties.getProjectId(), extractedProperties.getOutputPartialReference());
-            } catch (final ApiException | UncheckedExecutionException firstException) {
+            } catch (final ApiException firstException) {
                 // may have been a transient API issue, check if the API is healthy
-                try {
-                    final HealthStatus processingApiHealth = workflowAdminApi.healthCheck();
-                    if (!HealthStatus.StatusEnum.HEALTHY.equals(processingApiHealth.getStatus())) {
-                        // processing API is unhealthy, throw a transient exception
-                        LOG.info("Unable to transform workflow as processing API is unhealthy.");
-                        throw new DocumentWorkerTransientException(
-                                "Unable to transform workflow. Processing API is unhealthy.");
-                    }
-                } catch (final Exception secondException) {
-                    LOG.info("Unable to transform workflow as processing API communication is unhealthy.", secondException);
+                final HealthStatus processingApiHealth = workflowAdminApi.healthCheck();
+                if (!HealthStatus.StatusEnum.HEALTHY.equals(processingApiHealth.getStatus())) {
+                    // processing API is unhealthy, throw a transient exception
+                    LOG.info("Unable to transform workflow as processing API is unhealthy.");
                     throw new DocumentWorkerTransientException(
-                            "Unable to transform workflow. Processing API communication is unhealthy.",
-                            secondException);
+                            "Unable to transform workflow. Processing API is unhealthy.");
                 }
                 // API is healthy so attempt to retrieve transform result one more time (in case it was temporarily
                 // unhealthy previously).
@@ -192,11 +186,13 @@ public final class WorkflowWorker implements DocumentWorker
                 return workflowCache.getTransformWorkflowResult(extractedProperties.getWorkflowId(),
                         extractedProperties.getProjectId(), extractedProperties.getOutputPartialReference());
             }
-        }
-        catch (final DataStoreException e) {
+        } catch (final DataStoreException e) {
             document.addFailure(WorkflowWorkerConstants.ErrorCodes.STORE_WORKFLOW_FAILED, e.getMessage());
-        } catch (final ApiException | ExecutionException | UncheckedExecutionException | WorkflowTransformerException e) {
+        } catch (final ApiException | WorkflowTransformerException e) {
             document.addFailure(WorkflowWorkerConstants.ErrorCodes.WORKFLOW_TRANSFORM_FAILED, e.getMessage());
+        } catch (final WorkflowRetrievalException e) {
+            throw new DocumentWorkerTransientException(
+                    "Unable to transform workflow. Processing API communication is unhealthy.", e);
         }
         return null;
     }
