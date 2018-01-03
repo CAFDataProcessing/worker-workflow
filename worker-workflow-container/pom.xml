@@ -471,13 +471,15 @@
                             <run>
                                 <ports>
                                     <port>${worker.adminport}:8081</port>
+                                    <port>${worker.debugport}:5005</port>
                                 </ports>
                                 <env>
-                                    <CAF_WORKER_DATASTORE_PATH>/srv/common/webdav</CAF_WORKER_DATASTORE_PATH>
                                     <CAF_RABBITMQ_PREFETCH_BUFFER>1000</CAF_RABBITMQ_PREFETCH_BUFFER>
-                                    <CAF_WORKER_RETRY_LIMIT>2</CAF_WORKER_RETRY_LIMIT>
+                                    <CAF_WORKER_DATASTORE_PATH>/srv/common/webdav</CAF_WORKER_DATASTORE_PATH>
+                                    <CAF_WORKER_JAVA_OPTS>-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005</CAF_WORKER_JAVA_OPTS>
                                     <CAF_WORKER_MAX_BATCH_SIZE>2</CAF_WORKER_MAX_BATCH_SIZE>
                                     <CAF_WORKER_MAX_BATCH_TIME>5000</CAF_WORKER_MAX_BATCH_TIME>
+                                    <CAF_WORKER_RETRY_LIMIT>2</CAF_WORKER_RETRY_LIMIT>
                                     <CAF_WORKFLOW_WORKER_PROCESSING_API_URL>${internalProcessingServiceUrl}</CAF_WORKFLOW_WORKER_PROCESSING_API_URL>
                                 </env>
                                 <volumes>
@@ -544,6 +546,7 @@
                 <rabbitmq.ctrl.port>15672</rabbitmq.ctrl.port>
                 <rabbitmq.node.port>5672</rabbitmq.node.port>
                 <worker.adminport>8081</worker.adminport>
+                <worker.debugport>5005</worker.debugport>
             </properties>
         </profile>
     </profiles>

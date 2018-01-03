@@ -21,6 +21,7 @@ import com.github.cafdataprocessing.workflow.transform.WorkflowTransformerExcept
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.hpe.caf.api.worker.DataStore;
 import com.hpe.caf.api.worker.DataStoreException;
 import org.slf4j.Logger;
@@ -81,13 +82,15 @@ final class TransformedWorkflowCache
      * @return returns the transformed workflow result associated with the workflow ID, project ID & partial reference.
      * @throws ApiException if a failure occurs communicating with processing API during load of transformed workflow result.
      * @throws DataStoreException if a failure occurs storing a transformed workflow during load.
-     * @throws ExecutionException if a failure occurs during load of transformed workflow result that is not expected by
-     * this method.
+     * @throws ExecutionException if a checked exception occurs during load of transformed workflow result that is not
+     * expected by this method.
+     * @throws UncheckedExecutionException if an unchecked exception occurs during load of transformed workflow result
+     * that is not expected by this method.
      * @throws WorkflowTransformerException if a failure occurs during transformation of workflow during load.
      */
     public TransformWorkflowResult getTransformWorkflowResult(final long workflowId, final String projectId,
                                                               final String outputPartialReference)
-            throws ApiException, ExecutionException, DataStoreException, WorkflowTransformerException {
+            throws ApiException, ExecutionException, DataStoreException, UncheckedExecutionException, WorkflowTransformerException {
         final TransformedWorkflowCacheKey cacheKey = buildCacheKey(workflowId, projectId, outputPartialReference);
         try {
             return workflowCache.get(cacheKey);
