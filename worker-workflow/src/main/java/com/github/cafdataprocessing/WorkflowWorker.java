@@ -23,7 +23,6 @@ import com.github.cafdataprocessing.processing.service.client.model.HealthStatus
 import com.github.cafdataprocessing.workflow.constants.WorkflowWorkerConstants;
 import com.github.cafdataprocessing.workflow.transform.WorkflowRetrievalException;
 import com.github.cafdataprocessing.workflow.transform.WorkflowTransformerException;
-import com.google.common.util.concurrent.UncheckedExecutionException;
 import com.hpe.caf.api.ConfigurationException;
 import com.hpe.caf.api.ConfigurationSource;
 import com.hpe.caf.api.worker.DataStore;
