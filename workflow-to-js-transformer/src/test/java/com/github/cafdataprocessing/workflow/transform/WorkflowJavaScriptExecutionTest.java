@@ -27,8 +27,11 @@ import com.hpe.caf.api.worker.DataStore;
 import com.hpe.caf.api.worker.DataStoreException;
 import com.hpe.caf.api.worker.WorkerException;
 import com.hpe.caf.codec.JsonCodec;
+import com.hpe.caf.worker.document.DocumentWorkerFieldEncoding;
 import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.model.Field;
+import com.hpe.caf.worker.document.model.FieldValue;
+import com.hpe.caf.worker.document.model.FieldValues;
 import com.hpe.caf.worker.document.model.Task;
 import com.hpe.caf.worker.document.testing.DocumentBuilder;
 import com.hpe.caf.worker.document.testing.TestServices;
@@ -56,6 +59,166 @@ import java.util.*;
 public class WorkflowJavaScriptExecutionTest {
     private static final String POST_PROCESSING_NAME = "postProcessingScript";
     private static final WorkflowComponentBuilder BUILDER = new WorkflowComponentBuilder();
+
+    @Test(description = "Tests that the field mapping action is executed as expected on a document and that the next action " +
+            "is queued for execution with its settings.")
+    public void fieldMappingActionTest() throws WorkerException, URISyntaxException, IOException,
+            WorkflowTransformerException, ScriptException, NoSuchMethodException {
+        Map<String, Object> fieldMappingSettings = new HashMap<>();
+        Map<String, String> mappings = new HashMap<>();
+        String abcFieldKey = "abc";
+        String abcFieldValue = UUID.randomUUID().toString();
+        String defFieldKey = "def";
+        String defFieldValue_1 = UUID.randomUUID().toString();
+        String defFieldValue_2 = UUID.randomUUID().toString();
+        String ghiFieldKey = "ghi";
+        String ghiFieldValue = UUID.randomUUID().toString();
+        String jklFieldKey = "jkl";
+        String jklFieldValue = UUID.randomUUID().toString();
+        String mnoFieldKey = "mno";
+        String pqrFieldKey = "pqr";
+        String pqrFieldValueStr = UUID.randomUUID().toString();
+        String pqrFieldValueRef = UUID.randomUUID().toString();
+        String stuFieldKey = "stu";
+        String stuFieldValue = UUID.randomUUID().toString();
+        String vwxFieldKey = "vwx";
+        String vwxFieldValue = UUID.randomUUID().toString();
+        mappings.put(abcFieldKey, defFieldKey);
+        mappings.put(defFieldKey, abcFieldKey);
+        mappings.put(ghiFieldKey, defFieldKey);
+        mappings.put(jklFieldKey, mnoFieldKey);
+        mappings.put(pqrFieldKey, stuFieldKey);
+        fieldMappingSettings.put("mappings", mappings);
+
+        FullAction fieldMappingAction =
+                BUILDER.buildFullAction("Field Mapping Action", new ArrayList<>(Arrays.asList()), 100,
+                        fieldMappingSettings, "FieldMappingActionType");
+
+        Map<String, Object> entityExtractSettings = new HashMap<>();
+        Map<String, String> entityExtractCustomData = new HashMap<>();
+        String entityExtractOpModeKey = "OPERATION_MODE";
+        String entityExtractOpModeValue = "DETECT";
+        entityExtractCustomData.put(entityExtractOpModeKey, entityExtractOpModeValue);
+        String entityExtractGrammarMapKey = "GRAMMAR_MAP";
+        String enityExtractGrammarMapValue = "{pii.xml: []}";
+        entityExtractCustomData.put(entityExtractGrammarMapKey, enityExtractGrammarMapValue);
+        entityExtractSettings.put("customData", entityExtractCustomData);
+        entityExtractSettings.put("workerName", "entityextractworkerhandler");
+
+        String entityExtractQueueName = UUID.randomUUID().toString();
+        entityExtractSettings.put("queueName", entityExtractQueueName);
+
+        FullAction entityExtractAction =
+                BUILDER.buildFullAction("Entity Extract Action", new ArrayList<>(Arrays.asList()), 200,
+                        entityExtractSettings, "ChainedActionType");
+
+        FullProcessingRule rule =
+                BUILDER.buildFullProcessingRule("Processing Rule", true, 100,
+                        new ArrayList<>(Arrays.asList(fieldMappingAction, entityExtractAction)),
+                        new ArrayList<>(Arrays.asList()));
+        FullWorkflow workflow = BUILDER.buildFullWorkflow("Workflow", new ArrayList<>(Arrays.asList(rule)));
+        TestServices testServices = TestServices.createDefault();
+        Document testDocument_1 = DocumentBuilder.configure()
+                .withServices(testServices)
+                .withFields()
+                .addFieldValue(abcFieldKey, abcFieldValue)
+                .addFieldValue(defFieldKey, defFieldValue_1)
+                .addFieldValue(defFieldKey, defFieldValue_2)
+                .addFieldValue(ghiFieldKey, ghiFieldValue)
+                .addFieldValue(jklFieldKey, jklFieldValue)
+                .addFieldValue(pqrFieldKey, pqrFieldValueStr)
+                .addFieldValues(pqrFieldKey, DocumentWorkerFieldEncoding.storage_ref, pqrFieldValueRef)
+                .addFieldValue(stuFieldKey, stuFieldValue)
+                .addFieldValue(vwxFieldKey, vwxFieldValue)
+                .documentBuilder().build();
+
+        final Invocable invocable = getInvocableWorkflowJavaScriptFromFullWorkflow(workflow);
+        invocable.invokeFunction("processDocument", testDocument_1);
+        // the entity extract action should be the action listed for execution as field mapping will have occurred
+        // inside the script
+        checkActionIdToExecute(testDocument_1, Long.toString(entityExtractAction.getActionId()));
+
+        // check that the response options have been set as expected
+        String setQueueName = testDocument_1.getTask().getResponseOptions().getQueueName();
+        Assert.assertEquals(setQueueName, entityExtractQueueName, "Queue name should have been set to expected queue.");
+        Map<String, String> setCustomData = testDocument_1.getTask().getResponseOptions().getCustomData();
+        Assert.assertTrue(setCustomData.containsKey(entityExtractOpModeKey),
+                "Custom data should have the entity extract operation mode key.");
+        String setOpModeValue = (String) setCustomData.get(entityExtractOpModeKey);
+        Assert.assertEquals(setOpModeValue, entityExtractOpModeValue,
+                "Entity Extract Op mode value on returned custom data should have been set to expected value.");
+        Assert.assertTrue(setCustomData.containsKey(entityExtractGrammarMapKey),
+                "Custom data should have the entity extract grammar map key.");
+        String setGrammarMapValue = (String) setCustomData.get(entityExtractGrammarMapKey);
+        Assert.assertEquals(setGrammarMapValue, enityExtractGrammarMapValue,
+                "Entity Extract Grammar Map value on returned custom data should have been set to expected value.");
+
+        // verify that fields have been remapped as expected
+        // abc value & ghi value should now be in the def field
+        Field updatedDefField = testDocument_1.getField(defFieldKey);
+        FieldValues updatedDefFieldValues = updatedDefField.getValues();
+        boolean abcValuePresent = false;
+        boolean ghiValuePresent = false;
+        Assert.assertEquals(updatedDefFieldValues.size(), 2, "Expecting two values to be present in 'def' field after mapping.");
+        for(FieldValue updatedDefFieldValue: updatedDefFieldValues) {
+            String fieldValueStr = updatedDefFieldValue.getStringValue();
+            if(abcFieldValue.equals(fieldValueStr)){
+                abcValuePresent = true;
+            }
+            if(ghiFieldValue.equals(fieldValueStr)){
+                ghiValuePresent = true;
+            }
+        }
+        // 'abc' and 'ghi' field values should now be in 'dhi'
+        Assert.assertTrue(abcValuePresent, "Value from 'abc' field was not present in 'def' field.");
+        Assert.assertTrue(ghiValuePresent, "Value from 'ghi' field was not present in 'def' field.");
+        Field updatedGhiField = testDocument_1.getField(ghiFieldKey);
+        Assert.assertTrue(!updatedGhiField.hasValues(), "'ghi' field should have no values after mapping.");
+
+        // both 'def' values should now be in the 'abc' field
+        Field updatedAbcField = testDocument_1.getField(abcFieldKey);
+        Assert.assertEquals(updatedAbcField.getValues().size(), 2, "'abc' field should have 2 values after mapping.");
+        List<String> updatedAbcStrValues = updatedAbcField.getStringValues();
+        Assert.assertTrue(updatedAbcStrValues.contains(defFieldValue_1), "'def' value 1 should have been mapped to 'abc'");
+        Assert.assertTrue(updatedAbcStrValues.contains(defFieldValue_2), "'def' value 2 should have been mapped to 'abc'");
+
+        // 'jkl' values should be in 'mno' which was previously empty
+        Field updatedJklField = testDocument_1.getField(jklFieldKey);
+        Assert.assertTrue(!updatedJklField.hasValues(), "'jkl' field should have no values after mapping.");
+        Field updatedMnoField = testDocument_1.getField(mnoFieldKey);
+        Assert.assertEquals(updatedMnoField.getValues().size(), 1, "'mno' field should have 1 value after mapping.");
+        List<String> updatedMnoValues = updatedMnoField.getStringValues();
+        Assert.assertTrue(updatedMnoValues.contains(jklFieldValue), "'jkl' value should have been mapped to 'mno'");
+
+        // 'pqr' string and reference values should be added to 'stu' which was previously populated
+        Field updatedPqrField = testDocument_1.getField(pqrFieldKey);
+        Assert.assertTrue(!updatedPqrField.hasValues(), "'pqr' field should have no values after mapping.");
+        Field updatedStuField = testDocument_1.getField(stuFieldKey);
+        List<String> updatedStuStrValues = updatedStuField.getStringValues();
+        FieldValues updatedStuValues = updatedStuField.getValues();
+        Assert.assertEquals(updatedStuValues.size(), 3, "'stu' field should have 3 values after mapping.");
+        Assert.assertEquals(updatedStuStrValues.size(), 2, "'stu' field should have 2 string values after mapping.");
+        Assert.assertTrue(updatedStuStrValues.contains(pqrFieldValueStr),
+                "'pqr' string value should have been mapped to 'stu'");
+        Assert.assertTrue(updatedStuStrValues.contains(stuFieldValue),
+                "Original 'stu' string value should still be present on 'stu'");
+
+        boolean stuReferenceFound = false;
+        Iterator<FieldValue> stuValuesIterator = updatedStuValues.iterator();
+        while(stuValuesIterator.hasNext()){
+            FieldValue updatedStuFieldValue = stuValuesIterator.next();
+            if(!updatedStuFieldValue.isReference()){
+                continue;
+            }
+            else {
+                stuReferenceFound = true;
+            }
+            String stuFieldReferenceValue = updatedStuFieldValue.getReference();
+            Assert.assertEquals(stuFieldReferenceValue, pqrFieldValueRef,
+                    "'pqr' reference value should have been mapped to 'stu'.");
+        }
+        Assert.assertTrue(stuReferenceFound, "A reference should be present in the values of 'stu'.");
+    }
 
     @Test(description = "Verifies string condition evaluation behaviour works as expected in workflow.")
     public void stringConditionTest() throws WorkerException, DataStoreException, IOException, ScriptException,

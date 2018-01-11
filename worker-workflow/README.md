@@ -13,6 +13,8 @@ The Workflow Worker behaviour for a task message is as follows;
 - Evaluate the document against the workflow script to mark the document with the next suitable action to perform on the document e.g. send to Language Detection Worker, and modify the response options on the document to direct it to the appropriate queue.
 - Store the transformed workflow script on the document as a script to be executed by Document Workers during post processing. The intention is that once the next worker has completed its action it will evaluate the document against the workflow again and determine the next action to execute, sending the document to that next worker until all actions on the workflow are completed.
 
+Details of the actions supported by this worker can be found [here](../workflow-to-js-transformer/README.md).
+
 ## Configuration
 
 The configuration properties for use with this worker can be seen in the container for the worker, [here](../worker-workflow-container).

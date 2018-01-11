@@ -54,7 +54,19 @@ public class WorkflowComponentBuilder {
         action.setName(name);
         action.setOrder(order);
         action.setTypeId(1L);
-        action.setTypeInternalName("CompositeDocumentWorkerHandler");
+        action.setTypeInternalName("ChainedActionType");
+        action.setSettings(settings);
+        return new FullAction(action, conditions);
+    }
+
+    public FullAction buildFullAction(String name, List<ExistingCondition> conditions, int order, Object settings,
+                                      String typeInternalName){
+        ExistingAction action = new ExistingAction();
+        action.setId(actionIdCounter++);
+        action.setName(name);
+        action.setOrder(order);
+        action.setTypeId(1L);
+        action.setTypeInternalName(typeInternalName);
         action.setSettings(settings);
         return new FullAction(action, conditions);
     }

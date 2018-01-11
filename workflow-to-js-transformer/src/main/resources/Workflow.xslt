@@ -80,9 +80,9 @@
         return ALREADY_EXECUTED;
         }
         <xsl:if test="conditions/*">if (!<xsl:apply-templates select="conditions/condition"/>) return CONDITIONS_NOT_MET;</xsl:if>
-        var actionSettings = <xsl:apply-templates select="details/settings"/>;
-        recordActionToExecute(document, '<xsl:value-of select="$actionId"/>', actionSettings);
-        return ACTION_TO_EXECUTE;
+        var actionDetails = <xsl:apply-templates select="details/settings"/>;
+        recordActionToExecute(document, '<xsl:value-of select="$actionId"/>', actionDetails);
+        return evaluateActionDetails(document, actionDetails);
         }
     </xsl:template>
 
@@ -108,6 +108,12 @@
         'workerName' : '<xsl:value-of select="workerName"/>'<xsl:if test="customData/*">,
         'customData' : {<xsl:apply-templates select="customData"/>}
         </xsl:if>   }</xsl:template>
+
+    <xsl:template match="details/settings[../typeInternalName='FieldMappingActionType']">function(){executeFieldMapping(document, {
+        <xsl:for-each select="mappings/*">
+            '<xsl:value-of select="name()"/>' : '<xsl:value-of select="."/>'<xsl:if test="position() != last()">,</xsl:if>
+        </xsl:for-each>
+    });}</xsl:template>
 
     <xsl:template match="customData">
         <xsl:for-each select="*"><xsl:variable name="sourceData"><xsl:call-template name="customDataSource"/></xsl:variable>
@@ -266,25 +272,61 @@
         document.getField('CAF_ACTION_TO_EXECUTE').clear();
         }
 
-        function recordActionToExecute(document, actionId, actionDetails){
+        function recordActionToExecute(document, actionId){
         document.getField('CAF_ACTION_TO_EXECUTE').add(actionId);
-
-        // propagate the post-processing field to response custom data if it exists on the document custom data
-        var responseCustomData = actionDetails.customData ? actionDetails.customData : {};
-        if(!isEmpty(document.getCustomData(postProcessingScriptPropertyName))){
-        responseCustomData[postProcessingScriptPropertyName] = document.getCustomData(postProcessingScriptPropertyName);
         }
-
-        // Update document destination queue to that specified by action and pass appropriate settings and customData
-        var queueToSet = !isEmpty(actionDetails.queueName) ? actionDetails.queueName : actionDetails.workerName+"Input";
-        var responseOptions = document.getTask().getResponseOptions();
-        responseOptions.setQueueName(queueToSet);
-        responseOptions.setCustomData(responseCustomData);
-        }
-
     </xsl:template>
 
     <xsl:template name="utilityFunctions">
+        // evaluate the determined details of an action, either executing the action against document or preparing the
+        // document to execute the action
+        function evaluateActionDetails(document, actionDetails){
+            if(typeof actionDetails === 'function'){
+                actionDetails();
+                recordActionCompletedOrFailed(document);
+                return ALREADY_EXECUTED;
+            }
+            // propagate the post-processing field to response custom data if it exists on the document custom data
+            var responseCustomData = actionDetails.customData ? actionDetails.customData : {};
+            if(!isEmpty(document.getCustomData(postProcessingScriptPropertyName))){
+                responseCustomData[postProcessingScriptPropertyName] = document.getCustomData(postProcessingScriptPropertyName);
+            }
+
+            // Update document destination queue to that specified by action and pass appropriate settings and customData
+            var queueToSet = !isEmpty(actionDetails.queueName) ? actionDetails.queueName : actionDetails.workerName+"Input";
+            var responseOptions = document.getTask().getResponseOptions();
+            responseOptions.setQueueName(queueToSet);
+            responseOptions.setCustomData(responseCustomData);
+            return ACTION_TO_EXECUTE;
+        }
+
+        // executes the field mapping action on the document
+        function executeFieldMapping(document, mappings){
+        // get the field values to map (from the document)
+        var documentFieldsValuesMap = {};
+        for(var mappingKey in mappings) {
+        var documentFieldToMapFrom =  document.getField(mappingKey);
+        if(!documentFieldToMapFrom.hasValues()){
+        continue;
+        }
+        documentFieldsValuesMap[mappingKey] = documentFieldToMapFrom.getValues();
+        documentFieldToMapFrom.clear();
+        }
+
+        // for each mapping add the original field value with the new key
+        for(var mappingKey in mappings) {
+        var mappingDestination = mappings[mappingKey];
+        var documentFieldToMapTo = document.getField(mappingDestination);
+        for each(var fieldValue in documentFieldsValuesMap[mappingKey]) {
+        if(fieldValue.isReference()){
+        documentFieldToMapTo.addReference(fieldValue.getReference());
+        continue;
+        }
+        documentFieldToMapTo.add(fieldValue.getValue());
+        }
+        }
+        }
+
         // Returns string representing value of a Document Worker FieldValue
         function getDocumentFieldValueAsString(fieldValue, document){
         if(!fieldValue.isReference()){
