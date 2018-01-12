@@ -18,14 +18,14 @@
         // Workflow ID: <xsl:value-of select="details/id"/>
         // Workflow Name: <xsl:value-of select="details/name"/>
         function processDocument(document){
-        recordActionCompletedOrFailed(document);
-        <xsl:for-each select="processingRules/processingRule"><xsl:sort select="details/priority" data-type="number" order="ascending"/>
-            <xsl:if test="details/enabled = 'true'">
-                // Rule Name: <xsl:value-of select="details/name"/>
-                var ruleResult = rule_<xsl:value-of select="details/id"/> (document);
-                if(ruleResult==ACTION_TO_EXECUTE) return;
-            </xsl:if>
-        </xsl:for-each>
+            recordActionCompletedOrFailed(document);
+            <xsl:for-each select="processingRules/processingRule"><xsl:sort select="details/priority" data-type="number" order="ascending"/>
+                <xsl:if test="details/enabled = 'true'">
+                    // Rule Name: <xsl:value-of select="details/name"/>
+                    var ruleResult = rule_<xsl:value-of select="details/id"/> (document);
+                    if(ruleResult==ACTION_TO_EXECUTE) return;
+                </xsl:if>
+            </xsl:for-each>
         }
         <xsl:for-each select="processingRules/processingRule">
             <xsl:sort select="details/priority" data-type="number" order="ascending"/>
@@ -49,25 +49,25 @@
         // Return ACTION_TO_EXECUTE if an action in the rule should be executed
         function rule_<xsl:value-of select="$ruleId"/> (document){
 
-        if(isRuleCompleted(document, '<xsl:value-of select="$ruleId"/>')){
-        return ALREADY_EXECUTED;
-        }
-
-        <xsl:if test="conditions/*">
-            if (!<xsl:apply-templates select="conditions/condition"/>) {
-            recordRuleCompleted(document, '<xsl:value-of select="$ruleId"/>');
-            return CONDITIONS_NOT_MET;
+            if(isRuleCompleted(document, '<xsl:value-of select="$ruleId"/>')){
+                return ALREADY_EXECUTED;
             }
-        </xsl:if>
 
-        <xsl:for-each select="actions/action">
-            <xsl:sort select="details/order" data-type="number" order="ascending"/>
-            // Action Name: <xsl:value-of select="details/name"/>
-            var actionResult = action_<xsl:value-of select="details/id"/> (document);
-            if (actionResult==ACTION_TO_EXECUTE) return ACTION_TO_EXECUTE;
-        </xsl:for-each>
+            <xsl:if test="conditions/*">
+                if (!<xsl:apply-templates select="conditions/condition"/>) {
+                    recordRuleCompleted(document, '<xsl:value-of select="$ruleId"/>');
+                    return CONDITIONS_NOT_MET;
+                }
+            </xsl:if>
 
-        recordRuleCompleted(document, '<xsl:value-of select="$ruleId"/>');
+            <xsl:for-each select="actions/action">
+                <xsl:sort select="details/order" data-type="number" order="ascending"/>
+                // Action Name: <xsl:value-of select="details/name"/>
+                var actionResult = action_<xsl:value-of select="details/id"/> (document);
+                if (actionResult==ACTION_TO_EXECUTE) return ACTION_TO_EXECUTE;
+            </xsl:for-each>
+
+            recordRuleCompleted(document, '<xsl:value-of select="$ruleId"/>');
         }
     </xsl:template>
 
@@ -76,13 +76,13 @@
         // Action Name: <xsl:value-of select="details/name"/>
         // Return CONDITIONS_NOT_MET if the document did not match the action conditions
         function action_<xsl:value-of select="$actionId"/> (document){
-        if(isActionCompleted(document, '<xsl:value-of select="$actionId"/>')){
-        return ALREADY_EXECUTED;
-        }
-        <xsl:if test="conditions/*">if (!<xsl:apply-templates select="conditions/condition"/>) return CONDITIONS_NOT_MET;</xsl:if>
-        var actionDetails = <xsl:apply-templates select="details/settings"/>;
-        recordActionToExecute(document, '<xsl:value-of select="$actionId"/>', actionDetails);
-        return evaluateActionDetails(document, actionDetails);
+            if(isActionCompleted(document, '<xsl:value-of select="$actionId"/>')){
+                return ALREADY_EXECUTED;
+            }
+            <xsl:if test="conditions/*">if (!<xsl:apply-templates select="conditions/condition"/>) return CONDITIONS_NOT_MET;</xsl:if>
+            var actionDetails = <xsl:apply-templates select="details/settings"/>;
+            recordActionToExecute(document, '<xsl:value-of select="$actionId"/>', actionDetails);
+            return evaluateActionDetails(document, actionDetails);
         }
     </xsl:template>
 
@@ -167,56 +167,56 @@
         // Common logic to evaluate each field value on a document against a provided criteria function.
         // If the a field with the passed name has not values then false is returned.
         function evaluateValuesAgainstCondition(document, fieldName, expectedValue, evaluateFunction){
-        if(!document.getField(fieldName).hasValues()){
-        return false;
-        }
-        var fieldValues = document.getField(fieldName).getValues();
-        for each(var fieldValue in fieldValues){
-        var valueToEvaluate = getDocumentFieldValueAsString(fieldValue, document);
-        if(evaluateFunction(expectedValue, valueToEvaluate) === true){
-        return true;
-        }
-        }
-        return false;
+            if(!document.getField(fieldName).hasValues()){
+                return false;
+            }
+            var fieldValues = document.getField(fieldName).getValues();
+            for each(var fieldValue in fieldValues){
+                var valueToEvaluate = getDocumentFieldValueAsString(fieldValue, document);
+                if(evaluateFunction(expectedValue, valueToEvaluate) === true){
+                    return true;
+                }
+            }
+            return false;
         }
 
         function existsCondition_(document, fieldName) {
-        return document.getField(fieldName).hasValues();
+            return document.getField(fieldName).hasValues();
         }
 
         function stringCondition_is(document, fieldName, value) {
-        return evaluateValuesAgainstCondition(document, fieldName, value, function(expectedValue, actualValue){
-        if(actualValue.equalsIgnoreCase(expectedValue)){
-        return true;
-        }
-        });
+            return evaluateValuesAgainstCondition(document, fieldName, value, function(expectedValue, actualValue){
+                if(actualValue.equalsIgnoreCase(expectedValue)){
+                    return true;
+                }
+            });
         }
 
         function stringCondition_contains(document, fieldName, value) {
-        return evaluateValuesAgainstCondition(document, fieldName, value, function(expectedValue, actualValue){
-        if(actualValue.toUpperCase(java.util.Locale.getDefault())
-        .contains(expectedValue.toUpperCase(java.util.Locale.getDefault()))){
-        return true;
-        }
-        });
+            return evaluateValuesAgainstCondition(document, fieldName, value, function(expectedValue, actualValue){
+                if(actualValue.toUpperCase(java.util.Locale.getDefault())
+                .contains(expectedValue.toUpperCase(java.util.Locale.getDefault()))){
+                    return true;
+                }
+            });
         }
 
         function stringCondition_starts_with(document, fieldName, value) {
-        return evaluateValuesAgainstCondition(document, fieldName, value, function(expectedValue, actualValue){
-        if(actualValue.toUpperCase(java.util.Locale.getDefault())
-        .startsWith(expectedValue.toUpperCase(java.util.Locale.getDefault()))){
-        return true;
-        }
-        });
+            return evaluateValuesAgainstCondition(document, fieldName, value, function(expectedValue, actualValue){
+                if(actualValue.toUpperCase(java.util.Locale.getDefault())
+                .startsWith(expectedValue.toUpperCase(java.util.Locale.getDefault()))){
+                    return true;
+                }
+            });
         }
 
         function stringCondition_ends_with(document, fieldName, value) {
-        return evaluateValuesAgainstCondition(document, fieldName, value, function(expectedValue, actualValue){
-        if(actualValue.toUpperCase(java.util.Locale.getDefault())
-        .endsWith(expectedValue.toUpperCase(java.util.Locale.getDefault()))){
-        return true;
-        }
-        });
+            return evaluateValuesAgainstCondition(document, fieldName, value, function(expectedValue, actualValue){
+                if(actualValue.toUpperCase(java.util.Locale.getDefault())
+                .endsWith(expectedValue.toUpperCase(java.util.Locale.getDefault()))){
+                    return true;
+                }
+            });
         }
 
         function regexCondition_(document, fieldName, value) {
@@ -242,38 +242,38 @@
         }
 
         function notCondition(aBoolean) {
-        return !aBoolean;
+            return !aBoolean;
         }
     </xsl:template>
 
     <xsl:template name="trackingFunctions">
         function isRuleCompleted(document, ruleId){
-        return document.getField('CAF_PROCESSING_RULES_COMPLETED').getStringValues().contains(ruleId);
+            return document.getField('CAF_PROCESSING_RULES_COMPLETED').getStringValues().contains(ruleId);
         }
 
         function isActionCompleted(document, actionId) {
-        return document.getField('CAF_ACTIONS_COMPLETED').getStringValues().contains(actionId);
+            return document.getField('CAF_ACTIONS_COMPLETED').getStringValues().contains(actionId);
         }
 
         function recordRuleCompleted(document, ruleId){
-        document.getField('CAF_PROCESSING_RULES_COMPLETED').add(ruleId);
+            document.getField('CAF_PROCESSING_RULES_COMPLETED').add(ruleId);
         }
 
         function recordActionCompleted(document, actionId){
-        document.getField('CAF_ACTIONS_COMPLETED').add(actionId);
+            document.getField('CAF_ACTIONS_COMPLETED').add(actionId);
         }
 
         function recordActionCompletedOrFailed(document){
         if(!document.getField('CAF_ACTION_TO_EXECUTE').hasValues()){
-        return;
+            return;
         }
 
         recordActionCompleted(document, document.getField('CAF_ACTION_TO_EXECUTE').getStringValues().get(0));
-        document.getField('CAF_ACTION_TO_EXECUTE').clear();
+            document.getField('CAF_ACTION_TO_EXECUTE').clear();
         }
 
         function recordActionToExecute(document, actionId){
-        document.getField('CAF_ACTION_TO_EXECUTE').add(actionId);
+            document.getField('CAF_ACTION_TO_EXECUTE').add(actionId);
         }
     </xsl:template>
 
@@ -302,65 +302,63 @@
 
         // executes the field mapping action on the document
         function executeFieldMapping(document, mappings){
-        // get the field values to map (from the document)
-        var documentFieldsValuesMap = {};
-        for(var mappingKey in mappings) {
-        var documentFieldToMapFrom =  document.getField(mappingKey);
-        if(!documentFieldToMapFrom.hasValues()){
-        continue;
-        }
-        documentFieldsValuesMap[mappingKey] = documentFieldToMapFrom.getValues();
-        documentFieldToMapFrom.clear();
-        }
+            // get the field values to map (from the document)
+            var documentFieldsValuesMap = {};
+            for(var mappingKey in mappings) {
+                var documentFieldToMapFrom =  document.getField(mappingKey);
+                documentFieldsValuesMap[mappingKey] = documentFieldToMapFrom.getValues();
+                documentFieldToMapFrom.clear();
+            }
 
-        // for each mapping add the original field value with the new key
-        for(var mappingKey in mappings) {
-        var mappingDestination = mappings[mappingKey];
-        var documentFieldToMapTo = document.getField(mappingDestination);
-        for each(var fieldValue in documentFieldsValuesMap[mappingKey]) {
-        if(fieldValue.isReference()){
-        documentFieldToMapTo.addReference(fieldValue.getReference());
-        continue;
-        }
-        documentFieldToMapTo.add(fieldValue.getValue());
-        }
-        }
+            // for each mapping add the original field value with the new key
+            for(var mappingKey in mappings) {
+                var mappingDestination = mappings[mappingKey];
+                var documentFieldToMapTo = document.getField(mappingDestination);
+                for each(var fieldValue in documentFieldsValuesMap[mappingKey]) {
+                    if(fieldValue.isReference()){
+                    documentFieldToMapTo.addReference(fieldValue.getReference());
+                    }
+                    else {
+                    documentFieldToMapTo.add(fieldValue.getValue());
+                    }
+                }
+            }
         }
 
         // Returns string representing value of a Document Worker FieldValue
         function getDocumentFieldValueAsString(fieldValue, document){
-        if(!fieldValue.isReference()){
-        return fieldValue.getStringValue();
-        }
-        var reference = fieldValue.getReference();
-        var valueByteArrayStream = new java.io.ByteArrayOutputStream();
-        var valueToReturn;
-        var valueDataStoreStream;
-        try {
-        var store = document.getApplication().getService(DataStore.class);
-        valueDataStoreStream = store.retrieve(reference);
-        var valueBuffer = new ByteArray(1024);
-        var valuePortionLength;
-        while((valuePortionLength = valueDataStoreStream.read(valueBuffer)) != -1){
-        valueByteArrayStream.write(valueBuffer, 0, valuePortionLength);
-        }
-        valueToReturn = valueByteArrayStream.toString("UTF-8");
-        }
-        catch(e){
-        throw new java.lang.RuntimeException("Failed to retrieve document field value using reference: "+ reference, e);
-        }
-        finally {
-        valueByteArrayStream.close();
-        if(valueDataStoreStream!==undefined){
-        valueDataStoreStream.close();
-        }
-        }
-        return valueToReturn;
+            if(!fieldValue.isReference()){
+                return fieldValue.getStringValue();
+            }
+            var reference = fieldValue.getReference();
+            var valueByteArrayStream = new java.io.ByteArrayOutputStream();
+            var valueToReturn;
+            var valueDataStoreStream;
+            try {
+                var store = document.getApplication().getService(DataStore.class);
+                valueDataStoreStream = store.retrieve(reference);
+                var valueBuffer = new ByteArray(1024);
+                var valuePortionLength;
+                while((valuePortionLength = valueDataStoreStream.read(valueBuffer)) != -1){
+                    valueByteArrayStream.write(valueBuffer, 0, valuePortionLength);
+                }
+                valueToReturn = valueByteArrayStream.toString("UTF-8");
+            }
+            catch(e){
+                throw new java.lang.RuntimeException("Failed to retrieve document field value using reference: "+ reference, e);
+            }
+            finally {
+                valueByteArrayStream.close();
+                if(valueDataStoreStream!==undefined){
+                    valueDataStoreStream.close();
+                }
+            }
+            return valueToReturn;
         }
 
         // Returns true if a string value is null, undefined or empty
         function isEmpty(stringToCheck) {
-        return (!stringToCheck || 0 === stringToCheck.length);
+            return (!stringToCheck || 0 === stringToCheck.length);
         }
     </xsl:template>
 
