@@ -151,17 +151,17 @@
         'queueName': '<xsl:choose><xsl:when test="queueName != ''"><xsl:value-of select="queueName"/></xsl:when><xsl:otherwise>default-input</xsl:otherwise></xsl:choose>'
         }</xsl:template>
 
-    <xsl:template match="conditions/condition[additional/type='boolean'] | condition[additional/type='boolean'] | children/condition[additional/type='boolean']">
+    <xsl:template match="conditions/condition[additional/type='boolean'] | condition[additional/type='boolean'] | children/linked-hash-map[additional/type='boolean'] | children/condition[additional/type='boolean']">
         <xsl:choose>
-            <xsl:when test="additional/operator='or'">(<xsl:for-each select="additional/children/condition"><xsl:apply-templates select="."/><xsl:if test="position() != last()"> || </xsl:if></xsl:for-each>)</xsl:when>
-            <xsl:when test="additional/operator='and'">(<xsl:for-each select="additional/children/condition"><xsl:apply-templates select="."/><xsl:if test="position() != last()"> &amp;&amp; </xsl:if></xsl:for-each>)</xsl:when>
+            <xsl:when test="additional/operator='or'">(<xsl:for-each select="additional/children/linked-hash-map | additional/children/condition"><xsl:apply-templates select="."/><xsl:if test="position() != last()"> || </xsl:if></xsl:for-each>)</xsl:when>
+            <xsl:when test="additional/operator='and'">(<xsl:for-each select="additional/children/linked-hash-map | additional/children/condition"><xsl:apply-templates select="."/><xsl:if test="position() != last()"> &amp;&amp; </xsl:if></xsl:for-each>)</xsl:when>
         </xsl:choose>
     </xsl:template>
 
-    <xsl:template match="conditions/conditions[additional/type='not'] | condition[additional/type='not'] | children/condition[additional/type='not']">(notCondition(<xsl:apply-templates select="additional/condition"/>))</xsl:template>
+    <xsl:template match="conditions/conditions[additional/type='not'] | condition[additional/type='not'] | children/linked-hash-map[additional/type='not'] | children/condition[additional/type='not']">(notCondition(<xsl:apply-templates select="additional/condition"/>))</xsl:template>
 
     <!-- template used to create JS invoking call to condition with a document and values to test for -->
-    <xsl:template priority="-.5" match="conditions/condition | condition | children/condition">(<xsl:value-of select="additional/type"/>Condition_<xsl:value-of select="additional/operator"/> (document, '<xsl:value-of select="additional/field"/>','<xsl:value-of select="additional/value"/>'))</xsl:template>
+    <xsl:template priority="-.5" match="conditions/condition | condition | children/linked-hash-map | children/condition">(<xsl:value-of select="additional/type"/>Condition_<xsl:value-of select="additional/operator"/> (document, '<xsl:value-of select="additional/field"/>','<xsl:value-of select="additional/value"/>'))</xsl:template>
 
     <xsl:template name="conditionEvaluationFunctions">
         // Common logic to evaluate each field value on a document against a provided criteria function.

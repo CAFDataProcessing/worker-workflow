@@ -60,6 +60,76 @@ public class WorkflowJavaScriptExecutionTest {
     private static final String POST_PROCESSING_NAME = "postProcessingScript";
     private static final WorkflowComponentBuilder BUILDER = new WorkflowComponentBuilder();
 
+    @Test(description = "Tests that a workflow containing an action with boolean conditions is evaluated as expected.")
+    public void booleanConditionCheck()
+            throws ScriptException, WorkflowTransformerException, IOException, URISyntaxException,
+            NoSuchMethodException, WorkerException, DataStoreException {
+        final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_2.xml");
+        final String familyHashingActionId = "29";
+        final String langDetectActionId = "30";
+        final String entityExtractActionId = "31";
+        final String outputActionId = "32";
+
+        final Invocable invocable = getInvocableWorkflowJavaScriptFromJS(workflowJSStr);
+        TestServices testServices = TestServices.createDefault();
+        DataStore store = testServices.getDataStore();
+        String postProcessingScriptRef = store.store(workflowJSStr.getBytes(), "test");
+        Document document = DocumentBuilder.configure()
+                .withServices(testServices)
+                .withFields()
+                .addFieldValue("CONTENT", "test")
+                .addFieldValue("DOC_FORMAT_CODE", "345")
+                .addFieldValue("DOC_CLASS_CODE", "9")
+                .addFieldValue("test", "string_value").documentBuilder()
+                .withCustomData()
+                .add(POST_PROCESSING_NAME, postProcessingScriptRef)
+                .documentBuilder().build();
+
+        invocable.invokeFunction("processDocument", document);
+
+        checkActionIdToExecute(document, familyHashingActionId);
+
+        // invoke again which should cause next action to be marked for execution
+        invocable.invokeFunction("processDocument", document);
+
+        checkActionIdToExecute(document, langDetectActionId);
+        checkActionsCompleted(document, Arrays.asList(familyHashingActionId));
+
+        // invoke again which should cause next action to be marked for execution
+        invocable.invokeFunction("processDocument", document);
+
+        checkActionIdToExecute(document, entityExtractActionId);
+        checkActionsCompleted(document, Arrays.asList(familyHashingActionId, langDetectActionId));
+
+        // verify that if a document that does not meet the criteria is passed that it does not try to execute the action
+        Document document_doesntMatchEntityExtract = DocumentBuilder.configure()
+                .withServices(testServices)
+                .withFields()
+                .addFieldValue("CONTENT", "test")
+                .addFieldValue("DOC_FORMAT_CODE", "345")
+                .addFieldValue("DOC_CLASS_CODE", "8")
+                .addFieldValue("test", "string_value").documentBuilder()
+                .withCustomData()
+                .add(POST_PROCESSING_NAME, postProcessingScriptRef)
+                .documentBuilder().build();
+
+        invocable.invokeFunction("processDocument", document_doesntMatchEntityExtract);
+
+        checkActionIdToExecute(document_doesntMatchEntityExtract, familyHashingActionId);
+
+        // invoke again which should cause next action to be marked for execution
+        invocable.invokeFunction("processDocument", document_doesntMatchEntityExtract);
+
+        checkActionIdToExecute(document_doesntMatchEntityExtract, langDetectActionId);
+        checkActionsCompleted(document_doesntMatchEntityExtract, Arrays.asList(familyHashingActionId));
+
+        // invoke again which should cause Entity Extract Action to not be executed as doc does not meet the conditions
+        invocable.invokeFunction("processDocument", document_doesntMatchEntityExtract);
+
+        checkActionIdToExecute(document_doesntMatchEntityExtract, outputActionId);
+        checkActionsCompleted(document_doesntMatchEntityExtract, Arrays.asList(familyHashingActionId, langDetectActionId));
+    }
+
     @Test(description = "Tests that the field mapping action is executed as expected on a document and that the next action " +
             "is queued for execution with its settings.")
     public void fieldMappingActionTest() throws WorkerException, URISyntaxException, IOException,
