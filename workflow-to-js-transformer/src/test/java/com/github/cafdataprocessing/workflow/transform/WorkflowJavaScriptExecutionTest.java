@@ -621,6 +621,43 @@ public class WorkflowJavaScriptExecutionTest {
                 "Grammar map set on deserialized custom data from response options should have expected value.");
     }
 
+    @Test(description = "Verify that if the onError function is called that the next action to perform on the document is " +
+            "determined.")
+    public void onErrorTest() throws WorkerException, ScriptException, WorkflowTransformerException, IOException, URISyntaxException, DataStoreException, NoSuchMethodException {
+        final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_2.xml");
+        final String familyHashingActionId = "29";
+        final String langDetectActionId = "30";
+
+        final Invocable invocable = getInvocableWorkflowJavaScriptFromJS(workflowJSStr);
+        final TestServices testServices = TestServices.createDefault();
+        final DataStore store = testServices.getDataStore();
+        final String postProcessingScriptRef = store.store(workflowJSStr.getBytes(), "test");
+        final Document document = DocumentBuilder.configure()
+                .withServices(testServices)
+                .withFields()
+                .addFieldValue("CONTENT", "test")
+                .addFieldValue("DOC_FORMAT_CODE", "345")
+                .addFieldValue("DOC_CLASS_CODE", "9")
+                .addFieldValue("test", "string_value")
+                .addFieldValue("CAF_ACTION_TO_EXECUTE", familyHashingActionId)
+                .documentBuilder()
+                .withCustomData()
+                .add(POST_PROCESSING_NAME, postProcessingScriptRef)
+                .documentBuilder().build();
+
+        // TODO change this to ErrorEventObject class from worker-document once those changes aer ready and the xslt has been
+        // TODO updated to use that version of worker-document
+        final Map<String, Object> errorObj = new HashMap<>();
+        errorObj.put("rootDocument", document);
+        invocable.invokeFunction("onError", errorObj);
+
+        // verify that the document has been marked with the next action to execute
+        checkActionIdToExecute(document, langDetectActionId);
+        // even though the action failed it has still completed execution for the document so check it has been marked as
+        // completed
+        checkActionsCompleted(document, Arrays.asList("29"));
+    }
+
     private void checkActionIdToExecute(final Document document, final String expectedActionId){
         Assert.assertEquals(document.getField("CAF_ACTION_TO_EXECUTE").getStringValues().size(), 1,
                 "Expecting next action to execute to have been added to the document and any previous values to have been removed.");

@@ -18,7 +18,7 @@
         // Workflow ID: <xsl:value-of select="details/id"/>
         // Workflow Name: <xsl:value-of select="details/name"/>
         function processDocument(document){
-            recordActionCompletedOrFailed(document);
+            updateActionStatus(document);
             <xsl:for-each select="processingRules/processingRule"><xsl:sort select="details/priority" data-type="number" order="ascending"/>
                 <xsl:if test="details/enabled = 'true'">
                     // Rule Name: <xsl:value-of select="details/name"/>
@@ -41,6 +41,8 @@
         <xsl:call-template name="conditionEvaluationFunctions"/>
         <xsl:call-template name="trackingFunctions"/>
         <xsl:call-template name="utilityFunctions"/>
+        
+        <xsl:call-template name="onErrorFunction"/>
     </xsl:template>
 
     <xsl:template name="ruleFunction">
@@ -263,18 +265,17 @@
             document.getField('CAF_ACTIONS_COMPLETED').add(actionId);
         }
 
-        function recordActionCompletedOrFailed(document){
+        function recordActionToExecute(document, actionId){
+            document.getField('CAF_ACTION_TO_EXECUTE').add(actionId);
+        }
+
+        function updateActionStatus(document){
             // this may be the first time the document has been presented to the workflow
             if(!document.getField('CAF_ACTION_TO_EXECUTE').hasValues()){
                 return;
             }
-
             recordActionCompleted(document, document.getField('CAF_ACTION_TO_EXECUTE').getStringValues().get(0));
             document.getField('CAF_ACTION_TO_EXECUTE').clear();
-        }
-
-        function recordActionToExecute(document, actionId){
-            document.getField('CAF_ACTION_TO_EXECUTE').add(actionId);
         }
     </xsl:template>
 
@@ -284,7 +285,7 @@
         function evaluateActionDetails(document, actionDetails){
             if(typeof actionDetails === 'function'){
                 actionDetails();
-                recordActionCompletedOrFailed(document);
+                updateActionStatus(document);
                 return ALREADY_EXECUTED;
             }
             // propagate the post-processing field to response custom data if it exists on the document custom data
@@ -360,6 +361,17 @@
         // Returns true if a string value is null, undefined or empty
         function isEmpty(stringToCheck) {
             return (!stringToCheck || 0 === stringToCheck.length);
+        }
+    </xsl:template>
+
+    <xsl:template name="onErrorFunction">
+        function onError(errorEventObj) {
+            // we will not mark the error as handled here. This will allow the document-worker framework to add the failure
+            // itself rather than us duplicating the format of the failure value it constructs for non-script failure responses
+
+            // even though the action failed it still completed in terms of the document being sent for processing against the
+            // action, so the action should be marked as completed
+            processDocument(errorEventObj.rootDocument);
         }
     </xsl:template>
 

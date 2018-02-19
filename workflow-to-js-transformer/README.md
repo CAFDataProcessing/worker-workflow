@@ -81,3 +81,10 @@ Swapping the names of fields
    }
 }
 ```
+
+## Workflow Script Error Handling
+
+The generated workflow script assumes that any failures are recorded on the document outside of the script execution. If an
+action was marked for execution on a document and then failed it is the job of the code that failed to ensure that an
+appropriate failure is added to the document. The script will mark such action as completed so that it can determine the next
+action to try and execute on the document.
