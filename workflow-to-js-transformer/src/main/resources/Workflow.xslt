@@ -3,6 +3,8 @@
                 xmlns:sxl="http://www.w3.org/1999/XSL/Transform" xmlns:xslt="http://www.w3.org/1999/XSL/Transform"
                 xmlns:workflow_transform="com.github.cafdataprocessing.workflow.transform">
     <xsl:output method="text" omit-xml-declaration="yes" indent="no"/>
+    
+    <xsl:param name="projectId"/>
 
     <xsl:template match="/workflow">
         var System  = Java.type("java.lang.System")
@@ -128,6 +130,7 @@
 
     <xsl:template name="customDataSource">
         <xsl:choose><xsl:when test="source = 'inlineJson' and data !=''"><xsl:call-template name="jsonDataSource"><xsl:with-param name="currentProperties" select="data/*"/></xsl:call-template></xsl:when></xsl:choose>
+        <xsl:choose><xsl:when test="source = 'projectId'"><xsl:value-of select="$projectId"/></xsl:when></xsl:choose>
     </xsl:template>
 
     <xsl:template name="jsonDataSource"><xsl:param name="currentProperties"/>{<xsl:for-each select="$currentProperties">"<xsl:value-of select="name(.)"/>": <xsl:call-template name="jsonPropertyOutput"/><xsl:if test="position() != last()">, </xsl:if></xsl:for-each>}</xsl:template>

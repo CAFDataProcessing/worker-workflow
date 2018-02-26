@@ -66,7 +66,7 @@ public class WorkflowTransformer {
     public static String retrieveAndTransformWorkflowToJavaScript(long workflowId, String projectId, String processingApiUrl)
             throws ApiException, WorkflowTransformerException, WorkflowRetrievalException {
         final String workflowAsXML = retrieveAndTransformWorkflowToXml(workflowId, projectId, processingApiUrl);
-        return transformXmlWorkflowToJavaScript(workflowAsXML);
+        return transformXmlWorkflowToJavaScript(workflowAsXML, projectId);
     }
 
     /**
@@ -121,10 +121,11 @@ public class WorkflowTransformer {
     /**
      * Converts a workflow in XML form to a JavaScript logic representation that documents can be executed against.
      * @param workflowXml Workflow in XML form. The expected schema maps to the {@link FullWorkflow} class.
+     * @param projectId The projectId to use in workflow transformation
      * @return JavaScript representation of the workflow logic.
      * @throws WorkflowTransformerException if there is an error transforming workflow to JavaScript representation
      */
-    public static String transformXmlWorkflowToJavaScript(String workflowXml) throws WorkflowTransformerException {
+    public static String transformXmlWorkflowToJavaScript(final String workflowXml, final String projectId) throws WorkflowTransformerException {
         final String workflowResourceName = "Workflow.xslt";
         final InputStream defaultXsltStream = WorkflowTransformer.class.getClassLoader().getResourceAsStream(workflowResourceName);
         if(defaultXsltStream==null){
@@ -138,6 +139,7 @@ public class WorkflowTransformer {
         final Transformer transformer;
         try {
             transformer = TransformerFactory.newInstance().newTransformer(new StreamSource(defaultXsltStream));
+            transformer.setParameter("projectId", projectId);
         } catch (final TransformerConfigurationException e) {
             throw new WorkflowTransformerException("Failed to create Transformer from XSLT file input.", e);
         }
