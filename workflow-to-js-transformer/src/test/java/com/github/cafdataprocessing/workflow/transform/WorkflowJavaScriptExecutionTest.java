@@ -450,8 +450,8 @@ public class WorkflowJavaScriptExecutionTest {
 
     }
 
-    @Test(description = "Tests that when custom data in workflow XML specifies a source of inlineJson that the data is " +
-            "added to the response options as a serialized string when the action is executed.")
+    @Test(description = "Tests that when custom data in workflow XML specifies a source of projectId that the data is " +
+            "added to the response options as a string when the action is executed.")
     public void projectIdCustomDataTest()
             throws WorkerException, IOException, ScriptException, WorkflowTransformerException,
             URISyntaxException, NoSuchMethodException, DataStoreException {
@@ -782,7 +782,7 @@ public class WorkflowJavaScriptExecutionTest {
     private Invocable getInvocableWorkflowJavaScriptFromFullWorkflow(final FullWorkflow workflow)
             throws WorkflowTransformerException, ScriptException, URISyntaxException, IOException {
         final String workflowAsXml = WorkflowTransformer.transformFullWorkflowToXml(workflow);
-        final String workflowAsJS = WorkflowTransformer.transformXmlWorkflowToJavaScript(workflowAsXml, "projectId_54");
+        final String workflowAsJS = WorkflowTransformer.transformXmlWorkflowToJavaScript(workflowAsXml, PROJECT_ID);
         return getInvocableWorkflowJavaScriptFromJS(workflowAsJS);
     }
 
