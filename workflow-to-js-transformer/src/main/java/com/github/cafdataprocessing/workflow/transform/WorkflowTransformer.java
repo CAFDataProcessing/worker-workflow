@@ -62,9 +62,11 @@ public class WorkflowTransformer {
      * @throws WorkflowRetrievalException if certain failures occur communicating with the processing service to
      * retrieve the workflow. e.g. The processing service not being contactable.
      * @throws WorkflowTransformerException if there is an error transforming workflow returned to JavaScript representation
+     * @throws NullPointerException if the projectId passed to the method is null
      */
     public static String retrieveAndTransformWorkflowToJavaScript(long workflowId, String projectId, String processingApiUrl)
             throws ApiException, WorkflowTransformerException, WorkflowRetrievalException {
+        Objects.requireNonNull(projectId);
         final String workflowAsXML = retrieveAndTransformWorkflowToXml(workflowId, projectId, processingApiUrl);
         return transformXmlWorkflowToJavaScript(workflowAsXML, projectId);
     }
@@ -81,9 +83,11 @@ public class WorkflowTransformer {
      * @throws WorkflowRetrievalException if certain failures occur communicating with the processing service to
      * retrieve the workflow. e.g. The processing service not being contactable.
      * @throws WorkflowTransformerException if there is an error transforming workflow returned to XML representation
+     * @throws NullPointerException if the projectId passed to the method is null
      */
     public static String retrieveAndTransformWorkflowToXml(long workflowId, String projectId, String processingApiUrl)
             throws ApiException, WorkflowTransformerException, WorkflowRetrievalException {
+        Objects.requireNonNull(projectId);
         final ApiClient apiClient = new ApiClient();
         apiClient.setBasePath(processingApiUrl);
         final FullWorkflowRetriever workflowRetriever = new FullWorkflowRetriever(apiClient);
@@ -124,8 +128,10 @@ public class WorkflowTransformer {
      * @param projectId The projectId to use in workflow transformation
      * @return JavaScript representation of the workflow logic.
      * @throws WorkflowTransformerException if there is an error transforming workflow to JavaScript representation
+     * @throws NullPointerException if the projectId passed to the method is null
      */
     public static String transformXmlWorkflowToJavaScript(final String workflowXml, final String projectId) throws WorkflowTransformerException {
+        Objects.requireNonNull(projectId);
         final String workflowResourceName = "Workflow.xslt";
         final InputStream defaultXsltStream = WorkflowTransformer.class.getClassLoader().getResourceAsStream(workflowResourceName);
         if(defaultXsltStream==null){

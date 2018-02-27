@@ -484,7 +484,7 @@ public class WorkflowJavaScriptExecutionTest {
                 "custom data.");
 
         final String projectId = returnedCustomData.get("test_projectId_prop");
-        Assert.assertEquals(PROJECT_ID, projectId, "ProcjectId should match expected value");
+        Assert.assertEquals(PROJECT_ID, projectId, "ProjectId should match expected value");
 
         final String jsonProperty = returnedCustomData.get("test_prop");
         Assert.assertNotNull(jsonProperty, "The inline json data property should not be null on response custom data.");
@@ -531,6 +531,31 @@ public class WorkflowJavaScriptExecutionTest {
             }
         }
 
+    }
+
+    @Test(expectedExceptions = NullPointerException.class, description = "Tests that when custom data in workflow XML specifies a source "
+        + "of projectId and the projectId is Null, an Exception is thrown")
+    public void nullProjectIdCustomDataTest()
+            throws WorkerException, IOException, ScriptException, WorkflowTransformerException,
+            URISyntaxException, NoSuchMethodException, DataStoreException {
+        final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_4.xml", null);
+        final Invocable invocable = getInvocableWorkflowJavaScriptFromJS(workflowJSStr);
+        final TestServices testServices = TestServices.createDefault();
+        final DataStore store = testServices.getDataStore();
+        final String postProcessingScriptRef = store.store(workflowJSStr.getBytes(), "test");
+
+        final Document document = DocumentBuilder.configure()
+                .withServices(testServices)
+                .withFields()
+                .addFieldValue("test", "string_value").documentBuilder()
+                .withCustomData()
+                .add(POST_PROCESSING_NAME, postProcessingScriptRef)
+                .documentBuilder().build();
+        invocable.invokeFunction("processDocument", document);
+
+        // expecting action on first enabled rule to be marked for execution
+        checkActionIdToExecute(document, "10");
+        document.getTask().getResponse().getCustomData();
     }
 
     @Test(description = "Tests that a rule that has enabled set to 'false' does not get executed against a document.")
@@ -817,5 +842,14 @@ public class WorkflowJavaScriptExecutionTest {
 
         return WorkflowTransformer.transformXmlWorkflowToJavaScript(new String(
                 Files.readAllBytes(workflowXmlPath), StandardCharsets.UTF_8), PROJECT_ID);
+    }
+
+    private String getWorkflowJavaScriptFromXML(final String workflowXmlResourceIdentifier, final String projectId)
+            throws IOException, URISyntaxException, WorkflowTransformerException {
+        final URL testWorkflowXml = this.getClass().getResource(workflowXmlResourceIdentifier);
+        final Path workflowXmlPath = Paths.get(testWorkflowXml.toURI());
+
+        return WorkflowTransformer.transformXmlWorkflowToJavaScript(new String(
+                Files.readAllBytes(workflowXmlPath), StandardCharsets.UTF_8), projectId);
     }
 }
