@@ -539,23 +539,7 @@ public class WorkflowJavaScriptExecutionTest {
             throws WorkerException, IOException, ScriptException, WorkflowTransformerException,
             URISyntaxException, NoSuchMethodException, DataStoreException {
         final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_4.xml", null);
-        final Invocable invocable = getInvocableWorkflowJavaScriptFromJS(workflowJSStr);
-        final TestServices testServices = TestServices.createDefault();
-        final DataStore store = testServices.getDataStore();
-        final String postProcessingScriptRef = store.store(workflowJSStr.getBytes(), "test");
-
-        final Document document = DocumentBuilder.configure()
-                .withServices(testServices)
-                .withFields()
-                .addFieldValue("test", "string_value").documentBuilder()
-                .withCustomData()
-                .add(POST_PROCESSING_NAME, postProcessingScriptRef)
-                .documentBuilder().build();
-        invocable.invokeFunction("processDocument", document);
-
-        // expecting action on first enabled rule to be marked for execution
-        checkActionIdToExecute(document, "10");
-        document.getTask().getResponse().getCustomData();
+        Assert.fail("NullPointerExcepion should have been thrown before this point.");
     }
 
     @Test(description = "Tests that a rule that has enabled set to 'false' does not get executed against a document.")
