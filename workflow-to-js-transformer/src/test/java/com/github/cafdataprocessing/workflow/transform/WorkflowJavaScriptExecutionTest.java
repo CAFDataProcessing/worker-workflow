@@ -58,6 +58,7 @@ import java.util.*;
  */
 public class WorkflowJavaScriptExecutionTest {
     private static final String POST_PROCESSING_NAME = "postProcessingScript";
+    private static final String PROJECT_ID = "ProjectId_Test_Value_1234567890";
     private static final WorkflowComponentBuilder BUILDER = new WorkflowComponentBuilder();
 
     @Test(description = "Tests that a workflow containing an action with boolean conditions is evaluated as expected.")
@@ -449,6 +450,98 @@ public class WorkflowJavaScriptExecutionTest {
 
     }
 
+    @Test(description = "Tests that when custom data in workflow XML specifies a source of projectId that the data is " +
+            "added to the response options as a string when the action is executed.")
+    public void projectIdCustomDataTest()
+            throws WorkerException, IOException, ScriptException, WorkflowTransformerException,
+            URISyntaxException, NoSuchMethodException, DataStoreException {
+        final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_4.xml");
+        final Invocable invocable = getInvocableWorkflowJavaScriptFromJS(workflowJSStr);
+        final TestServices testServices = TestServices.createDefault();
+        final DataStore store = testServices.getDataStore();
+        final String postProcessingScriptRef = store.store(workflowJSStr.getBytes(), "test");
+
+        final Document document = DocumentBuilder.configure()
+                .withServices(testServices)
+                .withFields()
+                .addFieldValue("test", "string_value").documentBuilder()
+                .withCustomData()
+                .add(POST_PROCESSING_NAME, postProcessingScriptRef)
+                .documentBuilder().build();
+        invocable.invokeFunction("processDocument", document);
+
+        // expecting action on first enabled rule to be marked for execution
+        checkActionIdToExecute(document, "10");
+        final Map<String, String> returnedCustomData = document.getTask().getResponse().getCustomData();
+
+        // check that the simple string property has been set
+        final String simpleProperty = returnedCustomData.get("another_prop");
+        Assert.assertEquals(simpleProperty, "second value", "Returned simple string property should have expected value.");
+
+        // check that the property that specified an invalid source was not set
+        final String invalidProperty = returnedCustomData.get("invalid_prop");
+        Assert.assertNull(invalidProperty, "Expecting property with an invalid source to not have been returned on " +
+                "custom data.");
+
+        final String projectId = returnedCustomData.get("test_projectId_prop");
+        Assert.assertEquals(PROJECT_ID, projectId, "ProjectId should match expected value");
+
+        final String jsonProperty = returnedCustomData.get("test_prop");
+        Assert.assertNotNull(jsonProperty, "The inline json data property should not be null on response custom data.");
+        // test that deserializable string is output
+        final JSONObject deserializedObject = new JSONObject(jsonProperty);
+        final JSONObject topLevelProperty = ((JSONObject) deserializedObject.get("myObject"));
+        Assert.assertNotNull(topLevelProperty, "A node 'myObject' should exist.");
+        final String myKeyProperty = topLevelProperty.getString("myKey");
+        Assert.assertEquals(myKeyProperty, " myValue", "Expecting 'myKey' property to be expected value.");
+        final JSONArray intArrayProperty = topLevelProperty.getJSONArray("intArray");
+        Assert.assertNotNull(intArrayProperty, "Expecting int array to have been returned.");
+        final List<Integer> expectedIntValues = new ArrayList<>(Arrays.asList(1, 2, 3, 4));
+        for(int intArrayIndex=0; intArrayIndex < intArrayProperty.length(); intArrayIndex++){
+            final int returnedIntValue = intArrayProperty.getInt(intArrayIndex);
+            Assert.assertTrue(expectedIntValues.contains(returnedIntValue), "Expected returned value to be present in " +
+                    "list of expected values.");
+            expectedIntValues.remove(new Integer(returnedIntValue));
+        }
+        Assert.assertTrue(expectedIntValues.isEmpty(), "Expected all values to have been matched in returned array.");
+        final JSONArray myArrayProperty = topLevelProperty.getJSONArray("myArray");
+        Assert.assertEquals(myArrayProperty.length(), 4, "Expecting 4 entries returned on 'myArray'.");
+        for(int myArrayIndex=0; myArrayIndex < myArrayProperty.length(); myArrayIndex++){
+            final JSONObject currentArrayEntry = myArrayProperty.getJSONObject(myArrayIndex);
+            switch (currentArrayEntry.keys().next()){
+                case "myNullValue":
+                    Assert.assertTrue(currentArrayEntry.isNull("myNullValue"),
+                            "Value set on 'myNullValue' should be null.");
+                    break;
+                case "myStringValue":
+                    Assert.assertEquals(currentArrayEntry.getString("myStringValue"), "My String",
+                            "Value set on 'myStringValue' should be as expected." );
+                    break;
+                case "myBoolean":
+                    Assert.assertEquals(currentArrayEntry.getBoolean("myBoolean"), true,
+                            "Value set on 'myBoolean' should be expected value.");
+                    break;
+                case "myInteger":
+                    Assert.assertEquals(currentArrayEntry.getInt("myInteger"), 1,
+                            "Value set on 'myInteger' should be expected value.");
+                    break;
+                default:
+                    Assert.fail("Unrecognized key in objects returned on myArray property.");
+                    break;
+            }
+        }
+
+    }
+
+    @Test(expectedExceptions = NullPointerException.class, description = "Tests that when custom data in workflow XML specifies a source "
+        + "of projectId and the projectId is Null, an Exception is thrown")
+    public void nullProjectIdCustomDataTest()
+            throws WorkerException, IOException, ScriptException, WorkflowTransformerException,
+            URISyntaxException, NoSuchMethodException, DataStoreException {
+        final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_4.xml", null);
+        Assert.fail("NullPointerExcepion should have been thrown before this point.");
+    }
+
     @Test(description = "Tests that a rule that has enabled set to 'false' does not get executed against a document.")
     public void notEnabledRuleNotExecutedTest()
             throws WorkerException, IOException, ScriptException, WorkflowTransformerException,
@@ -698,7 +791,7 @@ public class WorkflowJavaScriptExecutionTest {
     private Invocable getInvocableWorkflowJavaScriptFromFullWorkflow(final FullWorkflow workflow)
             throws WorkflowTransformerException, ScriptException, URISyntaxException, IOException {
         final String workflowAsXml = WorkflowTransformer.transformFullWorkflowToXml(workflow);
-        final String workflowAsJS = WorkflowTransformer.transformXmlWorkflowToJavaScript(workflowAsXml);
+        final String workflowAsJS = WorkflowTransformer.transformXmlWorkflowToJavaScript(workflowAsXml, PROJECT_ID);
         return getInvocableWorkflowJavaScriptFromJS(workflowAsJS);
     }
 
@@ -732,6 +825,15 @@ public class WorkflowJavaScriptExecutionTest {
         final Path workflowXmlPath = Paths.get(testWorkflowXml.toURI());
 
         return WorkflowTransformer.transformXmlWorkflowToJavaScript(new String(
-                Files.readAllBytes(workflowXmlPath), StandardCharsets.UTF_8));
+                Files.readAllBytes(workflowXmlPath), StandardCharsets.UTF_8), PROJECT_ID);
+    }
+
+    private String getWorkflowJavaScriptFromXML(final String workflowXmlResourceIdentifier, final String projectId)
+            throws IOException, URISyntaxException, WorkflowTransformerException {
+        final URL testWorkflowXml = this.getClass().getResource(workflowXmlResourceIdentifier);
+        final Path workflowXmlPath = Paths.get(testWorkflowXml.toURI());
+
+        return WorkflowTransformer.transformXmlWorkflowToJavaScript(new String(
+                Files.readAllBytes(workflowXmlPath), StandardCharsets.UTF_8), projectId);
     }
 }
