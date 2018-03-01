@@ -16,7 +16,7 @@
         var ALREADY_EXECUTED = 'alreadyExecuted';
 
         function onAfterProcessTask(document){
-        processDocument(document);
+            processDocument(document);
         }
 
         // Workflow ID: <xsl:value-of select="details/id"/>
