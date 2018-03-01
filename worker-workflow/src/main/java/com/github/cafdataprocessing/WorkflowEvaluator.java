@@ -15,10 +15,9 @@
  */
 package com.github.cafdataprocessing;
 
-import com.hpe.caf.worker.document.JavaScriptDocumentPostProcessor;
-import com.hpe.caf.worker.document.exceptions.PostProcessingFailedException;
 import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.model.Script;
+import javax.script.ScriptException;
 
 
 /**
@@ -40,10 +39,8 @@ final class WorkflowEvaluator
      * @throws PostProcessingFailedException if there is a failure in workflow script execution.
      */
     public static void evaluate(final Document document, final String workflowAsJavaScript, final String workflowStorageRef)
-            throws PostProcessingFailedException
+            throws ScriptException
     {
-        final JavaScriptDocumentPostProcessor jsPostProcessor = new JavaScriptDocumentPostProcessor(workflowAsJavaScript);
-        jsPostProcessor.postProcessDocument(document);
         setWorkflowPostProcessingScript(document, workflowStorageRef);
     }
 
@@ -53,10 +50,11 @@ final class WorkflowEvaluator
      * @param document Document to set post processing information on.
      * @param workflowStorageReference DataStore reference for a workflow that can be executed in post processing.
      */
-    private static void setWorkflowPostProcessingScript(final Document document, final String workflowStorageReference)
+    private static void setWorkflowPostProcessingScript(final Document document, final String workflowStorageReference) throws ScriptException
     {
         final Script script = document.getTask().getScripts().add();
         script.setScriptByReference(workflowStorageReference);
         script.setName("postProcessingScript");
+        script.load();
     }
 }

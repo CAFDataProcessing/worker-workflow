@@ -28,11 +28,11 @@ import com.hpe.caf.api.ConfigurationSource;
 import com.hpe.caf.api.worker.DataStore;
 import com.hpe.caf.api.worker.DataStoreException;
 import com.hpe.caf.worker.document.exceptions.DocumentWorkerTransientException;
-import com.hpe.caf.worker.document.exceptions.PostProcessingFailedException;
 import com.hpe.caf.worker.document.extensibility.DocumentWorker;
 import com.hpe.caf.worker.document.model.Application;
 import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.model.HealthMonitor;
+import javax.script.ScriptException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -147,7 +147,7 @@ public final class WorkflowWorker implements DocumentWorker
         {
             WorkflowEvaluator.evaluate(document, transformWorkflowResult.getTransformedWorkflow(),
                     transformWorkflowResult.getWorkflowStorageRef());
-        } catch (final PostProcessingFailedException e) {
+        } catch (final ScriptException e) {
             LOG.error("A failure occurred trying to evaluate document against transformed Workflow.", e);
             document.addFailure(WorkflowWorkerConstants.ErrorCodes.WORKFLOW_EVALUATION_FAILED, e.getMessage());
         }

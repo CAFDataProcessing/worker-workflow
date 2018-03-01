@@ -36,7 +36,7 @@
         </dependency>
         <dependency>
             <groupId>com.github.cafdataprocessing</groupId>
-            <artifactId>worker-document</artifactId>
+            <artifactId>worker-document-interface</artifactId>
         </dependency>
         <dependency>
             <groupId>com.github.cafdataprocessing</groupId>
@@ -70,6 +70,10 @@
             <groupId>com.github.cafdataprocessing</groupId>
             <artifactId>worker-document-testing-unit</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.workerframework</groupId>
+            <artifactId>worker-api</artifactId>
         </dependency>
     </dependencies>
 

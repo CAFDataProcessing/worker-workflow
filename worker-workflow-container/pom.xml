@@ -62,6 +62,10 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>com.github.cafdataprocessing</groupId>
+            <artifactId>worker-document</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.github.workerframework</groupId>
             <artifactId>standard-worker-container</artifactId>
             <type>pom</type>
