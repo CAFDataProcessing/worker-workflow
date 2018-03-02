@@ -42,9 +42,9 @@ final class WorkflowProcessingScripts
         throws ScriptException
     {
         // Add temporary script to the task using the setScriptInline setter.
-        setWorkflowProcessingScripts(document, workflowAsJavaScript, ScriptType.InlineScript, "temp-workflow.js", false);
+        setWorkflowProcessingScripts(document, workflowAsJavaScript, ScriptType.InlineScript, "temp-workflow.js");
         // Add persistant script to the task using the setScriptByReference setter.
-        setWorkflowProcessingScripts(document, workflowAsJavaScript, ScriptType.StorageReference, "workflow.js", true);
+        setWorkflowProcessingScripts(document, workflowAsJavaScript, ScriptType.StorageReference, "workflow.js");
     }
 
     /**
@@ -56,11 +56,10 @@ final class WorkflowProcessingScripts
      * script in the datastore.
      * @param scriptType The type of add that should be performed when adding the script to the task.
      * @param scriptName The name to give the script when adding it to the task.
-     * @param persist This is whether or not the script should be passed on in the response.
      * @throws ScriptException if there is a failure in workflow script loading.
      */
     private static void setWorkflowProcessingScripts(final Document document, final String script, final ScriptType scriptType,
-                                                     final String scriptName, final Boolean persist) throws ScriptException
+                                                     final String scriptName) throws ScriptException
     {
         final Script scriptToAdd = document.getTask().getScripts().add();
         switch (scriptType) {
@@ -70,18 +69,15 @@ final class WorkflowProcessingScripts
             }
             case InlineScript: {
                 scriptToAdd.setScriptInline(script);
+                scriptToAdd.load();
+                scriptToAdd.uninstall();
                 break;
             }
             default: {
                 throw new ScriptException("No valid script type passed.");
             }
         }
-
         scriptToAdd.setName(scriptName);
-        scriptToAdd.load();
-        if (!persist) {
-            scriptToAdd.uninstall();
-        }
     }
 
 }
