@@ -54,6 +54,7 @@ final class WorkflowProcessingScripts
      * @param document Document to set post processing information on.
      * @param script The script to add to task, this can either be a string representation of the script or a storage reference for the
      * script in the datastore.
+     * @param scriptType The type of add that should be performed when adding the script to the task.
      * @param scriptName The name to give the script when adding it to the task.
      * @param persist This is whether or not the script should be passed on in the response.
      * @throws ScriptException if there is a failure in workflow script loading.
@@ -65,11 +66,17 @@ final class WorkflowProcessingScripts
         switch (scriptType) {
             case StorageReference: {
                 scriptToAdd.setScriptByReference(script);
+                break;
             }
             case InlineScript: {
                 scriptToAdd.setScriptInline(script);
+                break;
+            }
+            default: {
+                throw new ScriptException("No valid script type passed.");
             }
         }
+
         scriptToAdd.setName(scriptName);
         scriptToAdd.load();
         if (!persist) {
@@ -82,6 +89,5 @@ final class WorkflowProcessingScripts
 enum ScriptType
 {
     StorageReference,
-    InlineScript,
-    ScriptUrl
+    InlineScript
 }
