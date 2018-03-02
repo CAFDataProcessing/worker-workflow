@@ -32,6 +32,7 @@ import com.hpe.caf.worker.document.extensibility.DocumentWorker;
 import com.hpe.caf.worker.document.model.Application;
 import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.model.HealthMonitor;
+import com.hpe.caf.worker.document.model.Script;
 import javax.script.ScriptException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -141,15 +142,14 @@ public final class WorkflowWorker implements DocumentWorker
             return;
         }
 
-        // Evaluate the document against the workflow to execute the first matching action. If document has to be sent to another
-        // worker its queue property will be updated to reflect this.
+        // Add the workflow scripts to the document task.
         try
         {
-            WorkflowEvaluator.evaluate(document, transformWorkflowResult.getTransformedWorkflow(),
+            WorkflowProcessingScripts.setScripts(document, transformWorkflowResult.getTransformedWorkflow(),
                     transformWorkflowResult.getWorkflowStorageRef());
         } catch (final ScriptException e) {
-            LOG.error("A failure occurred trying to evaluate document against transformed Workflow.", e);
-            document.addFailure(WorkflowWorkerConstants.ErrorCodes.WORKFLOW_EVALUATION_FAILED, e.getMessage());
+            LOG.error("A failure occurred trying to add the scripts to the task.", e);
+            document.addFailure(WorkflowWorkerConstants.ErrorCodes.ADD_WORKFLOW_SCRIPTS_FAILED, e.getMessage());
         }
     }
 

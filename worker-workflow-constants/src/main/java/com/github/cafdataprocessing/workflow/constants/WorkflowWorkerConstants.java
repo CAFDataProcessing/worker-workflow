@@ -46,7 +46,7 @@ public final class WorkflowWorkerConstants {
     public static class ErrorCodes {
         public static final String INVALID_CUSTOM_DATA = "WORKFLOW-InvalidCustomData";
         public static final String STORE_WORKFLOW_FAILED = "WORKFLOW-StoreWorkflowFailed";
-        public static final String WORKFLOW_EVALUATION_FAILED = "WORKFLOW-WorkflowEvaluationFailed";
+        public static final String ADD_WORKFLOW_SCRIPTS_FAILED = "WORKFLOW-FailedToAddScriptsToTask";
         public static final String WORKFLOW_TRANSFORM_FAILED = "WORKFLOW-WorkflowTransformFailed";
     }
 }
