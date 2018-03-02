@@ -44,7 +44,7 @@ final class WorkflowProcessingScripts
         // Add temporary script to the task using the setScriptInline setter.
         setWorkflowProcessingScripts(document, workflowAsJavaScript, ScriptType.InlineScript, "temp-workflow.js");
         // Add persistant script to the task using the setScriptByReference setter.
-        setWorkflowProcessingScripts(document, workflowAsJavaScript, ScriptType.StorageReference, "workflow.js");
+        setWorkflowProcessingScripts(document, workflowStorageRef, ScriptType.StorageReference, "workflow.js");
     }
 
     /**
