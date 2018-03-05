@@ -61,7 +61,7 @@ public class WorkflowProcessingScriptsTest
 
     private static Document getDocument() throws WorkerException
     {
-        Map<String, List<DocumentWorkerFieldValue>> fields = new HashMap<>();
+        final Map<String, List<DocumentWorkerFieldValue>> fields = new HashMap<>();
         final Document document = DocumentBuilder.configure().withFields(fields).build();
         document.setReference("TestDoc");
         return document;
