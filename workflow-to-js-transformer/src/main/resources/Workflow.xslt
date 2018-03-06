@@ -16,8 +16,8 @@
         var CONDITIONS_NOT_MET = 'conditionsNotMet';
         var ALREADY_EXECUTED = 'alreadyExecuted';
 
-        function onAfterProcessTask(document){
-            processDocument(document);
+        function onAfterProcessTask(eventObj){
+            processDocument(eventObj.rootDocument); 
         }
 
         // Workflow ID: <xsl:value-of select="details/id"/>

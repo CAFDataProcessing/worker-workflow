@@ -32,6 +32,7 @@ import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.model.Field;
 import com.hpe.caf.worker.document.model.FieldValue;
 import com.hpe.caf.worker.document.model.FieldValues;
+import com.hpe.caf.worker.document.model.Script;
 import com.hpe.caf.worker.document.model.Task;
 import com.hpe.caf.worker.document.testing.DocumentBuilder;
 import com.hpe.caf.worker.document.testing.TestServices;
@@ -580,41 +581,6 @@ public class WorkflowJavaScriptExecutionTest {
         checkRulesCompleted(document, Arrays.asList("5", "7"));
     }
 
-    @Test(description = "Tests that the processing field is not set on response data if it is not passed on the custom " +
-            "data of the document and that it is set if it is passed.")
-    public void checkPostProcessingFieldSetAsExpected() throws WorkerException, IOException, ScriptException,
-            WorkflowTransformerException, URISyntaxException, NoSuchMethodException, DataStoreException {
-        final Document documentWithoutScript = DocumentBuilder.configure()
-                .withFields()
-                .addFieldValue("test", "string_value").documentBuilder()
-                .withCustomData()
-                .documentBuilder().build();
-        final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_1.xml");
-        final Invocable invocable = getInvocableWorkflowJavaScriptFromJS(workflowJSStr);
-        invocable.invokeFunction("processDocument", documentWithoutScript);
-
-        final Task returnedTask = documentWithoutScript.getTask();
-        final Map<String, String> returnedCustomData = returnedTask.getResponse().getCustomData();
-        Assert.assertNull(returnedCustomData, "Expecting no custom data to be set in response options " +
-                " when post processing script not passed to processDocument method.");
-
-        final TestServices testServices = TestServices.createDefault();
-        final DataStore store = testServices.getDataStore();
-        final String postProcessingScriptRef = store.store(workflowJSStr.getBytes(), "test");
-        final Document documentWithScript = DocumentBuilder.configure()
-                .withServices(testServices)
-                .withFields()
-                .addFieldValue("test", "string_value").documentBuilder()
-                .withCustomData()
-                .add(POST_PROCESSING_NAME, postProcessingScriptRef)
-                .documentBuilder().build();
-        invocable.invokeFunction("processDocument", documentWithScript);
-        final String secondReturnedScriptValue =
-                documentWithScript.getTask().getResponse().getCustomData().get(POST_PROCESSING_NAME);
-        Assert.assertEquals(secondReturnedScriptValue, postProcessingScriptRef, "Expecting post processing script to be set in response options " +
-                " when it has been passed on document custom data.");
-    }
-
     @Test(description = "Test that a fresh document passed into workflow has correct action to execute added to its fields" +
             " and on subsequent calls the completed fields are correctly updated. Other fields to facilitate progress also" +
             " should be passed.")
@@ -642,7 +608,6 @@ public class WorkflowJavaScriptExecutionTest {
 
         checkActionIdToExecute(document, "4");
         checkActionsCompleted(document, Arrays.asList("1"));
-        checkPostProcessingSet(document, postProcessingScriptRef);
 
         // invoke again to verify that all rules are marked as completed and no further actions to execute are returned
         invocable.invokeFunction("processDocument", document);
@@ -693,7 +658,6 @@ public class WorkflowJavaScriptExecutionTest {
 
         checkActionIdToExecute(document, "2");
         checkActionsCompleted(document, Arrays.asList("1"));
-        checkPostProcessingSet(document, postProcessingScriptRef);
         serializedCustomData = codec.serialise(document.getTask().getResponse().getCustomData());
         Assert.assertNotNull(serializedCustomData, "Custom data from second call should have been serialized.");
 
@@ -706,9 +670,6 @@ public class WorkflowJavaScriptExecutionTest {
         Assert.assertNotNull(serializedCustomData, "Custom data from third call should have been serialized.");
         final HashMap deserializedCustomData = codec.deserialise(serializedCustomData, HashMap.class);
         Assert.assertNotNull(deserializedCustomData, "Deserialized custom data should not be null.");
-        final Object postProcessReturnedObj = deserializedCustomData.get(POST_PROCESSING_NAME);
-        Assert.assertEquals((String) postProcessReturnedObj, postProcessingScriptRef,
-                "Post processing set on deserialized custom data from response options should have expected value.");
         final Object grammarMapReturnedObj = deserializedCustomData.get("GRAMMAR_MAP");
         Assert.assertEquals((String) grammarMapReturnedObj, "{pii.xml: []}",
                 "Grammar map set on deserialized custom data from response options should have expected value.");
@@ -769,14 +730,17 @@ public class WorkflowJavaScriptExecutionTest {
         }
     }
 
-    private void checkPostProcessingSet(final Document document, final String expectedPostProcessingValue){
-        final String actualPostProcessingValue = document.getTask().getResponse().getCustomData()
-                .get(POST_PROCESSING_NAME);
-        Assert.assertNotNull(actualPostProcessingValue,
-                "Expecting post processing field to have been set on task response options.");
-        Assert.assertEquals(actualPostProcessingValue, expectedPostProcessingValue, "Post processing " +
-                "field value should be as expected.");
-    }
+//    private void checkPostProcessingSet(final Document document, final String expectedPostProcessingValue)
+//    {
+//
+//        final String actualPostProcessingValue = null;
+//        for (final Script script : document.getTask().getScripts()) {
+//            Assert.assertNotNull(script,
+//                                 "Expecting post processing field to have been set on task response options.");
+//            Assert.assertEquals(script., expectedPostProcessingValue, "Post processing "
+//                                + "field value should be as expected.");
+//        }
+//    }
 
     private void checkRulesCompleted(final Document document, final List<String> expectedRuleIds){
         final Field rulesCompletedField = document.getField("CAF_PROCESSING_RULES_COMPLETED");
