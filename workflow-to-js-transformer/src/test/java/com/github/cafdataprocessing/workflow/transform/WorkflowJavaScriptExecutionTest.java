@@ -730,18 +730,6 @@ public class WorkflowJavaScriptExecutionTest {
         }
     }
 
-//    private void checkPostProcessingSet(final Document document, final String expectedPostProcessingValue)
-//    {
-//
-//        final String actualPostProcessingValue = null;
-//        for (final Script script : document.getTask().getScripts()) {
-//            Assert.assertNotNull(script,
-//                                 "Expecting post processing field to have been set on task response options.");
-//            Assert.assertEquals(script., expectedPostProcessingValue, "Post processing "
-//                                + "field value should be as expected.");
-//        }
-//    }
-
     private void checkRulesCompleted(final Document document, final List<String> expectedRuleIds){
         final Field rulesCompletedField = document.getField("CAF_PROCESSING_RULES_COMPLETED");
         Assert.assertEquals(rulesCompletedField.getStringValues().size(), expectedRuleIds.size(),
