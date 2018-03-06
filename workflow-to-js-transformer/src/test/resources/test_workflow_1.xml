@@ -53,7 +53,7 @@
                         </settings>
                         <name>LangDetect</name>
                         <description>Detects top 3 languages in an uploaded document.</description>
-                        <typeInternalName>CompositeDocumentWorkerHandler</typeInternalName>
+                        <typeInternalName>ChainedActionType</typeInternalName>
                         <typeId>12</typeId>
                         <id>2</id>
                         <order>200</order>

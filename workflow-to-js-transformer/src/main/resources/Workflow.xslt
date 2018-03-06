@@ -93,30 +93,20 @@
         }
     </xsl:template>
 
-    <xsl:template match="details/settings[../typeInternalName='DocumentWorkerHandler']">{
-        'internal_name' : '<xsl:value-of select="../typeInternalName"/>',
-        'queueName' : '<xsl:choose><xsl:when test="queueName != ''"><xsl:value-of select="queueName"/></xsl:when><xsl:otherwise><xsl:variable name="workerNameQueueEnvValue" select="workflow_transform:TransformerFunctions.getWorkerQueueFromEnvironment(workerName)"/><xsl:choose><xsl:when test="$workerNameQueueEnvValue != ''"><xsl:value-of select="$workerNameQueueEnvValue"/></xsl:when><xsl:otherwise><xsl:value-of select="concat(workerName, 'Input')"/></xsl:otherwise></xsl:choose></xsl:otherwise></xsl:choose>',
-        'workerName' : '<xsl:value-of select="workerName"/>',
-        'fields' : [<xsl:for-each select="fields">'<xsl:value-of select="text()"/>'<xsl:if test="position() != last()">,
-        </xsl:if></xsl:for-each>]<xsl:if test="customData/*">,
-            'customData' : {<xsl:apply-templates select="customData"/>}
-        </xsl:if>   }</xsl:template>
+    <xsl:template match="details/settings[../typeInternalName='DocumentWorkerHandler']"><xsl:call-template name="ChainedActionTypeTemplate"/></xsl:template>
 
-    <xsl:template match="details/settings[../typeInternalName='CompositeDocumentWorkerHandler']">{
-        'internal_name' : '<xsl:value-of select="../typeInternalName"/>',
-        'queueName' : '<xsl:choose><xsl:when test="queueName != ''"><xsl:value-of select="queueName"/></xsl:when><xsl:otherwise><xsl:variable name="workerNameQueueEnvValue" select="workflow_transform:TransformerFunctions.getWorkerQueueFromEnvironment(workerName)"/><xsl:choose><xsl:when test="$workerNameQueueEnvValue != ''"><xsl:value-of select="$workerNameQueueEnvValue"/></xsl:when><xsl:otherwise><xsl:value-of select="concat(workerName, 'Input')"/></xsl:otherwise></xsl:choose></xsl:otherwise></xsl:choose>',
-        'workerName' : '<xsl:value-of select="workerName"/>'<xsl:if test="customData/*">,
-            'customData' : {<xsl:apply-templates select="customData"/>}
-        </xsl:if>   }</xsl:template>
+    <xsl:template match="details/settings[../typeInternalName='CompositeDocumentWorkerHandler']"><xsl:call-template name="ChainedActionTypeTemplate"/></xsl:template>
 
-    <xsl:template match="details/settings[../typeInternalName='ChainedActionType']">{
+    <xsl:template name="ChainedActionTypeTemplate" match="details/settings[../typeInternalName='ChainedActionType']">{
         'internal_name' : '<xsl:value-of select="../typeInternalName"/>',
         'queueName' : '<xsl:choose><xsl:when test="queueName != ''"><xsl:value-of select="queueName"/></xsl:when><xsl:otherwise><xsl:variable name="workerNameQueueEnvValue" select="workflow_transform:TransformerFunctions.getWorkerQueueFromEnvironment(workerName)"/><xsl:choose><xsl:when test="$workerNameQueueEnvValue != ''"><xsl:value-of select="$workerNameQueueEnvValue"/></xsl:when><xsl:otherwise><xsl:value-of select="concat(workerName, 'Input')"/></xsl:otherwise></xsl:choose></xsl:otherwise></xsl:choose>',
         'workerName' : '<xsl:value-of select="workerName"/>'<xsl:if test="customData/*">,
         'customData' : {<xsl:apply-templates select="customData"/>}
         </xsl:if>   }</xsl:template>
 
-    <xsl:template match="details/settings[../typeInternalName='FieldMappingActionType']">function(){executeFieldMapping(document, {
+    <xsl:template match="details/settings[../typeInternalName='FieldMappingPolicyType']"><xsl:call-template name="FieldMappingActionTypeTemplate"/></xsl:template>
+
+    <xsl:template name="FieldMappingActionTypeTemplate" match="details/settings[../typeInternalName='FieldMappingActionType']">function(){executeFieldMapping(document, {
         <xsl:for-each select="mappings/*">
             '<xsl:value-of select="name()"/>' : '<xsl:value-of select="."/>'<xsl:if test="position() != last()">,</xsl:if>
         </xsl:for-each>
