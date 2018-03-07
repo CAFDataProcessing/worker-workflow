@@ -58,7 +58,6 @@ import java.util.*;
  * Class for testing the generated workflow JavaScript executes against a document as expected.
  */
 public class WorkflowJavaScriptExecutionTest {
-    private static final String POST_PROCESSING_NAME = "postProcessingScript";
     private static final String PROJECT_ID = "ProjectId_Test_Value_1234567890";
     private static final WorkflowComponentBuilder BUILDER = new WorkflowComponentBuilder();
 
@@ -74,8 +73,6 @@ public class WorkflowJavaScriptExecutionTest {
 
         final Invocable invocable = getInvocableWorkflowJavaScriptFromJS(workflowJSStr);
         final TestServices testServices = TestServices.createDefault();
-        final DataStore store = testServices.getDataStore();
-        final String postProcessingScriptRef = store.store(workflowJSStr.getBytes(), "test");
         final Document document = DocumentBuilder.configure()
                 .withServices(testServices)
                 .withFields()
@@ -83,9 +80,7 @@ public class WorkflowJavaScriptExecutionTest {
                 .addFieldValue("DOC_FORMAT_CODE", "345")
                 .addFieldValue("DOC_CLASS_CODE", "9")
                 .addFieldValue("test", "string_value").documentBuilder()
-                .withCustomData()
-                .add(POST_PROCESSING_NAME, postProcessingScriptRef)
-                .documentBuilder().build();
+                .build();
 
         invocable.invokeFunction("processDocument", document);
 
@@ -111,9 +106,7 @@ public class WorkflowJavaScriptExecutionTest {
                 .addFieldValue("DOC_FORMAT_CODE", "345")
                 .addFieldValue("DOC_CLASS_CODE", "8")
                 .addFieldValue("test", "string_value").documentBuilder()
-                .withCustomData()
-                .add(POST_PROCESSING_NAME, postProcessingScriptRef)
-                .documentBuilder().build();
+                .build();
 
         invocable.invokeFunction("processDocument", document_doesntMatchEntityExtract);
 
@@ -379,16 +372,12 @@ public class WorkflowJavaScriptExecutionTest {
         final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_3.xml");
         final Invocable invocable = getInvocableWorkflowJavaScriptFromJS(workflowJSStr);
         final TestServices testServices = TestServices.createDefault();
-        final DataStore store = testServices.getDataStore();
-        final String postProcessingScriptRef = store.store(workflowJSStr.getBytes(), "test");
 
         final Document document = DocumentBuilder.configure()
                 .withServices(testServices)
                 .withFields()
                 .addFieldValue("test", "string_value").documentBuilder()
-                .withCustomData()
-                .add(POST_PROCESSING_NAME, postProcessingScriptRef)
-                .documentBuilder().build();
+                .build();
         invocable.invokeFunction("processDocument", document);
 
         // expecting action on first enabled rule to be marked for execution
@@ -459,16 +448,12 @@ public class WorkflowJavaScriptExecutionTest {
         final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_4.xml");
         final Invocable invocable = getInvocableWorkflowJavaScriptFromJS(workflowJSStr);
         final TestServices testServices = TestServices.createDefault();
-        final DataStore store = testServices.getDataStore();
-        final String postProcessingScriptRef = store.store(workflowJSStr.getBytes(), "test");
 
         final Document document = DocumentBuilder.configure()
                 .withServices(testServices)
                 .withFields()
                 .addFieldValue("test", "string_value").documentBuilder()
-                .withCustomData()
-                .add(POST_PROCESSING_NAME, postProcessingScriptRef)
-                .documentBuilder().build();
+                .build();
         invocable.invokeFunction("processDocument", document);
 
         // expecting action on first enabled rule to be marked for execution
@@ -550,15 +535,11 @@ public class WorkflowJavaScriptExecutionTest {
         final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_3.xml");
         final Invocable invocable = getInvocableWorkflowJavaScriptFromJS(workflowJSStr);
         final TestServices testServices = TestServices.createDefault();
-        final DataStore store = testServices.getDataStore();
-        final String postProcessingScriptRef = store.store(workflowJSStr.getBytes(), "test");
         final Document document = DocumentBuilder.configure()
                 .withServices(testServices)
                 .withFields()
                 .addFieldValue("test", "string_value").documentBuilder()
-                .withCustomData()
-                .add(POST_PROCESSING_NAME, postProcessingScriptRef)
-                .documentBuilder().build();
+                .build();
 
         invocable.invokeFunction("processDocument", document);
 
@@ -589,15 +570,11 @@ public class WorkflowJavaScriptExecutionTest {
         final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_1.xml");
         final Invocable invocable = getInvocableWorkflowJavaScriptFromJS(workflowJSStr);
         final TestServices testServices = TestServices.createDefault();
-        final DataStore store = testServices.getDataStore();
-        final String postProcessingScriptRef = store.store(workflowJSStr.getBytes(), "test");
         final Document document = DocumentBuilder.configure()
                 .withServices(testServices)
                 .withFields()
                 .addFieldValue("test", "string_value").documentBuilder()
-                .withCustomData()
-                .add(POST_PROCESSING_NAME, postProcessingScriptRef)
-                .documentBuilder().build();
+                .build();
 
         invocable.invokeFunction("processDocument", document);
 
@@ -633,15 +610,11 @@ public class WorkflowJavaScriptExecutionTest {
         final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_1.xml");
         final Invocable invocable = getInvocableWorkflowJavaScriptFromJS(workflowJSStr);
         final TestServices testServices = TestServices.createDefault();
-        final DataStore store = testServices.getDataStore();
-        final String postProcessingScriptRef = store.store(workflowJSStr.getBytes(), "test");
         final Document document = DocumentBuilder.configure()
                 .withServices(testServices)
                 .withFields()
                 .addFieldValue("CONTENT", "string_value").documentBuilder()
-                .withCustomData()
-                .add(POST_PROCESSING_NAME, postProcessingScriptRef)
-                .documentBuilder().build();
+                .build();
 
         invocable.invokeFunction("processDocument", document);
 
@@ -684,8 +657,6 @@ public class WorkflowJavaScriptExecutionTest {
 
         final Invocable invocable = getInvocableWorkflowJavaScriptFromJS(workflowJSStr);
         final TestServices testServices = TestServices.createDefault();
-        final DataStore store = testServices.getDataStore();
-        final String postProcessingScriptRef = store.store(workflowJSStr.getBytes(), "test");
         final Document document = DocumentBuilder.configure()
                 .withServices(testServices)
                 .withFields()
@@ -695,9 +666,7 @@ public class WorkflowJavaScriptExecutionTest {
                 .addFieldValue("test", "string_value")
                 .addFieldValue("CAF_ACTION_TO_EXECUTE", familyHashingActionId)
                 .documentBuilder()
-                .withCustomData()
-                .add(POST_PROCESSING_NAME, postProcessingScriptRef)
-                .documentBuilder().build();
+                .build();
 
         // TODO change this to ErrorEventObject class from worker-document once those changes aer ready and the xslt has been
         // TODO updated to use that version of worker-document

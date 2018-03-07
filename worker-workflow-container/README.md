@@ -24,11 +24,11 @@ The project ID that the workflow to transform is associated with. This is requir
 
 The ID of the workflow to transform. This is required.
 
-### Output Custom Data
+### Output Task Scripts
 
-The worker adds the following properties to the custom data of its task response.
+The worker adds the following script to the document task of its response.
 
-#### postProcessingScript
+#### workflow.js
 
 The storage reference of the workflow script so that the next worker may execute the workflow against the document after processing is complete.
 
