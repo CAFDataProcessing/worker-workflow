@@ -170,7 +170,7 @@
             }
             var fieldValues = document.getField(fieldName).getValues();
             for each(var fieldValue in fieldValues){
-                var valueToEvaluate = getDocumentFieldValueAsString(fieldValue, document);
+                var valueToEvaluate = getDocumentFieldValueAsString(fieldValue);
                 if(evaluateFunction(expectedValue, valueToEvaluate) === true){
                     return true;
                 }
@@ -321,7 +321,7 @@
         }
 
         // Returns string representing value of a Document Worker FieldValue
-        function getDocumentFieldValueAsString(fieldValue, document){
+        function getDocumentFieldValueAsString(fieldValue) {
             if(!fieldValue.isReference()){
                 return fieldValue.getStringValue();
             }
@@ -330,8 +330,7 @@
             var valueToReturn;
             var valueDataStoreStream;
             try {
-                var store = document.getApplication().getService(DataStore.class);
-                valueDataStoreStream = store.retrieve(reference);
+                valueDataStoreStream = fieldValue.openInputStream();
                 var valueBuffer = new ByteArray(1024);
                 var valuePortionLength;
                 while((valuePortionLength = valueDataStoreStream.read(valueBuffer)) != -1){
