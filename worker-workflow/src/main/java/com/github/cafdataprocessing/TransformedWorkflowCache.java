@@ -81,6 +81,7 @@ final class TransformedWorkflowCache
      * @param workflowId ID of workflow indicating the transformed workflow result to retrieve.
      * @param projectId project ID indicating the transformed workflow result to retrieve.
      * @param outputPartialReference partial reference used in storing transformed workflow.
+     * @param tenantId a tenant ID to use in evaluating the workflow.
      * @return returns the transformed workflow result associated with the workflow ID, project ID & partial reference.
      * @throws ApiException if certain failures occur communicating with the processing service to retrieve the workflow
      * during load of workflow for transformation.
@@ -93,9 +94,11 @@ final class TransformedWorkflowCache
      * @throws WorkflowTransformerException if a failure occurs during transformation of workflow during load.
      */
     public TransformWorkflowResult getTransformWorkflowResult(final long workflowId, final String projectId,
-                                                              final String outputPartialReference)
+                                                              final String outputPartialReference,
+                                                              final String tenantId)
             throws ApiException, DataStoreException, WorkflowRetrievalException, WorkflowTransformerException {
-        final TransformedWorkflowCacheKey cacheKey = buildCacheKey(workflowId, projectId, outputPartialReference);
+        final TransformedWorkflowCacheKey cacheKey =
+                buildCacheKey(workflowId, projectId, outputPartialReference, tenantId);
         try {
             return workflowCache.get(cacheKey);
         }
@@ -124,11 +127,13 @@ final class TransformedWorkflowCache
      * @param workflowId workflow ID to use in cache key construction.
      * @param projectId project ID to use in cache key construction.
      * @param outputPartialReference partial reference to use in cache key construction.
+     * @param tenantId a tenant ID to use in evaluating the workflow.
      * @return constructed cache key.
      */
     private static TransformedWorkflowCacheKey buildCacheKey(final long workflowId, final String projectId,
-                                                             final String outputPartialReference) {
-        return new TransformedWorkflowCacheKey(outputPartialReference, projectId, workflowId);
+                                                             final String outputPartialReference,
+                                                             final String tenantId) {
+        return new TransformedWorkflowCacheKey(outputPartialReference, projectId, tenantId, workflowId);
     }
 
     /**
@@ -162,7 +167,7 @@ final class TransformedWorkflowCache
         try {
             workflowJavaScript = WorkflowTransformer.retrieveAndTransformWorkflowToJavaScript(
                     cacheKey.getWorkflowId(), cacheKey.getProjectId(),
-                    processingApiUrl);
+                    processingApiUrl, cacheKey.getTenantId());
         } catch (final ApiException | WorkflowRetrievalException | WorkflowTransformerException e) {
             LOG.error("A failure occurred trying to transform Workflow to JavaScript representation.", e);
             throw e;

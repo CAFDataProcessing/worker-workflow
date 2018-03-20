@@ -56,6 +56,7 @@ public class WorkflowTransformer {
      * @param workflowId ID of workflow to generate JavaScript for.
      * @param projectId Project ID associated with the workflow and its children.
      * @param processingApiUrl Contactable URL for a processing API web service that the workflow can be retrieved from.
+     * @param tenantId A tenant ID that may be used during workflow transformation.
      * @return JavaScript representation of the workflow logic.
      * @throws ApiException if certain failures occur communicating with the processing service to retrieve the workflow
      * e.g. Invalid requests will result in this exception.
@@ -64,11 +65,12 @@ public class WorkflowTransformer {
      * @throws WorkflowTransformerException if there is an error transforming workflow returned to JavaScript representation
      * @throws NullPointerException if the projectId passed to the method is null
      */
-    public static String retrieveAndTransformWorkflowToJavaScript(long workflowId, String projectId, String processingApiUrl)
+    public static String retrieveAndTransformWorkflowToJavaScript(long workflowId, String projectId, String processingApiUrl,
+                                                                  final String tenantId)
             throws ApiException, WorkflowTransformerException, WorkflowRetrievalException {
         Objects.requireNonNull(projectId);
         final String workflowAsXML = retrieveAndTransformWorkflowToXml(workflowId, projectId, processingApiUrl);
-        return transformXmlWorkflowToJavaScript(workflowAsXML, projectId);
+        return transformXmlWorkflowToJavaScript(workflowAsXML, projectId, tenantId);
     }
 
     /**
@@ -126,11 +128,14 @@ public class WorkflowTransformer {
      * Converts a workflow in XML form to a JavaScript logic representation that documents can be executed against.
      * @param workflowXml Workflow in XML form. The expected schema maps to the {@link FullWorkflow} class.
      * @param projectId The projectId to use in workflow transformation
+     * @param tenantId a tenant ID to use in evaluating the workflow
      * @return JavaScript representation of the workflow logic.
      * @throws WorkflowTransformerException if there is an error transforming workflow to JavaScript representation
      * @throws NullPointerException if the projectId passed to the method is null
      */
-    public static String transformXmlWorkflowToJavaScript(final String workflowXml, final String projectId) throws WorkflowTransformerException {
+    public static String transformXmlWorkflowToJavaScript(final String workflowXml, final String projectId,
+                                                          final String tenantId) throws
+            WorkflowTransformerException {
         Objects.requireNonNull(projectId);
         final String workflowResourceName = "Workflow.xslt";
         final InputStream defaultXsltStream = WorkflowTransformer.class.getClassLoader().getResourceAsStream(workflowResourceName);
@@ -146,6 +151,7 @@ public class WorkflowTransformer {
         try {
             transformer = TransformerFactory.newInstance().newTransformer(new StreamSource(defaultXsltStream));
             transformer.setParameter("projectId", projectId);
+            transformer.setParameter("tenantId", tenantId);
         } catch (final TransformerConfigurationException e) {
             throw new WorkflowTransformerException("Failed to create Transformer from XSLT file input.", e);
         }

@@ -32,8 +32,6 @@ import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.model.Field;
 import com.hpe.caf.worker.document.model.FieldValue;
 import com.hpe.caf.worker.document.model.FieldValues;
-import com.hpe.caf.worker.document.model.Script;
-import com.hpe.caf.worker.document.model.Task;
 import com.hpe.caf.worker.document.testing.DocumentBuilder;
 import com.hpe.caf.worker.document.testing.TestServices;
 import org.json.JSONArray;
@@ -52,13 +50,20 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * Class for testing the generated workflow JavaScript executes against a document as expected.
  */
 public class WorkflowJavaScriptExecutionTest {
     private static final String PROJECT_ID = "ProjectId_Test_Value_1234567890";
+    private static final String TENANT_ID = "123456789";
     private static final WorkflowComponentBuilder BUILDER = new WorkflowComponentBuilder();
 
     @Test(description = "Tests that a workflow containing an action with boolean conditions is evaluated as expected.")
@@ -440,6 +445,43 @@ public class WorkflowJavaScriptExecutionTest {
 
     }
 
+    @Test(description = "Tests that when custom data in workflow XML specifies a source of tenantId that the data is added to " +
+            "the response options as a string when the action is executed.")
+    public void tenantIdCustomDataTest() throws WorkerException, ScriptException, NoSuchMethodException, WorkflowTransformerException, IOException, URISyntaxException {
+        final Map<String, Object> customDataInput = new HashMap<>();
+        final String testPropertyKey = "testProperty";
+        final Map<String, Object> testPropertyValue = new HashMap<>();
+        testPropertyValue.put("source", "tenantId");
+        customDataInput.put(testPropertyKey, testPropertyValue);
+
+        final Map<String, Object> settingsInput = new HashMap<>();
+        settingsInput.put("customData", customDataInput);
+
+        final FullAction testAction = BUILDER.buildFullAction("TenantId Action",
+                new ArrayList<>(), 100, settingsInput);
+
+        final FullProcessingRule rule = BUILDER.buildFullProcessingRule("Test rule", true, 100,
+                new ArrayList<>(Arrays.asList(testAction)),
+                new ArrayList<>());
+        final FullWorkflow workflow = BUILDER.buildFullWorkflow("Test workflow", new ArrayList<>(Arrays.asList(rule)));
+
+        final TestServices testServices = TestServices.createDefault();
+        final Document testDocument_1 = DocumentBuilder.configure()
+                .withServices(testServices)
+                .withFields()
+                .addFieldValue("test", "string_value")
+                .documentBuilder().build();
+
+        final Invocable invocable = getInvocableWorkflowJavaScriptFromFullWorkflow(workflow);
+        invocable.invokeFunction("processDocument", testDocument_1);
+        checkActionIdToExecute(testDocument_1, Long.toString(testAction.getActionId()));
+        final Map<String, String> returnedCustomData = testDocument_1.getTask().getResponse().getCustomData();
+
+        final String returnedTestPropertyValue = returnedCustomData.get(testPropertyKey);
+        Assert.assertEquals(returnedTestPropertyValue, TENANT_ID,
+                "TenantId value set on custom data property should match expected value");
+    }
+
     @Test(description = "Tests that when custom data in workflow XML specifies a source of projectId that the data is " +
             "added to the response options as a string when the action is executed.")
     public void projectIdCustomDataTest()
@@ -524,7 +566,7 @@ public class WorkflowJavaScriptExecutionTest {
     public void nullProjectIdCustomDataTest()
             throws WorkerException, IOException, ScriptException, WorkflowTransformerException,
             URISyntaxException, NoSuchMethodException, DataStoreException {
-        final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_4.xml", null);
+        final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_4.xml", null, null);
         Assert.fail("NullPointerExcepion should have been thrown before this point.");
     }
 
@@ -712,7 +754,7 @@ public class WorkflowJavaScriptExecutionTest {
     private Invocable getInvocableWorkflowJavaScriptFromFullWorkflow(final FullWorkflow workflow)
             throws WorkflowTransformerException, ScriptException, URISyntaxException, IOException {
         final String workflowAsXml = WorkflowTransformer.transformFullWorkflowToXml(workflow);
-        final String workflowAsJS = WorkflowTransformer.transformXmlWorkflowToJavaScript(workflowAsXml, PROJECT_ID);
+        final String workflowAsJS = WorkflowTransformer.transformXmlWorkflowToJavaScript(workflowAsXml, PROJECT_ID, TENANT_ID);
         return getInvocableWorkflowJavaScriptFromJS(workflowAsJS);
     }
 
@@ -746,15 +788,16 @@ public class WorkflowJavaScriptExecutionTest {
         final Path workflowXmlPath = Paths.get(testWorkflowXml.toURI());
 
         return WorkflowTransformer.transformXmlWorkflowToJavaScript(new String(
-                Files.readAllBytes(workflowXmlPath), StandardCharsets.UTF_8), PROJECT_ID);
+                Files.readAllBytes(workflowXmlPath), StandardCharsets.UTF_8), PROJECT_ID, TENANT_ID);
     }
 
-    private String getWorkflowJavaScriptFromXML(final String workflowXmlResourceIdentifier, final String projectId)
+    private String getWorkflowJavaScriptFromXML(final String workflowXmlResourceIdentifier, final String projectId,
+                                                final String tenantId)
             throws IOException, URISyntaxException, WorkflowTransformerException {
         final URL testWorkflowXml = this.getClass().getResource(workflowXmlResourceIdentifier);
         final Path workflowXmlPath = Paths.get(testWorkflowXml.toURI());
 
         return WorkflowTransformer.transformXmlWorkflowToJavaScript(new String(
-                Files.readAllBytes(workflowXmlPath), StandardCharsets.UTF_8), projectId);
+                Files.readAllBytes(workflowXmlPath), StandardCharsets.UTF_8), projectId, tenantId);
     }
 }

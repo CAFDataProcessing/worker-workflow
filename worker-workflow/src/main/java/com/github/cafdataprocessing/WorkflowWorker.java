@@ -167,7 +167,8 @@ public final class WorkflowWorker implements DocumentWorker
         try {
             try {
                 return workflowCache.getTransformWorkflowResult(extractedProperties.getWorkflowId(),
-                        extractedProperties.getProjectId(), extractedProperties.getOutputPartialReference());
+                        extractedProperties.getProjectId(), extractedProperties.getOutputPartialReference(),
+                        extractedProperties.getTenantId());
             } catch (final ApiException firstException) {
                 // may have been a transient API issue, check if the API is healthy
                 final HealthStatus processingApiHealth = workflowAdminApi.healthCheck();
@@ -181,7 +182,8 @@ public final class WorkflowWorker implements DocumentWorker
                 // unhealthy previously).
                 LOG.info("Attempting to get transformed workflow a second time after ApiException was thrown.");
                 return workflowCache.getTransformWorkflowResult(extractedProperties.getWorkflowId(),
-                        extractedProperties.getProjectId(), extractedProperties.getOutputPartialReference());
+                        extractedProperties.getProjectId(), extractedProperties.getOutputPartialReference(),
+                        extractedProperties.getTenantId());
             }
         } catch (final DataStoreException e) {
             document.addFailure(WorkflowWorkerConstants.ErrorCodes.STORE_WORKFLOW_FAILED, e.getMessage());

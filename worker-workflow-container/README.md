@@ -20,6 +20,10 @@ The data store partial reference to use when storing the generated workflow. Thi
 
 The project ID that the workflow to transform is associated with. This is required.
 
+#### tenantId
+
+A tenant ID that can be used in the evaluation of the workflow. This is required.
+
 #### workflowId
 
 The ID of the workflow to transform. This is required.

@@ -22,6 +22,74 @@ Actions of this type should have their type ID set to the action type with inter
 
 Used to send additional worker-specific data to the worker. This is optional. This should be a map of keys to raw values/objects that are understood by the worker the document is to be sent to.
 
+
+###### Sources support
+
+Properties under customData may pull their values from another source beyond a raw value passed.
+
+*inlineJson*
+
+A source of inlineJson may be specified to indicate that a value for a property has been passed as a JSON structure that should be
+passed as a string representation in customData. When source is 'inlineJson' a 'data' property should also be set containing the
+JSON object that should be set as the string value.
+
+```
+"customData": {
+     "myProperty" : {
+        "source" : "inlineJson",
+        "data": {
+            "extractMetadata": true,
+            "extractContent": true
+        }
+     }
+ }
+```
+
+Which would be output as;
+
+```
+"customData": {
+     "myProperty" : '{"extractMetadata":true,"extractContent":true}'
+```
+
+*projectId*
+
+A source of projectId may be specified to indicate that a value for a property should come from a `projectId` parameter that will
+ be available during workflow transformation.
+
+```
+"customData": {
+     "myProperty" : { "source" : "projectId"}
+ }
+```
+
+Which given a projectId of "myProjectId" would be output after transformation as;
+
+```
+"customData": {
+    "myProperty": 'myProjectId'
+}
+```
+
+*tenantId*
+
+A source of tenantId may be specified to indicate that a value for a property should come from a `tenantId` parameter that will
+ be available during workflow transformation.
+
+```
+"customData": {
+     "myProperty" : { "source" : "tenantId"}
+ }
+```
+
+Which given a projectId of "1234" would be output after transformation as;
+
+```
+"customData": {
+    "myProperty": '1234'
+}
+```
+
 ##### queueName
 
 The name of a queue to send the document to. Can be used to specify the queue to send the document to for this action. This is an optional property. If it is not specified then an environment variable made up of the specified `workerName` plus '.taskqueue' is checked for a value to use. If that is not set then a default queue name of `workerName` plus 'Input' is set for the action.

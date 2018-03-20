@@ -24,6 +24,7 @@ final class ExtractedProperties
     private final boolean valid;
     private final String outputPartialReference;
     private final String projectId;
+    private final String tenantId;
     private final long workflowId;
 
     /**
@@ -31,13 +32,15 @@ final class ExtractedProperties
      * @param valid indicates if all the properties this instance contains are valid for use.
      * @param outputPartialReference the output partial reference to use for data storage.
      * @param projectId the project ID workflow is associated with.
+     * @param tenantId a tenant ID to use in evaluating the workflow.
      * @param workflowId the workflow ID to retrieve for the document.
      */
     public ExtractedProperties(final boolean valid, final String outputPartialReference, final String projectId,
-                               final long workflowId) {
+                               final String tenantId, final long workflowId) {
         this.valid = valid;
         this.outputPartialReference = outputPartialReference;
         this.projectId = projectId;
+        this.tenantId = tenantId;
         this.workflowId = workflowId;
     }
 
@@ -48,6 +51,8 @@ final class ExtractedProperties
     public String getProjectId() {
         return projectId;
     }
+
+    public String getTenantId() { return tenantId; }
 
     public long getWorkflowId() {
         return workflowId;
