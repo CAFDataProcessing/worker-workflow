@@ -15,13 +15,22 @@
  */
 package com.github.cafdataprocessing.workflow.transform;
 
+import com.github.cafdataprocessing.processing.service.client.ApiClient;
+import com.github.cafdataprocessing.processing.service.client.ApiException;
+import com.github.cafdataprocessing.processing.service.client.api.TenantsConfigurationApi;
+import com.github.cafdataprocessing.processing.service.client.model.EffectiveTenantConfigValue;
 import java.util.Locale;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Methods that are available to be called during Workflow XSLT transformation. These are intended to provide some useful
  * operations at transformation time.
  */
 public class TransformerFunctions {
+    
+    public static final Logger LOG = LoggerFactory.getLogger(TransformerFunctions.class);
+    
     /**
      * Checks system environment and system properties for the specified property name returning the value if it is found
      * or null if it is not. If both value is set for both environment and system property then the system property will
