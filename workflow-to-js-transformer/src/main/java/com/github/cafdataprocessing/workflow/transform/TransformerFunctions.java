@@ -42,9 +42,25 @@ public class TransformerFunctions {
      * @return Queue value associated with specified worker name or null if no match found.
      */
     public static String getWorkerQueueFromEnvironment(final String workerName){
-        if(workerName==null || workerName.isEmpty()){
+        if (workerName == null || workerName.isEmpty()) {
             return null;
         }
         return getEnvironmentValue(workerName.toLowerCase(Locale.ENGLISH) + ".taskqueue");
+    }
+
+    public static String getTenantSpecificConfigValue(final String apiClientBaseUrl, final String tenantId, final String key)
+    {
+        final ApiClient apiClient = new ApiClient();
+        apiClient.setBasePath(apiClientBaseUrl);
+        final TenantsConfigurationApi tenantsApi = new TenantsConfigurationApi(apiClient);
+        try {
+            final EffectiveTenantConfigValue effectiveTenantConfigValue = tenantsApi.getEffectiveTenantConfig(tenantId, key);
+            LOG.debug("Retrieved value for tenant configuration using key: {}", key);
+            LOG.debug("Retrieved value for tenant configuration is of type: {}", effectiveTenantConfigValue.getValueType());
+            return effectiveTenantConfigValue.getValue();
+        } catch (final ApiException ex) {
+            LOG.error("Unable to obtain tenant configuration from processing service for tenant: {} using key: {}", tenantId, key);
+            throw new RuntimeException(ex);
+        }
     }
 }

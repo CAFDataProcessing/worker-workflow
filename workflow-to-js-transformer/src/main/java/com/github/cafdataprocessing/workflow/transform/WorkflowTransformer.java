@@ -68,7 +68,7 @@ public class WorkflowTransformer {
             throws ApiException, WorkflowTransformerException, WorkflowRetrievalException {
         Objects.requireNonNull(projectId);
         final String workflowAsXML = retrieveAndTransformWorkflowToXml(workflowId, projectId, processingApiUrl);
-        return transformXmlWorkflowToJavaScript(workflowAsXML, projectId);
+        return transformXmlWorkflowToJavaScript(workflowAsXML, projectId, processingApiUrl);
     }
 
     /**
@@ -126,17 +126,20 @@ public class WorkflowTransformer {
      * Converts a workflow in XML form to a JavaScript logic representation that documents can be executed against.
      * @param workflowXml Workflow in XML form. The expected schema maps to the {@link FullWorkflow} class.
      * @param projectId The projectId to use in workflow transformation
+     * @param apiClientBaseUrl Contactable URL for a processing API web service that the workflow can be retrieved from.
      * @return JavaScript representation of the workflow logic.
      * @throws WorkflowTransformerException if there is an error transforming workflow to JavaScript representation
      * @throws NullPointerException if the projectId passed to the method is null
      */
-    public static String transformXmlWorkflowToJavaScript(final String workflowXml, final String projectId) throws WorkflowTransformerException {
+    public static String transformXmlWorkflowToJavaScript(final String workflowXml, final String projectId, final String apiClientBaseUrl)
+        throws WorkflowTransformerException
+    {
         Objects.requireNonNull(projectId);
         final String workflowResourceName = "Workflow.xslt";
         final InputStream defaultXsltStream = WorkflowTransformer.class.getClassLoader().getResourceAsStream(workflowResourceName);
-        if(defaultXsltStream==null){
+        if (defaultXsltStream == null) {
             throw new WorkflowTransformerException("Unable to find workflow XSLT resource for transform. Resource name: "
-                    +workflowResourceName);
+                + workflowResourceName);
         }
 
         final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -146,6 +149,7 @@ public class WorkflowTransformer {
         try {
             transformer = TransformerFactory.newInstance().newTransformer(new StreamSource(defaultXsltStream));
             transformer.setParameter("projectId", projectId);
+            transformer.setParameter("apiClientBaseUrl", apiClientBaseUrl);
         } catch (final TransformerConfigurationException e) {
             throw new WorkflowTransformerException("Failed to create Transformer from XSLT file input.", e);
         }

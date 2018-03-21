@@ -712,7 +712,7 @@ public class WorkflowJavaScriptExecutionTest {
     private Invocable getInvocableWorkflowJavaScriptFromFullWorkflow(final FullWorkflow workflow)
             throws WorkflowTransformerException, ScriptException, URISyntaxException, IOException {
         final String workflowAsXml = WorkflowTransformer.transformFullWorkflowToXml(workflow);
-        final String workflowAsJS = WorkflowTransformer.transformXmlWorkflowToJavaScript(workflowAsXml, PROJECT_ID);
+        final String workflowAsJS = WorkflowTransformer.transformXmlWorkflowToJavaScript(workflowAsXml, PROJECT_ID, null);
         return getInvocableWorkflowJavaScriptFromJS(workflowAsJS);
     }
 
@@ -746,7 +746,7 @@ public class WorkflowJavaScriptExecutionTest {
         final Path workflowXmlPath = Paths.get(testWorkflowXml.toURI());
 
         return WorkflowTransformer.transformXmlWorkflowToJavaScript(new String(
-                Files.readAllBytes(workflowXmlPath), StandardCharsets.UTF_8), PROJECT_ID);
+                Files.readAllBytes(workflowXmlPath), StandardCharsets.UTF_8), PROJECT_ID, null);
     }
 
     private String getWorkflowJavaScriptFromXML(final String workflowXmlResourceIdentifier, final String projectId)
@@ -755,6 +755,6 @@ public class WorkflowJavaScriptExecutionTest {
         final Path workflowXmlPath = Paths.get(testWorkflowXml.toURI());
 
         return WorkflowTransformer.transformXmlWorkflowToJavaScript(new String(
-                Files.readAllBytes(workflowXmlPath), StandardCharsets.UTF_8), projectId);
+                Files.readAllBytes(workflowXmlPath), StandardCharsets.UTF_8), projectId, null);
     }
 }
