@@ -5,6 +5,7 @@
     <xsl:output method="text" omit-xml-declaration="yes" indent="no"/>
     
     <xsl:param name="projectId"/>
+    <xsl:param name="tenantId"/>
     <xsl:param name="apiClientBaseUrl"/>
 
     <xsl:template match="/workflow">
@@ -124,6 +125,7 @@
     <xsl:template name="customDataSource">
         <xsl:choose><xsl:when test="source = 'inlineJson' and data !=''"><xsl:call-template name="jsonDataSource"><xsl:with-param name="currentProperties" select="data/*"/></xsl:call-template></xsl:when></xsl:choose>
         <xsl:choose><xsl:when test="source = 'projectId'"><xsl:value-of select="$projectId"/></xsl:when></xsl:choose>
+        <xsl:choose><xsl:when test="source = 'tenantId'"><xsl:value-of select="$tenantId"/></xsl:when></xsl:choose>
         <xsl:choose><xsl:when test="source = 'tenantData'"><xsl:value-of select="workflow_transform:TransformerFunctions.getWorkerQueueFromEnvironment($apiClientBaseUrl, $tenantId, data)"/></xsl:when></xsl:choose>
     </xsl:template>
 

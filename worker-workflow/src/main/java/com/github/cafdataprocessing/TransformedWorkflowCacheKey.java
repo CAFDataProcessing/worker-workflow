@@ -23,18 +23,21 @@ import java.util.Objects;
 final class TransformedWorkflowCacheKey {
     private final String outputPartialReference;
     private final String projectId;
+    private final String tenantId;
     private final long workflowId;
 
     /**
      * Create a transformed workflow cache key using the partial storage reference,  project ID and workflow ID provided.
      * @param outputPartialReference partial storage reference for the transformed workflow this key is to be associated with.
      * @param projectId project ID of the transformed workflow this key is to be associated with.
+     * @param tenantId a tenant ID to use in evaluating the workflow.
      * @param workflowId workflow ID of the transformed workflow this key is to be associated with.
      */
     public TransformedWorkflowCacheKey(final String outputPartialReference, final String projectId,
-                                       final long workflowId) {
+                                       final String tenantId, final long workflowId) {
         this.outputPartialReference = outputPartialReference;
         this.projectId = projectId;
+        this.tenantId = tenantId;
         this.workflowId = workflowId;
     }
 
@@ -43,6 +46,8 @@ final class TransformedWorkflowCacheKey {
     public String getProjectId() {
         return projectId;
     }
+
+    public String getTenantId() { return tenantId; }
 
     public long getWorkflowId() {
         return workflowId;
@@ -59,11 +64,12 @@ final class TransformedWorkflowCacheKey {
         final TransformedWorkflowCacheKey cacheKeyToCheck = (TransformedWorkflowCacheKey) o;
         return Objects.equals(this.outputPartialReference, cacheKeyToCheck.getOutputPartialReference()) &&
                 Objects.equals(this.projectId, cacheKeyToCheck.getProjectId()) &&
+                Objects.equals(this.tenantId, cacheKeyToCheck.getTenantId()) &&
                 this.workflowId == cacheKeyToCheck.getWorkflowId();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(outputPartialReference, projectId, workflowId);
+        return Objects.hash(outputPartialReference, projectId, tenantId, workflowId);
     }
 }

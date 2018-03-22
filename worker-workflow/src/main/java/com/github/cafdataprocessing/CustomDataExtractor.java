@@ -40,6 +40,7 @@ final class CustomDataExtractor
     public static ExtractedProperties extractPropertiesFromCustomData(final Document document) {
         final String outputPartialReference;
         final String projectId;
+        final String tenantId;
         long workflowId = -1;
         boolean customDataValid = true;
 
@@ -53,6 +54,14 @@ final class CustomDataExtractor
             LOG.error("No project ID value passed to worker in custom data.");
             document.addFailure(WorkflowWorkerConstants.ErrorCodes.INVALID_CUSTOM_DATA,
                     "No project ID value passed to worker in custom data.");
+            customDataValid = false;
+        }
+
+        tenantId = CustomDataExtractor.getTenantId(document);
+        if(tenantId==null || tenantId.isEmpty()) {
+            LOG.error("No tenant ID value passed to worker in custom data.");
+            document.addFailure(WorkflowWorkerConstants.ErrorCodes.INVALID_CUSTOM_DATA,
+                    "No tenant ID value passed to worker in custom data.");
             customDataValid = false;
         }
 
@@ -73,7 +82,7 @@ final class CustomDataExtractor
             document.addFailure(WorkflowWorkerConstants.ErrorCodes.INVALID_CUSTOM_DATA, e.getMessage());
             customDataValid = false;
         }
-        return new ExtractedProperties(customDataValid, outputPartialReference, projectId, workflowId);
+        return new ExtractedProperties(customDataValid, outputPartialReference, projectId, tenantId, workflowId);
     }
 
     /**
@@ -92,6 +101,15 @@ final class CustomDataExtractor
      */
     private static String getProjectId(final Document document) {
         return document.getCustomData(WorkflowWorkerConstants.CustomData.PROJECT_ID);
+    }
+
+    /**
+     * Gets the tenant ID property from provided document.
+     * @param document document to examine for property.
+     * @return the tenant ID property or null if it is not present.
+     */
+    private static String getTenantId(final Document document) {
+        return document.getCustomData(WorkflowWorkerConstants.CustomData.TENANT_ID);
     }
 
     /**
