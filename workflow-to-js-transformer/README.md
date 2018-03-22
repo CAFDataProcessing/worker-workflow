@@ -90,6 +90,24 @@ Which given a projectId of "1234" would be output after transformation as;
 }
 ```
 
+*tenantData*
+
+A source of tenantData may be specified to indicate that the value of the property should be retrieved from the data processing service's api using the source's data as the key. This allows for per tenant customization of a tenant ignostic workflow.
+
+```
+"customData": {
+    "ee.grammarMap": { "source" : "tenantData",
+                       "data": "ee.grammarMap"}
+}
+```
+Which given a value of `"{"pii.xml": []}" would output after transformation as:
+
+```
+"customData": {
+    "ee.grammarMap": '{"pii.xml": []}'
+}
+
+
 ##### queueName
 
 The name of a queue to send the document to. Can be used to specify the queue to send the document to for this action. This is an optional property. If it is not specified then an environment variable made up of the specified `workerName` plus '.taskqueue' is checked for a value to use. If that is not set then a default queue name of `workerName` plus 'Input' is set for the action.
