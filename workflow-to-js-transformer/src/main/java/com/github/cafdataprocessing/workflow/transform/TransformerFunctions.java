@@ -19,6 +19,7 @@ import com.github.cafdataprocessing.processing.service.client.ApiClient;
 import com.github.cafdataprocessing.processing.service.client.ApiException;
 import com.github.cafdataprocessing.processing.service.client.api.TenantsConfigurationApi;
 import com.github.cafdataprocessing.processing.service.client.model.EffectiveTenantConfigValue;
+import com.hpe.caf.worker.document.exceptions.DocumentWorkerTransientException;
 import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +59,7 @@ public class TransformerFunctions {
     }
 
     public static String getTenantSpecificConfigValue(final String apiClientBaseUrl, final String tenantId, final String key)
+        throws DocumentWorkerTransientException
     {
         final ApiClient apiClient = new ApiClient();
         apiClient.setBasePath(apiClientBaseUrl);
@@ -68,6 +70,11 @@ public class TransformerFunctions {
             LOG.debug("Retrieved value for tenant configuration is of type: {}", effectiveTenantConfigValue.getValueType());
             return effectiveTenantConfigValue.getValue();
         } catch (final ApiException ex) {
+            if (ex.getCode() == 500) {
+                LOG.error("Unable to obtain tenant configuration from processing service for tenant: {} using key: {} as the service could"
+                    + " not be contacted", tenantId, key);
+                throw new DocumentWorkerTransientException(ex);
+            }
             LOG.error("Unable to obtain tenant configuration from processing service for tenant: {} using key: {}", tenantId, key);
             throw new RuntimeException(ex);
         }

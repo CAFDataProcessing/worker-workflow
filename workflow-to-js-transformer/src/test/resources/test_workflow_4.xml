@@ -68,10 +68,6 @@
                                 <test_projectId_prop class="linked-hash-map">
                                     <source>projectId</source>
                                 </test_projectId_prop>
-                                <ee.grammarMap class="linked-hash-map">
-                                    <source>tenantData</source>
-                                    <data>ee.grammarMap</data>
-                                </ee.grammarMap>
                                 <invalid_prop>
                                     <source>nonValidSource</source>
                                     <data>invalid</data>

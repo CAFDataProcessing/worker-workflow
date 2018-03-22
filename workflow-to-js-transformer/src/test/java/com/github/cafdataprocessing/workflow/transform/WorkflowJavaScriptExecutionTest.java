@@ -754,7 +754,7 @@ public class WorkflowJavaScriptExecutionTest {
     private Invocable getInvocableWorkflowJavaScriptFromFullWorkflow(final FullWorkflow workflow)
             throws WorkflowTransformerException, ScriptException, URISyntaxException, IOException {
         final String workflowAsXml = WorkflowTransformer.transformFullWorkflowToXml(workflow);
-        final String workflowAsJS = WorkflowTransformer.transformXmlWorkflowToJavaScript(workflowAsXml, PROJECT_ID, TENANT_ID, null);
+        final String workflowAsJS = WorkflowTransformer.transformXmlWorkflowToJavaScript(workflowAsXml, PROJECT_ID, TENANT_ID, "");
         return getInvocableWorkflowJavaScriptFromJS(workflowAsJS);
     }
 
@@ -788,7 +788,7 @@ public class WorkflowJavaScriptExecutionTest {
         final Path workflowXmlPath = Paths.get(testWorkflowXml.toURI());
 
         return WorkflowTransformer.transformXmlWorkflowToJavaScript(new String(
-                Files.readAllBytes(workflowXmlPath), StandardCharsets.UTF_8), PROJECT_ID, TENANT_ID, "http://localhost:8080/data-processing-service/v1");
+                Files.readAllBytes(workflowXmlPath), StandardCharsets.UTF_8), PROJECT_ID, TENANT_ID, "");
     }
 
     private String getWorkflowJavaScriptFromXML(final String workflowXmlResourceIdentifier, final String projectId,
@@ -798,6 +798,6 @@ public class WorkflowJavaScriptExecutionTest {
         final Path workflowXmlPath = Paths.get(testWorkflowXml.toURI());
 
         return WorkflowTransformer.transformXmlWorkflowToJavaScript(new String(
-                Files.readAllBytes(workflowXmlPath), StandardCharsets.UTF_8), projectId, tenantId, null);
+                Files.readAllBytes(workflowXmlPath), StandardCharsets.UTF_8), projectId, tenantId, "");
     }
 }
