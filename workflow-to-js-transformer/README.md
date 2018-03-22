@@ -92,7 +92,7 @@ Which given a projectId of "1234" would be output after transformation as;
 
 *tenantData*
 
-A source of tenantData may be specified to indicate that the value of the property should be retrieved from the data processing service's api using the source's data as the key. This allows for per tenant customization of a tenant ignostic workflow.
+A source of tenantData may be specified to indicate that the value of the property should be retrieved from the data processing service's api using the source's data as the key. This allows for per tenant customization of a tenant agnostic workflow.
 
 ```
 "customData": {
