@@ -63,12 +63,13 @@ public class WorkflowTransformer {
      * @throws WorkflowRetrievalException if certain failures occur communicating with the processing service to
      * retrieve the workflow. e.g. The processing service not being contactable.
      * @throws WorkflowTransformerException if there is an error transforming workflow returned to JavaScript representation
-     * @throws NullPointerException if the projectId passed to the method is null
+     * @throws NullPointerException if the projectId or tenantId passed to the method is null
      */
     public static String retrieveAndTransformWorkflowToJavaScript(long workflowId, String projectId, String processingApiUrl,
                                                                   final String tenantId)
             throws ApiException, WorkflowTransformerException, WorkflowRetrievalException {
         Objects.requireNonNull(projectId);
+        Objects.requireNonNull(tenantId);
         final String workflowAsXML = retrieveAndTransformWorkflowToXml(workflowId, projectId, processingApiUrl);
         return transformXmlWorkflowToJavaScript(workflowAsXML, projectId, tenantId, processingApiUrl);
     }
@@ -132,12 +133,13 @@ public class WorkflowTransformer {
      * @param processingApiUrl Contactable URL for a processing API web service that the tenant configs can be retrieved from.
      * @return JavaScript representation of the workflow logic.
      * @throws WorkflowTransformerException if there is an error transforming workflow to JavaScript representation
-     * @throws NullPointerException if the projectId passed to the method is null
+     * @throws NullPointerException if the projectId or tenantId passed to the method is null
      */
     public static String transformXmlWorkflowToJavaScript(final String workflowXml, final String projectId,
                                                           final String tenantId, final String processingApiUrl) throws
-            WorkflowTransformerException {
+            WorkflowTransformerException, ApiException {
         Objects.requireNonNull(projectId);
+        Objects.requireNonNull(tenantId);
         final String workflowResourceName = "Workflow.xslt";
         final InputStream defaultXsltStream = WorkflowTransformer.class.getClassLoader().getResourceAsStream(workflowResourceName);
         if (defaultXsltStream == null) {
@@ -160,6 +162,11 @@ public class WorkflowTransformer {
         try {
             transformer.transform(xmlInputStream, outputStream);
         } catch (final TransformerException e) {
+            if (e.getCause() instanceof ApiException) {
+                if (((ApiException) e.getCause()).getCode() == 500) {
+                    throw (ApiException) e.getCause();
+                }
+            }
             throw new WorkflowTransformerException("Failed to transform and output workflow XML input.", e);
         }
 

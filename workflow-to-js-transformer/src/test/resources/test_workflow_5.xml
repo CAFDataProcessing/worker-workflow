@@ -1,0 +1,118 @@
+<!--
+
+    Copyright 2015-2017 EntIT Software LLC, a Micro Focus company.
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<workflow>
+    <details>
+        <name>Custom Data Test</name>
+        <description></description>
+        <notes></notes>
+        <id>5</id>
+    </details>
+    <processingRules>
+        <processingRule>
+            <details>
+                <name>Custom data test</name>
+                <description></description>
+                <id>5</id>
+                <priority>1</priority>
+                <enabled>true</enabled>
+            </details>
+            <actions>
+                <action>
+                    <details>
+                        <settings class="linked-hash-map">
+                            <workerName>testworker</workerName>
+                            <customData class="linked-hash-map">
+                                <ee.grammarMap class="linked-hash-map">
+                                    <source>tenantData</source>
+                                    <data>ee.grammarMap</data>
+                                </ee.grammarMap>
+                            </customData>
+                        </settings>
+                        <name>String condition action</name>
+                        <description></description>
+                        <typeInternalName>CompositeDocumentWorkerHandler</typeInternalName>
+                        <typeId>12</typeId>
+                        <id>10</id>
+                        <order>100</order>
+                    </details>
+                    <conditions/>
+                </action>
+            </actions>
+            <conditions/>
+        </processingRule>
+        <processingRule>
+            <details>
+                <name>Not enabled rule</name>
+                <description></description>
+                <id>6</id>
+                <priority>2</priority>
+                <enabled>false</enabled>
+            </details>
+            <actions>
+                <action>
+                    <details>
+                        <settings class="linked-hash-map">
+                            <workerName>entityworker</workerName>
+                            <customData class="linked-hash-map">
+                                <OPERATION_MODE>DETECT</OPERATION_MODE>
+                                <GRAMMAR_MAP>{pii.xml: []}</GRAMMAR_MAP>
+                            </customData>
+                        </settings>
+                        <name>Entity action</name>
+                        <description></description>
+                        <typeInternalName>CompositeDocumentWorkerHandler</typeInternalName>
+                        <typeId>12</typeId>
+                        <id>11</id>
+                        <order>100</order>
+                    </details>
+                    <conditions/>
+                </action>
+            </actions>
+            <conditions/>
+        </processingRule>
+        <processingRule>
+            <details>
+                <name>Another enabled rule</name>
+                <description></description>
+                <id>7</id>
+                <priority>3</priority>
+                <enabled>true</enabled>
+            </details>
+            <actions>
+                <action>
+                    <details>
+                        <settings class="linked-hash-map">
+                            <workerName>dummyworker</workerName>
+                            <customData class="linked-hash-map">
+                                <dummyField>dummyValue</dummyField>
+                            </customData>
+                        </settings>
+                        <name>Dummy</name>
+                        <description></description>
+                        <typeInternalName>CompositeDocumentWorkerHandler</typeInternalName>
+                        <typeId>12</typeId>
+                        <id>12</id>
+                        <order>100</order>
+                    </details>
+                    <conditions/>
+                </action>
+            </actions>
+            <conditions/>
+        </processingRule>
+    </processingRules>
+</workflow>
