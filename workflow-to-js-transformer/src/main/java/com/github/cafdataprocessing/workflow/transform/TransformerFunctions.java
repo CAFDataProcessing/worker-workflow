@@ -89,6 +89,11 @@ public class TransformerFunctions {
             LOG.error("Unable to obtain tenant configuration from processing service for tenant: {} using key: {}", tenantId, key);
             throw ex;
         } catch (final ClientHandlerException ex) {
+            /**
+             * Wrapping this exception as an ApiException as it was caused by an in ability to contact the processing service. Wrapping it
+             * in an ApiException allows for this to be picked up be the calling code and it can then make a decision to retry as the
+             * connection problem may have been transient.
+             */
             LOG.error("Unable to obtain tenant configuration from processing service for tenant: {} using key: {}", tenantId, key);
             throw new ApiException(500, "Unable to contact processing service to retrieve tenant configs.");
         }
