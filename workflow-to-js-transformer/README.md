@@ -117,6 +117,26 @@ The name of a queue to send the document to. Can be used to specify the queue to
 
 The name of the worker the document will be sent to. Some configuration details, such as the default queue names, will be looked up based on this name.
 
+##### scripts
+
+Customization scripts may be included on an action and will be loaded when the document is sent to another worker. Each script should have a name and the actual script to execute which may be specified using one of the following properties;
+* script - an inline script
+* storageRef - a storage reference that can be used to retrieve a script from storage
+* url - a URL to a script
+
+**Example**
+
+```
+"scripts": [
+      {
+        "name": "countSuspectedPii.js",
+        "script": "// Count the suspected pii entities\nfunction onAfterProcessDocument(e) {\n  var piiEntityCount = e.document.getField(\"SUSPECTED_PII\").getValues().size();\n  e.document.getField(\"SUSPECTED_PII_ENTITY_COUNT\").set(piiEntityCount);\n}\n\n// Do not pass this script on to the next worker\nthisScript.uninstall();\n"
+      }
+    ]
+```
+
+The above script would be set on the task sent to a worker. Note that this script uninstalls itself so that it is not passed to the next worker for execution. By default a script will continue to be passed and execute in subsequent workers.
+
 ### FieldMapping Action Type
 
 This action is used to rename the fields of a document, according to a configurable mapping of field names.
