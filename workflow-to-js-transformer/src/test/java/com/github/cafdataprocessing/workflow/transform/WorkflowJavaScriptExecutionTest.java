@@ -68,6 +68,7 @@ import java.util.Map;
 import java.util.UUID;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
 import org.mockito.Mockito;
 
 /**
@@ -137,8 +138,8 @@ public class WorkflowJavaScriptExecutionTest {
                 .withFields()
                 .addFieldValue("test", "string_value")
                 .documentBuilder().build();
-
-        final Invocable invocable = getInvocableWorkflowJavaScriptFromFullWorkflow(workflow);
+        final ApiClient apiClient = getMockTenantApiClient(null, null);
+        final Invocable invocable = getInvocableWorkflowJavaScriptFromFullWorkflow(workflow, apiClient);
         invocable.invokeFunction("processDocument", testDocument_1);
         checkActionIdToExecute(testDocument_1, Long.toString(testAction.getActionId()));
         final Task returnedTask = testDocument_1.getTask();
@@ -201,8 +202,8 @@ public class WorkflowJavaScriptExecutionTest {
                 .withFields()
                 .addFieldValue("test", "string_value")
                 .documentBuilder().build();
-
-        final Invocable invocable = getInvocableWorkflowJavaScriptFromFullWorkflow(workflow);
+        final ApiClient apiClient = getMockTenantApiClient(null, null);
+        final Invocable invocable = getInvocableWorkflowJavaScriptFromFullWorkflow(workflow, apiClient);
         try {
             invocable.invokeFunction("processDocument", testDocument_1);
             Assert.fail("Exception should have been thrown during processDocument call due to invalid script definition.");
@@ -252,7 +253,8 @@ public class WorkflowJavaScriptExecutionTest {
                 .documentBuilder().build();
 
         try {
-            final Invocable invocable = getInvocableWorkflowJavaScriptFromFullWorkflow(workflow);
+            final ApiClient apiClient = getMockTenantApiClient(null, null);
+            final Invocable invocable = getInvocableWorkflowJavaScriptFromFullWorkflow(workflow, apiClient);
             Assert.fail("This is expected to throw an exception until SCMOD-3725 is complete.");
         }
         catch(final ScriptException e) {
@@ -290,7 +292,7 @@ public class WorkflowJavaScriptExecutionTest {
     public void booleanConditionCheck()
             throws ScriptException, WorkflowTransformerException, IOException, URISyntaxException,
             NoSuchMethodException, WorkerException, DataStoreException, ApiException {
-        final ApiClient apiClient = getMockApiClient(null, null);
+        final ApiClient apiClient = getMockTenantApiClient(null, null);
         final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_2.xml", apiClient);
         final String familyHashingActionId = "29";
         final String langDetectActionId = "30";
@@ -423,7 +425,7 @@ public class WorkflowJavaScriptExecutionTest {
                 .addFieldValue(vwxFieldKey, vwxFieldValue)
                 .documentBuilder().build();
 
-        final ApiClient apiClient = getMockApiClient(null, null);
+        final ApiClient apiClient = getMockTenantApiClient(null, null);
         final Invocable invocable = getInvocableWorkflowJavaScriptFromFullWorkflow(workflow, apiClient);
         invocable.invokeFunction("processDocument", testDocument_1);
         // the entity extract action should be the action listed for execution as field mapping will have occurred
@@ -571,7 +573,7 @@ public class WorkflowJavaScriptExecutionTest {
                 .documentBuilder().build();
         testDocument_1.getField(contentFieldName).addReference(dataStoreRef);
 
-        final ApiClient apiClient = getMockApiClient(null, null);
+        final ApiClient apiClient = getMockTenantApiClient(null, null);
         final Invocable invocable = getInvocableWorkflowJavaScriptFromFullWorkflow(workflow, apiClient);
         invocable.invokeFunction("processDocument", testDocument_1);
         checkActionIdToExecute(testDocument_1, Long.toString(stringIsAction.getActionId()));
@@ -597,7 +599,7 @@ public class WorkflowJavaScriptExecutionTest {
     public void inlineJsonCustomDataTest()
             throws WorkerException, IOException, ScriptException, WorkflowTransformerException,
             URISyntaxException, NoSuchMethodException, DataStoreException, ApiException {
-        final ApiClient apiClient = getMockApiClient(null, null);
+        final ApiClient apiClient = getMockTenantApiClient(null, null);
         final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_3.xml", apiClient);
         final Invocable invocable = getInvocableWorkflowJavaScriptFromJS(workflowJSStr);
         final TestServices testServices = TestServices.createDefault();
@@ -696,7 +698,7 @@ public class WorkflowJavaScriptExecutionTest {
                 .addFieldValue("test", "string_value")
                 .documentBuilder().build();
 
-        final ApiClient apiClient = getMockApiClient(null, null);
+        final ApiClient apiClient = getMockTenantApiClient(null, null);
         final Invocable invocable = getInvocableWorkflowJavaScriptFromFullWorkflow(workflow, apiClient);
         invocable.invokeFunction("processDocument", testDocument_1);
         checkActionIdToExecute(testDocument_1, Long.toString(testAction.getActionId()));
@@ -712,7 +714,7 @@ public class WorkflowJavaScriptExecutionTest {
     public void projectIdCustomDataTest()
             throws WorkerException, IOException, ScriptException, WorkflowTransformerException,
             URISyntaxException, NoSuchMethodException, DataStoreException, ApiException {
-        final ApiClient apiClient = getMockApiClient(null, null);
+        final ApiClient apiClient = getMockTenantApiClient(null, null);
         final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_4.xml", apiClient);
         final Invocable invocable = getInvocableWorkflowJavaScriptFromJS(workflowJSStr);
         final TestServices testServices = TestServices.createDefault();
@@ -792,7 +794,7 @@ public class WorkflowJavaScriptExecutionTest {
     public void nullProjectIdCustomDataTest()
             throws WorkerException, IOException, ScriptException, WorkflowTransformerException,
             URISyntaxException, NoSuchMethodException, DataStoreException, ApiException {
-        final ApiClient apiClient = getMockApiClient(null, null);
+        final ApiClient apiClient = getMockTenantApiClient(null, null);
         final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_4.xml", null, null, apiClient);
         Assert.fail("NullPointerExcepion should have been thrown before this point.");
     }
@@ -831,9 +833,9 @@ public class WorkflowJavaScriptExecutionTest {
     {
         final String key = "ee.grammarMap";
         final String value = "{\"pii.xml\": []}";
-        final ApiClient apiClient = getMockApiClient(value, key);
+        final ApiClient apiClient = getMockTenantApiClient(value, key);
         final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_5.xml", apiClient);
-                final Invocable invocable = getInvocableWorkflowJavaScriptFromJS(workflowJSStr);
+        final Invocable invocable = getInvocableWorkflowJavaScriptFromJS(workflowJSStr);
         final TestServices testServices = TestServices.createDefault();
 
         final Document document = DocumentBuilder.configure()
@@ -852,7 +854,7 @@ public class WorkflowJavaScriptExecutionTest {
     public void notEnabledRuleNotExecutedTest()
             throws WorkerException, IOException, ScriptException, WorkflowTransformerException,
             URISyntaxException, NoSuchMethodException, DataStoreException, ApiException {
-        final ApiClient apiClient = getMockApiClient(null, null);
+        final ApiClient apiClient = getMockTenantApiClient(null, null);
         final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_3.xml", apiClient);
         final Invocable invocable = getInvocableWorkflowJavaScriptFromJS(workflowJSStr);
         final TestServices testServices = TestServices.createDefault();
@@ -888,7 +890,7 @@ public class WorkflowJavaScriptExecutionTest {
             " should be passed.")
     public void actionProgressFieldsTest() throws IOException, ScriptException, URISyntaxException, WorkerException,
             WorkflowTransformerException, NoSuchMethodException, DataStoreException, ApiException {
-        final ApiClient apiClient = getMockApiClient(null, null);
+        final ApiClient apiClient = getMockTenantApiClient(null, null);
         final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_1.xml", apiClient);
         final Invocable invocable = getInvocableWorkflowJavaScriptFromJS(workflowJSStr);
         final TestServices testServices = TestServices.createDefault();
@@ -929,7 +931,7 @@ public class WorkflowJavaScriptExecutionTest {
             "custom data can be serialized.")
     public void handleCustomData() throws WorkerException, ScriptException, NoSuchMethodException,
             WorkflowTransformerException, IOException, URISyntaxException, CodecException, DataStoreException, ApiException {
-        final ApiClient apiClient = getMockApiClient(null, null);
+        final ApiClient apiClient = getMockTenantApiClient(null, null);
         final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_1.xml", apiClient);
         final Invocable invocable = getInvocableWorkflowJavaScriptFromJS(workflowJSStr);
         final TestServices testServices = TestServices.createDefault();
@@ -974,7 +976,7 @@ public class WorkflowJavaScriptExecutionTest {
     @Test(description = "Verify that if the onError function is called that the next action to perform on the document is " +
             "determined.")
     public void onErrorTest() throws WorkerException, ScriptException, WorkflowTransformerException, IOException, URISyntaxException, DataStoreException, NoSuchMethodException, ApiException {
-        final ApiClient apiClient = getMockApiClient(null, null);
+        final ApiClient apiClient = getMockTenantApiClient(null, null);
         final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_2.xml", apiClient);
         final String familyHashingActionId = "29";
         final String langDetectActionId = "30";
@@ -1060,7 +1062,7 @@ public class WorkflowJavaScriptExecutionTest {
     private Invocable getInvocableWorkflowJavaScriptFromXML(final String workflowXmlResourceIdentifier)
             throws URISyntaxException, IOException,
             ScriptException, WorkflowTransformerException, ApiException {
-        final ApiClient apiClient = getMockApiClient("", "ee.grammarMap");
+        final ApiClient apiClient = getMockTenantApiClient("", "ee.grammarMap");
         final String workflowAsJS = getWorkflowJavaScriptFromXML(workflowXmlResourceIdentifier, apiClient);
         return getInvocableWorkflowJavaScriptFromJS(workflowAsJS);
     }
@@ -1084,7 +1086,7 @@ public class WorkflowJavaScriptExecutionTest {
                 Files.readAllBytes(workflowXmlPath), StandardCharsets.UTF_8), projectId, tenantId, apiClient);
     }
 
-    private ApiClient getMockApiClient(final String returnValue, final String key) throws ApiException
+    private ApiClient getMockTenantApiClient(final String returnValue, final String key) throws ApiException
     {
         final ApiClient client = Mockito.mock(ApiClient.class);
         if (returnValue != null && key != null) {
@@ -1092,10 +1094,11 @@ public class WorkflowJavaScriptExecutionTest {
             config.setKey(key);
             config.setValue(returnValue);
             config.setValueType(EffectiveTenantConfigValue.ValueTypeEnum.DEFAULT);
-            Mockito.when(client.escapeString(anyString())).thenReturn("");
-            Mockito.when(client.selectHeaderAccept(any())).thenReturn("");
+            Mockito.when(client.escapeString(key)).thenReturn(key);
+            Mockito.when(client.escapeString(TENANT_ID)).thenReturn(TENANT_ID);
             Mockito.when(client.selectHeaderContentType(any())).thenReturn("");
-            Mockito.when(client.invokeAPI(any(), any(), any(), any(), any(), any(), any(), any(), any(), any())).thenReturn(config);
+            Mockito.when(client.invokeAPI(eq("/tenants/" + TENANT_ID + "/effectiveconfig/" + key), any(), any(), any(), any(), any(), any(),
+                                          any(), any(), any())).thenReturn(config);
         }
         return client;
     }

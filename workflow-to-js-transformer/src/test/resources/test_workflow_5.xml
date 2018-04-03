@@ -39,7 +39,7 @@
                             <customData class="linked-hash-map">
                                 <ee.grammarMap class="linked-hash-map">
                                     <source>tenantData</source>
-                                    <data>ee.grammarMap</data>
+                                    <key>ee.grammarMap</key>
                                 </ee.grammarMap>
                             </customData>
                         </settings>
