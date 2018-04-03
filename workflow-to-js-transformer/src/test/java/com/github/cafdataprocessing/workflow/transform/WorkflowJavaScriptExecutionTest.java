@@ -97,7 +97,8 @@ public class WorkflowJavaScriptExecutionTest {
         // add a storage reference script
         final String testScriptStoredValue = UUID.randomUUID().toString();
         final TestServices testServices = TestServices.createDefault();
-        final String testScriptValue_2 = testServices.getDataStore().store(testScriptStoredValue.getBytes(), "test");
+        final String testScriptValue_2 = testServices.getDataStore()
+                .store(testScriptStoredValue.getBytes(StandardCharsets.UTF_8), "test");
         final String testScriptName_2 = "testScript_2";
         final Map<String, String> scriptEntry_2 = new HashMap<>();
         scriptEntry_2.put("name", testScriptName_2);
@@ -265,6 +266,8 @@ public class WorkflowJavaScriptExecutionTest {
         Assert.assertEquals(returnedScripts.size(), scriptsList.size(), "Returned task should have expected number of scripts.");
         final Script returnedScript_1 = returnedScripts.get(0);
         checkGeneralScriptProperties(returnedScript_1, testScriptName_1, testScriptValue_1);*/
+
+        // TODO add execution of the script and checking of the field added
     }
 
     private void checkGeneralScriptProperties(final Script actualScript, final String expectedName, final String expectedValue)
