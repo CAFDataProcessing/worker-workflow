@@ -92,12 +92,12 @@ Which given a projectId of "1234" would be output after transformation as;
 
 *tenantData*
 
-A source of tenantData may be specified to indicate that the value of the property should be retrieved from the data processing service's api using the source's data as the key. This allows for per tenant customization of a tenant agnostic workflow.
+A source of tenantData may be specified to indicate that the value of the property should be retrieved from the data processing service's api using the provided key. This allows for per tenant customization of a tenant agnostic workflow.
 
 ```
 "customData": {
     "ee.grammarMap": { "source" : "tenantData",
-                       "data": "ee.grammarMap"}
+                       "key": "ee.grammarMap"}
 }
 ```
 Which given a value of `"{"pii.xml": []}" would output after transformation as:
