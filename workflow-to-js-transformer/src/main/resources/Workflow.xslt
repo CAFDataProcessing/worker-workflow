@@ -10,6 +10,7 @@
 
     <xsl:template match="/workflow">
         var System = Java.type("java.lang.System");
+        var URL = Java.type("java.net.URL");
         var ByteArray = Java.type("byte[]");
 
         // Constants for return values
@@ -99,11 +100,14 @@
     <xsl:template match="details/settings[../typeInternalName='CompositeDocumentWorkerHandler']"><xsl:call-template name="ChainedActionTypeTemplate"/></xsl:template>
 
     <xsl:template name="ChainedActionTypeTemplate" match="details/settings[../typeInternalName='ChainedActionType']">{
-        'internal_name' : '<xsl:value-of select="../typeInternalName"/>',
-        'queueName' : '<xsl:choose><xsl:when test="queueName != ''"><xsl:value-of select="queueName"/></xsl:when><xsl:otherwise><xsl:variable name="workerNameQueueEnvValue" select="workflow_transform:TransformerFunctions.getWorkerQueueFromEnvironment(workerName)"/><xsl:choose><xsl:when test="$workerNameQueueEnvValue != ''"><xsl:value-of select="$workerNameQueueEnvValue"/></xsl:when><xsl:otherwise><xsl:value-of select="concat(workerName, 'Input')"/></xsl:otherwise></xsl:choose></xsl:otherwise></xsl:choose>',
-        'workerName' : '<xsl:value-of select="workerName"/>'<xsl:if test="customData/*">,
-        'customData' : {<xsl:apply-templates select="customData"/>}
-        </xsl:if>   }</xsl:template>
+                'internal_name' : '<xsl:value-of select="../typeInternalName"/>',
+                'queueName' : '<xsl:choose><xsl:when test="queueName != ''"><xsl:value-of select="queueName"/></xsl:when><xsl:otherwise><xsl:variable name="workerNameQueueEnvValue" select="workflow_transform:TransformerFunctions.getWorkerQueueFromEnvironment(workerName)"/><xsl:choose><xsl:when test="$workerNameQueueEnvValue != ''"><xsl:value-of select="$workerNameQueueEnvValue"/></xsl:when><xsl:otherwise><xsl:value-of select="concat(workerName, 'Input')"/></xsl:otherwise></xsl:choose></xsl:otherwise></xsl:choose>',
+                'workerName' : '<xsl:value-of select="workerName"/>',
+                <xsl:if test="customData/*">'customData' : {<xsl:apply-templates select="customData"/>},</xsl:if>
+                'scripts': [
+                    <xsl:apply-templates select="scripts"/>
+                ]
+           }</xsl:template>
 
     <xsl:template match="details/settings[../typeInternalName='FieldMappingPolicyType']"><xsl:call-template name="FieldMappingActionTypeTemplate"/></xsl:template>
 
@@ -112,6 +116,18 @@
             '<xsl:value-of select="name()"/>' : '<xsl:value-of select="."/>'<xsl:if test="position() != last()">,</xsl:if>
         </xsl:for-each>
     });}</xsl:template>
+    
+    <xsl:template match="scripts">
+        <xsl:for-each select="*">{
+                        'name': '<xsl:value-of select="name"/>'<xsl:if test="script or storageRef or url">,</xsl:if>
+                        <xsl:choose>
+                            <xsl:when test="script">'script': '<xsl:value-of select="script"/>'</xsl:when>
+                            <xsl:when test="storageRef">'storageRef': '<xsl:value-of select="storageRef"/>'</xsl:when>
+                            <xsl:when test="url">'url': '<xsl:value-of select="url"/>'</xsl:when>
+                        </xsl:choose>
+                    }<xsl:if test="position() != last()">, </xsl:if>
+        </xsl:for-each>
+    </xsl:template>
 
     <xsl:template match="customData">
         <xsl:for-each select="*"><xsl:variable name="sourceData"><xsl:call-template name="customDataSource"/></xsl:variable>
@@ -295,6 +311,28 @@
             var response = document.getTask().getResponse();
             response.setQueueNameOverride(queueToSet);
             response.setCustomData(responseCustomData);
+
+            // add any scripts specified on the action
+            if(actionDetails.scripts.length !=0 ) {
+                for each(var scriptToAdd in actionDetails.scripts) {
+                    var scriptObjectAdded = document.getTask().getScripts().add()
+                    scriptObjectAdded.setName(scriptToAdd.name);
+
+                    if(scriptToAdd.script !== undefined) {
+                        scriptObjectAdded.setScriptInline(scriptToAdd.script);
+                    }
+                    else if (scriptToAdd.storageRef !== undefined) {
+                        scriptObjectAdded.setScriptByReference(scriptToAdd.storageRef);
+                    }
+                    else if (scriptToAdd.url !== undefined) {
+                        scriptObjectAdded.setScriptByUrl(new URL(scriptToAdd.url));
+                    }
+                    else {
+                        throw new java.lang.RuntimeException("Invalid script definition on action. No valid script value source.");
+                    }
+                }
+            }
+
             return ACTION_TO_EXECUTE;
         }
 
