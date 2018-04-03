@@ -62,18 +62,17 @@ public class TransformerFunctions {
     /**
      * Returns the value of the tenant's configuration that was requested.
      *
-     * @param apiClientBaseUrl The base url of the processing service.
+     * @param apiClientObject The api client that should be used when contacting the data processing service.
      * @param tenantId A unique string that identifies the tenant.
      * @param key The unique string used to identify a specific configuration.
      * @return The string representation of the value of the configuration requested.
      * @throws DocumentWorkerTransientException Thrown when the processing service is unreachable.
      * @throws ApiException When an error occurs while trying to retrieve a config's value from the processing service.
      */
-    public static String getTenantSpecificConfigValue(final String apiClientBaseUrl, final String tenantId, final String key)
+    public static String getTenantSpecificConfigValue(final Object apiClientObject, final String tenantId, final String key)
         throws DocumentWorkerTransientException, ApiException
     {
-        final ApiClient apiClient = new ApiClient();
-        apiClient.setBasePath(apiClientBaseUrl);
+        final ApiClient apiClient = (ApiClient) apiClientObject;
         final TenantConfigurationApi tenantsApi = new TenantConfigurationApi(apiClient);
         try {
             final EffectiveTenantConfigValue effectiveTenantConfigValue = tenantsApi.getEffectiveTenantConfig(tenantId, key);

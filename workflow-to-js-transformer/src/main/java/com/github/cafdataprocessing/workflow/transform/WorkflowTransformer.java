@@ -70,8 +70,10 @@ public class WorkflowTransformer {
             throws ApiException, WorkflowTransformerException, WorkflowRetrievalException {
         Objects.requireNonNull(projectId);
         Objects.requireNonNull(tenantId);
-        final String workflowAsXML = retrieveAndTransformWorkflowToXml(workflowId, projectId, processingApiUrl);
-        return transformXmlWorkflowToJavaScript(workflowAsXML, projectId, tenantId, processingApiUrl);
+        final ApiClient apiClient = new ApiClient();
+        apiClient.setBasePath(processingApiUrl);
+        final String workflowAsXML = retrieveAndTransformWorkflowToXml(workflowId, projectId, apiClient);
+        return transformXmlWorkflowToJavaScript(workflowAsXML, projectId, tenantId, apiClient);
     }
 
     /**
@@ -79,7 +81,7 @@ public class WorkflowTransformer {
      * processing API url and returns its as an XML representation.
      * @param workflowId ID of workflow to generate XML for.
      * @param projectId Project ID associated with the workflow and its children.
-     * @param processingApiUrl Contactable URL for a processing API web service that the workflow can be retrieved from.
+     * @param apiClient ApiClient to use when retrieving the workflow.
      * @return XML representation of the workflow and its children.
      * @throws ApiException if certain failures occur communicating with the processing service to retrieve the workflow
      * e.g. Invalid requests will result in this exception.
@@ -88,11 +90,9 @@ public class WorkflowTransformer {
      * @throws WorkflowTransformerException if there is an error transforming workflow returned to XML representation
      * @throws NullPointerException if the projectId passed to the method is null
      */
-    public static String retrieveAndTransformWorkflowToXml(long workflowId, String projectId, String processingApiUrl)
+    public static String retrieveAndTransformWorkflowToXml(long workflowId, String projectId, ApiClient apiClient)
             throws ApiException, WorkflowTransformerException, WorkflowRetrievalException {
         Objects.requireNonNull(projectId);
-        final ApiClient apiClient = new ApiClient();
-        apiClient.setBasePath(processingApiUrl);
         final FullWorkflowRetriever workflowRetriever = new FullWorkflowRetriever(apiClient);
         final FullWorkflow fullWorkflow = workflowRetriever.getFullWorkflow(projectId, workflowId);
         return transformFullWorkflowToXml(fullWorkflow);
@@ -130,13 +130,14 @@ public class WorkflowTransformer {
      * @param workflowXml Workflow in XML form. The expected schema maps to the {@link FullWorkflow} class.
      * @param projectId The projectId to use in workflow transformation
      * @param tenantId a tenant ID to use in evaluating the workflow
-     * @param processingApiUrl Contactable URL for a processing API web service that the tenant configs can be retrieved from.
+     * @param apiClient ApiClient to use when resolving tenant specific configurations.
      * @return JavaScript representation of the workflow logic.
      * @throws WorkflowTransformerException if there is an error transforming workflow to JavaScript representation
      * @throws NullPointerException if the projectId or tenantId passed to the method is null
+     * @throws ApiException if there is a problem contacting the data processing service
      */
     public static String transformXmlWorkflowToJavaScript(final String workflowXml, final String projectId,
-                                                          final String tenantId, final String processingApiUrl) throws
+                                                          final String tenantId, final ApiClient apiClient) throws
             WorkflowTransformerException, ApiException {
         Objects.requireNonNull(projectId);
         Objects.requireNonNull(tenantId);
@@ -155,7 +156,7 @@ public class WorkflowTransformer {
             transformer = TransformerFactory.newInstance().newTransformer(new StreamSource(defaultXsltStream));
             transformer.setParameter("projectId", projectId);
             transformer.setParameter("tenantId", tenantId);
-            transformer.setParameter("apiClientBaseUrl", processingApiUrl);
+            transformer.setParameter("apiClient", apiClient);
         } catch (final TransformerConfigurationException e) {
             throw new WorkflowTransformerException("Failed to create Transformer from XSLT file input.", e);
         }
