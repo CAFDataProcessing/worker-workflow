@@ -47,7 +47,7 @@
                                                     <myNullValue class="null"/>
                                                 </linked-hash-map>
                                                 <linked-hash-map>
-                                                    <myStringValue>My String</myStringValue>
+                                                    <myStringValue>My St'ring</myStringValue>
                                                 </linked-hash-map>
                                                 <linked-hash-map>
                                                     <myBoolean class="boolean">true</myBoolean>

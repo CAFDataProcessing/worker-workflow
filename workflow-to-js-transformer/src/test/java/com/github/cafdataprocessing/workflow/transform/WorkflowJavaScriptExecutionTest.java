@@ -79,7 +79,43 @@ public class WorkflowJavaScriptExecutionTest {
     private static final String TENANT_ID = "123456789";
     private static final WorkflowComponentBuilder BUILDER = new WorkflowComponentBuilder();
 
-    @Test(description = "Tests that a script specified on an action is added to the scripts property on the set response after " +
+    @Test(description = "Test that a custom data value that has characters that should be escaped is correctly escaped in JS " +
+            "output so as to not render the generated JS invalid.")
+    public void customDataValueCorrectlyEscaped()
+            throws WorkerException, URISyntaxException, IOException, ApiException, WorkflowTransformerException,
+            ScriptException, NoSuchMethodException, DataStoreException {
+        final Map<String, Object> customDataInput = new HashMap<>();
+        final String testPropertyKey = "test";
+        final String testPropertyValue = "again \'here te\nst 'th\ris' v\ta\"l\"ue"+UUID.randomUUID().toString();
+        customDataInput.put(testPropertyKey, testPropertyValue);
+
+        final Map<String, Object> settingsInput = new HashMap<>();
+        settingsInput.put("customData", customDataInput);
+
+        final FullAction testAction = BUILDER.buildFullAction("Escape check action",
+                new ArrayList<>(), 100, settingsInput);
+
+        final FullProcessingRule rule = BUILDER.buildFullProcessingRule("Test escape rule", true, 100,
+                new ArrayList<>(Arrays.asList(testAction)),
+                new ArrayList<>());
+        final FullWorkflow workflow = BUILDER.buildFullWorkflow("Test escape workflow", new ArrayList<>(Arrays.asList(rule)));
+
+        final Document testDocument_1 = DocumentBuilder.configure()
+                .withFields()
+                .addFieldValue("test", "string_value")
+                .documentBuilder().build();
+
+        final Invocable invocable = getInvocableWorkflowJavaScriptFromFullWorkflow(workflow);
+        invocable.invokeFunction("processDocument", testDocument_1);
+        checkActionIdToExecute(testDocument_1, Long.toString(testAction.getActionId()));
+        final Task returnedTask = testDocument_1.getTask();
+        final Map<String, String> returnedCustomData = returnedTask.getResponse().getCustomData();
+        final String returnedTestPropertyValue = returnedCustomData.get(testPropertyKey);
+        Assert.assertEquals(returnedTestPropertyValue, testPropertyValue, "Returned property that was set on custom data should" +
+                " be as expected.");
+    }
+
+        @Test(description = "Tests that a script specified on an action is added to the scripts property on the set response after " +
             "document is evaluated against the workflow..")
     public void addScriptsFromAction()
             throws WorkerException, URISyntaxException, IOException, ApiException, WorkflowTransformerException,
@@ -214,9 +250,9 @@ public class WorkflowJavaScriptExecutionTest {
         }
     }
 
-    @Test(description = "Tests how a script that contains a single quote character on an action is handled during execution of " +
-            "workflow.")
-    public void addScriptWithSingleQuoteOnAction()
+    @Test(description = "Tests how a script that contains characters that must be escaped before being written to the " +
+            "JavaScript on an action is handled during execution of workflow.")
+    public void addScriptWithCharactersThatRequireEscapingOnAction()
             throws WorkerException, URISyntaxException, IOException, ApiException, WorkflowTransformerException,
             ScriptException, NoSuchMethodException, DataStoreException {
         final Map<String, Object> customDataInput = new HashMap<>();
@@ -228,9 +264,13 @@ public class WorkflowJavaScriptExecutionTest {
         settingsInput.put("customData", customDataInput);
 
         // add an inline script
-        final String expectedScriptFieldValue_1 = UUID.randomUUID().toString();
+        final String testScriptFieldUpdateUUIDValue = UUID.randomUUID().toString();
+        final String testScriptFieldUpdateValue = "This < \\n > & \\'" + testScriptFieldUpdateUUIDValue + "\\' test";
+        final String testScriptFieldToUpdate = "TEST";
         final String testScriptValue_1 =
-                "function run(){document.getField('TEST').set('This < \\n > & '"+expectedScriptFieldValue_1+"');}";
+                "//this script has new line characters\n function run(document){document.getField" +
+                        "('"+testScriptFieldToUpdate+"').set" +
+                        "('"+testScriptFieldUpdateValue+"');}";
         final String testScriptName_1 = "testScript_1";
         final Map<String, String> scriptEntry_1 = new HashMap<>();
         scriptEntry_1.put("name", testScriptName_1);
@@ -252,17 +292,9 @@ public class WorkflowJavaScriptExecutionTest {
                 .addFieldValue("test", "string_value")
                 .documentBuilder().build();
 
-        try {
-            final ApiClient apiClient = getMockTenantApiClient(null, null);
-            final Invocable invocable = getInvocableWorkflowJavaScriptFromFullWorkflow(workflow, apiClient);
-            Assert.fail("This is expected to throw an exception until SCMOD-3725 is complete.");
-        }
-        catch(final ScriptException e) {
-            // TODO when SCMOD0-3725 is complete the below code should be uncommeted as it is expected the single quotes causing
-            // TODO the script exception will be escaped and the script will be evaluated sucessfully.
-        }
+        final ApiClient apiClient = getMockTenantApiClient(null, null);
+        final Invocable invocable = getInvocableWorkflowJavaScriptFromFullWorkflow(workflow, apiClient);
 
-        /*
         invocable.invokeFunction("processDocument", testDocument_1);
         checkActionIdToExecute(testDocument_1, Long.toString(testAction.getActionId()));
         final Task returnedTask = testDocument_1.getTask();
@@ -274,9 +306,19 @@ public class WorkflowJavaScriptExecutionTest {
         final Scripts returnedScripts = returnedTask.getScripts();
         Assert.assertEquals(returnedScripts.size(), scriptsList.size(), "Returned task should have expected number of scripts.");
         final Script returnedScript_1 = returnedScripts.get(0);
-        checkGeneralScriptProperties(returnedScript_1, testScriptName_1, testScriptValue_1);*/
+        checkGeneralScriptProperties(returnedScript_1, testScriptName_1, testScriptValue_1);
 
-        // TODO add execution of the script and checking of the field added
+        final ScriptEngineManager engineManager = new ScriptEngineManager();
+        final ScriptEngine engine = engineManager.getEngineByName("nashorn");
+        engine.eval(returnedScript_1.getScript());
+        final Invocable invocableTestScript_1 = (Invocable) engine;
+        invocableTestScript_1.invokeFunction("run", testDocument_1);
+
+        final List<String> testFieldValues = testDocument_1.getField(testScriptFieldToUpdate).getStringValues();
+        Assert.assertEquals(testFieldValues.size(), 1, "Expecting the inline script to have added one value on a specific field" +
+                ".");
+        Assert.assertEquals(testFieldValues.get(0), "This < \n > & \'" + testScriptFieldUpdateUUIDValue +
+                "\' test", "Expected inline script to have set a specific value on a field.");
     }
 
     private void checkGeneralScriptProperties(final Script actualScript, final String expectedName, final String expectedValue)
@@ -652,7 +694,7 @@ public class WorkflowJavaScriptExecutionTest {
                             "Value set on 'myNullValue' should be null.");
                     break;
                 case "myStringValue":
-                    Assert.assertEquals(currentArrayEntry.getString("myStringValue"), "My String",
+                    Assert.assertEquals(currentArrayEntry.getString("myStringValue"), "My St'ring",
                             "Value set on 'myStringValue' should be as expected." );
                     break;
                 case "myBoolean":
@@ -1033,6 +1075,12 @@ public class WorkflowJavaScriptExecutionTest {
             Assert.assertTrue( rulesCompletedField.getStringValues().contains(expectedRuleId),
                     "Expected rule: "+expectedRuleId+" to have been marked as completed.");
         }
+    }
+
+    private Invocable getInvocableWorkflowJavaScriptFromFullWorkflow(final FullWorkflow workflow)
+            throws URISyntaxException, IOException, ApiException, WorkflowTransformerException, ScriptException {
+        ApiClient apiClient = getMockTenantApiClient(null, null);
+        return getInvocableWorkflowJavaScriptFromFullWorkflow(workflow, apiClient);
     }
 
     private Invocable getInvocableWorkflowJavaScriptFromFullWorkflow(final FullWorkflow workflow, final ApiClient apiClient)

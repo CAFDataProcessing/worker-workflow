@@ -22,6 +22,8 @@ import com.github.cafdataprocessing.processing.service.client.model.EffectiveTen
 import com.sun.jersey.api.client.ClientHandlerException;
 import java.util.Locale;
 import java.util.Objects;
+
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +34,18 @@ import org.slf4j.LoggerFactory;
 public class TransformerFunctions {
     
     public static final Logger LOG = LoggerFactory.getLogger(TransformerFunctions.class);
-    
+
+    /**
+     * Escape characters in the passed value that need to be escaped before being written to JavaScript.
+     * @param valueToEscape value that should have characters escaped
+     * @return escaped value
+     * @throws NullPointerException if {@code valueToEscape} is null
+     */
+    public static String escapeForJavaScript(final String valueToEscape) {
+        Objects.requireNonNull(valueToEscape);
+        return StringEscapeUtils.escapeEcmaScript(valueToEscape);
+    }
+
     /**
      * Checks system environment and system properties for the specified property name returning the value if it is found
      * or null if it is not. If both value is set for both environment and system property then the system property will
@@ -56,7 +69,7 @@ public class TransformerFunctions {
         if (workerName == null || workerName.isEmpty()) {
             return null;
         }
-        return getEnvironmentValue(workerName.toLowerCase(Locale.ENGLISH) + ".taskqueue");
+        return escapeForJavaScript(getEnvironmentValue(workerName.toLowerCase(Locale.ENGLISH) + ".taskqueue"));
     }
 
     /**
@@ -80,7 +93,8 @@ public class TransformerFunctions {
             final EffectiveTenantConfigValue effectiveTenantConfigValue = tenantsApi.getEffectiveTenantConfig(tenantId, key);
             LOG.debug("Retrieved value for tenant configuration using key: {}", key);
             LOG.debug("Retrieved value for tenant configuration is of type: {}", effectiveTenantConfigValue.getValueType());
-            return effectiveTenantConfigValue.getValue();
+            // escape the config value in case it has characters that would cause issues in JavaScript
+            return escapeForJavaScript(effectiveTenantConfigValue.getValue());
         } catch (final ApiException ex) {
             if (ex.getCode() == 404) {
                 LOG.error("Unable to obtain tenant configuration from processing service for tenant: {} using key: {} as no configuration "

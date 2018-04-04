@@ -101,8 +101,8 @@
 
     <xsl:template name="ChainedActionTypeTemplate" match="details/settings[../typeInternalName='ChainedActionType']">{
                 'internal_name' : '<xsl:value-of select="../typeInternalName"/>',
-                'queueName' : '<xsl:choose><xsl:when test="queueName != ''"><xsl:value-of select="queueName"/></xsl:when><xsl:otherwise><xsl:variable name="workerNameQueueEnvValue" select="workflow_transform:TransformerFunctions.getWorkerQueueFromEnvironment(workerName)"/><xsl:choose><xsl:when test="$workerNameQueueEnvValue != ''"><xsl:value-of select="$workerNameQueueEnvValue"/></xsl:when><xsl:otherwise><xsl:value-of select="concat(workerName, 'Input')"/></xsl:otherwise></xsl:choose></xsl:otherwise></xsl:choose>',
-                'workerName' : '<xsl:value-of select="workerName"/>',
+                'queueName' : '<xsl:choose><xsl:when test="queueName != ''"><xsl:value-of  select="workflow_transform:TransformerFunctions.escapeForJavaScript(queueName)"/></xsl:when><xsl:otherwise><xsl:variable name="workerNameQueueEnvValue" select="workflow_transform:TransformerFunctions.getWorkerQueueFromEnvironment(workerName)"/><xsl:choose><xsl:when test="$workerNameQueueEnvValue != ''"><xsl:value-of select="$workerNameQueueEnvValue"/></xsl:when><xsl:otherwise><xsl:value-of select="workflow_transform:TransformerFunctions.escapeForJavaScript(concat(workerName, 'Input'))"/></xsl:otherwise></xsl:choose></xsl:otherwise></xsl:choose>',
+                'workerName' : '<xsl:value-of select="workflow_transform:TransformerFunctions.escapeForJavaScript(workerName)"/>',
                 <xsl:if test="customData/*">'customData' : {<xsl:apply-templates select="customData"/>},</xsl:if>
                 'scripts': [
                     <xsl:apply-templates select="scripts"/>
@@ -119,9 +119,9 @@
     
     <xsl:template match="scripts">
         <xsl:for-each select="*">{
-                        'name': '<xsl:value-of select="name"/>'<xsl:if test="script or storageRef or url">,</xsl:if>
+                        'name': '<xsl:value-of select="workflow_transform:TransformerFunctions.escapeForJavaScript(name)"/>'<xsl:if test="script or storageRef or url">,</xsl:if>
                         <xsl:choose>
-                            <xsl:when test="script">'script': '<xsl:value-of select="script"/>'</xsl:when>
+                            <xsl:when test="script">'script': '<xsl:value-of select="workflow_transform:TransformerFunctions.escapeForJavaScript(script)"/>'</xsl:when>
                             <xsl:when test="storageRef">'storageRef': '<xsl:value-of select="storageRef"/>'</xsl:when>
                             <xsl:when test="url">'url': '<xsl:value-of select="url"/>'</xsl:when>
                         </xsl:choose>
@@ -133,7 +133,7 @@
         <xsl:for-each select="*"><xsl:variable name="sourceData"><xsl:call-template name="customDataSource"/></xsl:variable>
             <xsl:choose>
                 <xsl:when test="$sourceData != ''">'<xsl:value-of select="name(.)"/>': '<xsl:value-of select="$sourceData"/>'<xsl:if test="position() != last()">, </xsl:if></xsl:when>
-                <xsl:when test="not(source)">'<xsl:value-of select="name(.)"/>': '<xsl:value-of select="text()"/>'<xsl:if test="position() != last()">, </xsl:if></xsl:when>
+                <xsl:when test="not(source)">'<xsl:value-of select="name(.)"/>': '<xsl:value-of select="workflow_transform:TransformerFunctions.escapeForJavaScript(text())"/>'<xsl:if test="position() != last()">, </xsl:if></xsl:when>
             </xsl:choose>
         </xsl:for-each>
     </xsl:template>
@@ -156,7 +156,7 @@
                     <xsl:when test="@class='int'"><xsl:value-of select="text()"/></xsl:when>
                     <xsl:when test="@class='null'">null</xsl:when>
                     <xsl:when test="@class='boolean'"><xsl:value-of select="text()"/></xsl:when>
-                    <xsl:otherwise>"<xsl:value-of select="text()"/>"</xsl:otherwise>
+                    <xsl:otherwise>"<xsl:value-of select="workflow_transform:TransformerFunctions.escapeForJavaScript(text())"/>"</xsl:otherwise>
                 </xsl:choose>
             </xsl:otherwise>
         </xsl:choose>
@@ -165,7 +165,7 @@
     <!-- fall back template outputting details of other action types -->
     <xsl:template priority="-.5" match="details/settings">{
         'internal_name' : '<xsl:value-of select="../typeInternalName"/>',
-        'queueName': '<xsl:choose><xsl:when test="queueName != ''"><xsl:value-of select="queueName"/></xsl:when><xsl:otherwise>default-input</xsl:otherwise></xsl:choose>'
+        'queueName': '<xsl:choose><xsl:when test="queueName != ''"><xsl:value-of select="workflow_transform:TransformerFunctions.escapeForJavaScript(queueName)"/></xsl:when><xsl:otherwise>default-input</xsl:otherwise></xsl:choose>'
         }</xsl:template>
 
     <xsl:template match="conditions/condition[additional/type='boolean'] | condition[additional/type='boolean'] | children/linked-hash-map[additional/type='boolean'] | children/condition[additional/type='boolean']">
