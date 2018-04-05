@@ -733,6 +733,147 @@ public class WorkflowJavaScriptExecutionTest {
         checkActionsCompleted(document, Arrays.asList("29"));
     }
 
+    @Test(description = "Regex condition check")
+    public void regexConditionCheck()
+            throws ScriptException, WorkflowTransformerException, IOException, URISyntaxException,
+            NoSuchMethodException, WorkerException, DataStoreException, ApiException {
+        final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_regex.xml");
+        final Invocable invocable = getInvocableWorkflowJavaScriptFromJS(workflowJSStr);
+        final TestServices testServices = TestServices.createDefault();
+        final Document document = DocumentBuilder.configure()
+                .withServices(testServices)
+                .withFields()
+                .documentBuilder()
+                .build();
+
+        try {
+            invocable.invokeFunction("processDocument", document);
+        }
+        catch (ScriptException ex) {
+            Assert.assertEquals(ex.getCause().getMessage(),"java.lang.UnsupportedOperationException: Regex is not supported");
+        }
+    }
+
+    @Test(description = "Date condition before check")
+    public void dateConditionBeforeConditionCheck()
+            throws ScriptException, WorkflowTransformerException, IOException, URISyntaxException,
+            NoSuchMethodException, WorkerException, DataStoreException, ApiException {
+        final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_dateBefore.xml");
+        final Invocable invocable = getInvocableWorkflowJavaScriptFromJS(workflowJSStr);
+        final TestServices testServices = TestServices.createDefault();
+        final Document document = DocumentBuilder.configure()
+                .withServices(testServices)
+                .withFields()
+                .documentBuilder()
+                .build();
+        try {
+            invocable.invokeFunction("processDocument", document);
+        }
+        catch (ScriptException ex) {
+            Assert.assertEquals(ex.getCause().getMessage(),"java.lang.UnsupportedOperationException: Date before is not supported");
+        }
+    }
+
+    @Test(description = "Date condition after check")
+    public void dateConditionAfterConditionCheck()
+            throws ScriptException, WorkflowTransformerException, IOException, URISyntaxException,
+            NoSuchMethodException, WorkerException, DataStoreException, ApiException {
+        final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_dateAfter.xml");
+        final Invocable invocable = getInvocableWorkflowJavaScriptFromJS(workflowJSStr);
+        final TestServices testServices = TestServices.createDefault();
+        final Document document = DocumentBuilder.configure()
+                .withServices(testServices)
+                .withFields()
+                .documentBuilder()
+                .build();
+        try {
+            invocable.invokeFunction("processDocument", document);
+        }
+        catch (ScriptException ex) {
+            Assert.assertEquals(ex.getCause().getMessage(),"java.lang.UnsupportedOperationException: Date after is not supported");
+        }
+    }
+
+    @Test(description = "Date condition on check")
+    public void dateConditionOnConditionCheck()
+            throws ScriptException, WorkflowTransformerException, IOException, URISyntaxException,
+            NoSuchMethodException, WorkerException, DataStoreException, ApiException {
+        final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_dateOn.xml");
+        final Invocable invocable = getInvocableWorkflowJavaScriptFromJS(workflowJSStr);
+        final TestServices testServices = TestServices.createDefault();
+        final Document document = DocumentBuilder.configure()
+                .withServices(testServices)
+                .withFields()
+                .documentBuilder()
+                .build();
+        try {
+            invocable.invokeFunction("processDocument", document);
+        }
+        catch (ScriptException ex) {
+            Assert.assertEquals(ex.getCause().getMessage(),"java.lang.UnsupportedOperationException: Date on is not supported");
+        }
+    }
+
+    @Test(description = "Number greater than check")
+    public void numberGreaterConditionCheck()
+            throws ScriptException, WorkflowTransformerException, IOException, URISyntaxException,
+            NoSuchMethodException, WorkerException, DataStoreException, ApiException {
+        final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_numberGt.xml");
+        final Invocable invocable = getInvocableWorkflowJavaScriptFromJS(workflowJSStr);
+        final TestServices testServices = TestServices.createDefault();
+        final Document document = DocumentBuilder.configure()
+                .withServices(testServices)
+                .withFields()
+                .documentBuilder()
+                .build();
+        try {
+            invocable.invokeFunction("processDocument", document);
+        }
+        catch (ScriptException ex) {
+            Assert.assertEquals(ex.getCause().getMessage(),"java.lang.UnsupportedOperationException: Number greater than is not supported");
+        }
+    }
+    @Test(description = "Number less than check")
+    public void numberLesserConditionCheck()
+            throws ScriptException, WorkflowTransformerException, IOException, URISyntaxException,
+            NoSuchMethodException, WorkerException, DataStoreException, ApiException {
+        final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_numberLt.xml");
+        final Invocable invocable = getInvocableWorkflowJavaScriptFromJS(workflowJSStr);
+        final TestServices testServices = TestServices.createDefault();
+        final Document document = DocumentBuilder.configure()
+                .withServices(testServices)
+                .withFields()
+                .documentBuilder()
+                .build();
+        try {
+            invocable.invokeFunction("processDocument", document);
+        }
+        catch (ScriptException ex) {
+            Assert.assertEquals(ex.getCause().getMessage(),"java.lang.UnsupportedOperationException: Number less than is not supported");
+        }
+    }
+
+    @Test(description = "Number equals check")
+    public void numberEqualsConditionCheck()
+            throws ScriptException, WorkflowTransformerException, IOException, URISyntaxException,
+            NoSuchMethodException, WorkerException, DataStoreException, ApiException {
+        final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_numberEq.xml");
+        final Invocable invocable = getInvocableWorkflowJavaScriptFromJS(workflowJSStr);
+        final TestServices testServices = TestServices.createDefault();
+        final Document document = DocumentBuilder.configure()
+                .withServices(testServices)
+                .withFields()
+                .documentBuilder()
+                .build();
+        try {
+            invocable.invokeFunction("processDocument", document);
+        }
+        catch (ScriptException ex) {
+            Assert.assertEquals(ex.getCause().getMessage(),"java.lang.UnsupportedOperationException: Number equal to is not supported");
+        }
+    }
+
+
     private void checkActionIdToExecute(final Document document, final String expectedActionId){
         Assert.assertEquals(document.getField("CAF_ACTION_TO_EXECUTE").getStringValues().size(), 1,
                 "Expecting next action to execute to have been added to the document and any previous values to have been removed.");
