@@ -232,27 +232,27 @@
 
         function dateCondition_after(document, fieldName, value) {
 
-        throw new java.lang.UnsupportedOperationException("Date after is not supported");
+            throw new java.lang.UnsupportedOperationException("Date after is not supported");
         }
 
         function dateCondition_on(document, fieldName, value) {
 
-        throw new java.lang.UnsupportedOperationException("Date on is not supported");
+            throw new java.lang.UnsupportedOperationException("Date on is not supported");
         }
 
         function numberCondition_gt(document, fieldName, value) {
 
-        throw new java.lang.UnsupportedOperationException("Number greater than is not supported");
+            throw new java.lang.UnsupportedOperationException("Number greater than is not supported");
         }
 
         function numberCondition_lt(document, fieldName, value) {
 
-        throw new java.lang.UnsupportedOperationException("Number less than is not supported");
+            throw new java.lang.UnsupportedOperationException("Number less than is not supported");
         }
 
         function numberCondition_eq(document, fieldName, value) {
 
-        throw new java.lang.UnsupportedOperationException("Number equal to is not supported");
+            throw new java.lang.UnsupportedOperationException("Number equal to is not supported");
         }
 
         function notCondition(aBoolean) {

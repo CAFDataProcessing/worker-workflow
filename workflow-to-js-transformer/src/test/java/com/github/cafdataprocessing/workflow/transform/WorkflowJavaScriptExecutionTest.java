@@ -736,7 +736,7 @@ public class WorkflowJavaScriptExecutionTest {
     @Test(description = "Regex condition check")
     public void regexConditionCheck()
             throws ScriptException, WorkflowTransformerException, IOException, URISyntaxException,
-            NoSuchMethodException, WorkerException, DataStoreException, ApiException {
+            NoSuchMethodException, WorkerException, ApiException {
         final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_regex.xml");
         final Invocable invocable = getInvocableWorkflowJavaScriptFromJS(workflowJSStr);
         final TestServices testServices = TestServices.createDefault();
@@ -757,7 +757,7 @@ public class WorkflowJavaScriptExecutionTest {
     @Test(description = "Date condition before check")
     public void dateConditionBeforeConditionCheck()
             throws ScriptException, WorkflowTransformerException, IOException, URISyntaxException,
-            NoSuchMethodException, WorkerException, DataStoreException, ApiException {
+            NoSuchMethodException, WorkerException, ApiException {
         final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_dateBefore.xml");
         final Invocable invocable = getInvocableWorkflowJavaScriptFromJS(workflowJSStr);
         final TestServices testServices = TestServices.createDefault();
@@ -776,8 +776,8 @@ public class WorkflowJavaScriptExecutionTest {
 
     @Test(description = "Date condition after check")
     public void dateConditionAfterConditionCheck()
-            throws ScriptException, WorkflowTransformerException, IOException, URISyntaxException,
-            NoSuchMethodException, WorkerException, DataStoreException, ApiException {
+          throws ScriptException, WorkflowTransformerException, IOException, URISyntaxException,
+            NoSuchMethodException, WorkerException, ApiException {
         final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_dateAfter.xml");
         final Invocable invocable = getInvocableWorkflowJavaScriptFromJS(workflowJSStr);
         final TestServices testServices = TestServices.createDefault();
@@ -797,7 +797,7 @@ public class WorkflowJavaScriptExecutionTest {
     @Test(description = "Date condition on check")
     public void dateConditionOnConditionCheck()
             throws ScriptException, WorkflowTransformerException, IOException, URISyntaxException,
-            NoSuchMethodException, WorkerException, DataStoreException, ApiException {
+            NoSuchMethodException, WorkerException, ApiException {
         final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_dateOn.xml");
         final Invocable invocable = getInvocableWorkflowJavaScriptFromJS(workflowJSStr);
         final TestServices testServices = TestServices.createDefault();
@@ -817,7 +817,7 @@ public class WorkflowJavaScriptExecutionTest {
     @Test(description = "Number greater than check")
     public void numberGreaterConditionCheck()
             throws ScriptException, WorkflowTransformerException, IOException, URISyntaxException,
-            NoSuchMethodException, WorkerException, DataStoreException, ApiException {
+            NoSuchMethodException, WorkerException, ApiException {
         final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_numberGt.xml");
         final Invocable invocable = getInvocableWorkflowJavaScriptFromJS(workflowJSStr);
         final TestServices testServices = TestServices.createDefault();
@@ -836,7 +836,7 @@ public class WorkflowJavaScriptExecutionTest {
     @Test(description = "Number less than check")
     public void numberLesserConditionCheck()
             throws ScriptException, WorkflowTransformerException, IOException, URISyntaxException,
-            NoSuchMethodException, WorkerException, DataStoreException, ApiException {
+            NoSuchMethodException, WorkerException, ApiException {
         final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_numberLt.xml");
         final Invocable invocable = getInvocableWorkflowJavaScriptFromJS(workflowJSStr);
         final TestServices testServices = TestServices.createDefault();
@@ -856,7 +856,7 @@ public class WorkflowJavaScriptExecutionTest {
     @Test(description = "Number equals check")
     public void numberEqualsConditionCheck()
             throws ScriptException, WorkflowTransformerException, IOException, URISyntaxException,
-            NoSuchMethodException, WorkerException, DataStoreException, ApiException {
+            NoSuchMethodException, WorkerException, ApiException {
         final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_numberEq.xml");
         final Invocable invocable = getInvocableWorkflowJavaScriptFromJS(workflowJSStr);
         final TestServices testServices = TestServices.createDefault();
