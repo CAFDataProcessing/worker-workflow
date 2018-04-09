@@ -1053,7 +1053,8 @@ public class WorkflowJavaScriptExecutionTest {
     public void regexConditionCheck()
             throws ScriptException, WorkflowTransformerException, IOException, URISyntaxException,
             NoSuchMethodException, WorkerException, ApiException {
-        final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_regex.xml");
+        final ApiClient apiClient = getMockTenantApiClient(null, null);
+        final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_regex.xml",apiClient);
         final Invocable invocable = getInvocableWorkflowJavaScriptFromJS(workflowJSStr);
         final TestServices testServices = TestServices.createDefault();
         final Document document = DocumentBuilder.configure()
@@ -1074,7 +1075,8 @@ public class WorkflowJavaScriptExecutionTest {
     public void dateConditionBeforeConditionCheck()
             throws ScriptException, WorkflowTransformerException, IOException, URISyntaxException,
             NoSuchMethodException, WorkerException, ApiException {
-        final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_dateBefore.xml");
+        final ApiClient apiClient = getMockTenantApiClient(null, null);
+        final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_dateBefore.xml",apiClient);
         final Invocable invocable = getInvocableWorkflowJavaScriptFromJS(workflowJSStr);
         final TestServices testServices = TestServices.createDefault();
         final Document document = DocumentBuilder.configure()
@@ -1094,7 +1096,8 @@ public class WorkflowJavaScriptExecutionTest {
     public void dateConditionAfterConditionCheck()
           throws ScriptException, WorkflowTransformerException, IOException, URISyntaxException,
             NoSuchMethodException, WorkerException, ApiException {
-        final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_dateAfter.xml");
+        final ApiClient apiClient = getMockTenantApiClient(null, null);
+        final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_dateAfter.xml",apiClient);
         final Invocable invocable = getInvocableWorkflowJavaScriptFromJS(workflowJSStr);
         final TestServices testServices = TestServices.createDefault();
         final Document document = DocumentBuilder.configure()
@@ -1114,7 +1117,8 @@ public class WorkflowJavaScriptExecutionTest {
     public void dateConditionOnConditionCheck()
             throws ScriptException, WorkflowTransformerException, IOException, URISyntaxException,
             NoSuchMethodException, WorkerException, ApiException {
-        final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_dateOn.xml");
+        final ApiClient apiClient = getMockTenantApiClient(null, null);
+        final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_dateOn.xml",apiClient);
         final Invocable invocable = getInvocableWorkflowJavaScriptFromJS(workflowJSStr);
         final TestServices testServices = TestServices.createDefault();
         final Document document = DocumentBuilder.configure()
@@ -1134,7 +1138,8 @@ public class WorkflowJavaScriptExecutionTest {
     public void numberGreaterConditionCheck()
             throws ScriptException, WorkflowTransformerException, IOException, URISyntaxException,
             NoSuchMethodException, WorkerException, ApiException {
-        final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_numberGt.xml");
+        final ApiClient apiClient = getMockTenantApiClient(null, null);
+        final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_numberGt.xml",apiClient);
         final Invocable invocable = getInvocableWorkflowJavaScriptFromJS(workflowJSStr);
         final TestServices testServices = TestServices.createDefault();
         final Document document = DocumentBuilder.configure()
@@ -1153,7 +1158,8 @@ public class WorkflowJavaScriptExecutionTest {
     public void numberLesserConditionCheck()
             throws ScriptException, WorkflowTransformerException, IOException, URISyntaxException,
             NoSuchMethodException, WorkerException, ApiException {
-        final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_numberLt.xml");
+        final ApiClient apiClient = getMockTenantApiClient(null, null);
+        final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_numberLt.xml",apiClient);
         final Invocable invocable = getInvocableWorkflowJavaScriptFromJS(workflowJSStr);
         final TestServices testServices = TestServices.createDefault();
         final Document document = DocumentBuilder.configure()
@@ -1173,7 +1179,8 @@ public class WorkflowJavaScriptExecutionTest {
     public void numberEqualsConditionCheck()
             throws ScriptException, WorkflowTransformerException, IOException, URISyntaxException,
             NoSuchMethodException, WorkerException, ApiException {
-        final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_numberEq.xml");
+        final ApiClient apiClient = getMockTenantApiClient(null, null);
+        final String workflowJSStr = getWorkflowJavaScriptFromXML("/test_workflow_numberEq.xml",apiClient);
         final Invocable invocable = getInvocableWorkflowJavaScriptFromJS(workflowJSStr);
         final TestServices testServices = TestServices.createDefault();
         final Document document = DocumentBuilder.configure()
