@@ -951,7 +951,7 @@ public class WorkflowJavaScriptExecutionTest
         // invoke again which should cause no more actions to be marked for execution and third rule marked as
         // completed, with second rule being skipped entirely as it is not enabled
         invocable.invokeFunction("processDocument", document);
-        Assert.assertTrue(document.getField("CAF_ACTION_TO_EXECUTE").getStringValues().isEmpty(),
+        Assert.assertTrue(document.getField("CAF_WORKFLOW_ACTION").getStringValues().isEmpty(),
                           "Expecting no further actions to execute on the document.");
         checkActionsCompleted(document, Arrays.asList("10", "12"));
         checkRulesCompleted(document, Arrays.asList("5", "7"));
@@ -985,7 +985,7 @@ public class WorkflowJavaScriptExecutionTest
         // invoke again to verify that all rules are marked as completed and no further actions to execute are returned
         invocable.invokeFunction("processDocument", document);
 
-        Assert.assertTrue(document.getField("CAF_ACTION_TO_EXECUTE").getStringValues().isEmpty(),
+        Assert.assertTrue(document.getField("CAF_WORKFLOW_ACTION").getStringValues().isEmpty(),
                           "Expecting no further actions to execute on the document.");
         checkActionsCompleted(document, Arrays.asList("1", "4"));
         checkRulesCompleted(document, Arrays.asList("1", "2"));
@@ -993,7 +993,7 @@ public class WorkflowJavaScriptExecutionTest
         //invoke again to verify that repeated calls after all rules completed doesn't alter the fields
         invocable.invokeFunction("processDocument", document);
 
-        Assert.assertTrue(document.getField("CAF_ACTION_TO_EXECUTE").getStringValues().isEmpty(),
+        Assert.assertTrue(document.getField("CAF_WORKFLOW_ACTION").getStringValues().isEmpty(),
                           "Expecting no further actions to execute on the document on second call after completion.");
         checkActionsCompleted(document, Arrays.asList("1", "4"));
         checkRulesCompleted(document, Arrays.asList("1", "2"));
@@ -1054,7 +1054,7 @@ public class WorkflowJavaScriptExecutionTest
             .addFieldValue("DOC_FORMAT_CODE", "345")
             .addFieldValue("DOC_CLASS_CODE", "9")
             .addFieldValue("test", "string_value")
-            .addFieldValue("CAF_ACTION_TO_EXECUTE", familyHashingActionId)
+            .addFieldValue("CAF_WORKFLOW_ACTION", familyHashingActionId)
             .documentBuilder()
             .build();
 
@@ -1221,17 +1221,17 @@ public class WorkflowJavaScriptExecutionTest
 
     private void checkActionIdToExecute(final Document document, final String expectedActionId)
     {
-        Assert.assertEquals(document.getField("CAF_ACTION_TO_EXECUTE").getStringValues().size(), 1,
+        Assert.assertEquals(document.getField("CAF_WORKFLOW_ACTION").getStringValues().size(), 1,
                             "Expecting next action to execute to have been added to the document and any previous values to have been "
                             + "removed.");
-        final String returnedActionIdToExecute = document.getField("CAF_ACTION_TO_EXECUTE").getStringValues().get(0);
+        final String returnedActionIdToExecute = document.getField("CAF_WORKFLOW_ACTION").getStringValues().get(0);
         Assert.assertEquals(returnedActionIdToExecute, expectedActionId,
                             "Expecting action ID of " + expectedActionId + " to have been matched against test document.");
     }
 
     private void checkActionsCompleted(final Document document, final List<String> expectedActionIds)
     {
-        final Field actionsCompletedField = document.getField("CAF_ACTIONS_COMPLETED");
+        final Field actionsCompletedField = document.getField("CAF_WORKFLOW_ACTIONS_COMPLETED");
         Assert.assertEquals(actionsCompletedField.getStringValues().size(), expectedActionIds.size(),
                             "Completed actions should be the expected size.");
         for (final String expectedActionId : expectedActionIds) {
@@ -1242,7 +1242,7 @@ public class WorkflowJavaScriptExecutionTest
 
     private void checkRulesCompleted(final Document document, final List<String> expectedRuleIds)
     {
-        final Field rulesCompletedField = document.getField("CAF_PROCESSING_RULES_COMPLETED");
+        final Field rulesCompletedField = document.getField("CAF_WORKFLOW_RULES_COMPLETED");
         Assert.assertEquals(rulesCompletedField.getStringValues().size(), expectedRuleIds.size(),
                             "Completed actions should be the expected size.");
         for (final String expectedRuleId : expectedRuleIds) {

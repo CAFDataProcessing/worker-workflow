@@ -280,32 +280,32 @@ function notCondition(aBoolean) {
 
     <xsl:template name="trackingFunctions">
 function isRuleCompleted(document, ruleId) {
-    return document.getField('CAF_PROCESSING_RULES_COMPLETED').getStringValues().contains(ruleId);
+    return document.getField('CAF_WORKFLOW_RULES_COMPLETED').getStringValues().contains(ruleId);
 }
 
 function isActionCompleted(document, actionId) {
-    return document.getField('CAF_ACTIONS_COMPLETED').getStringValues().contains(actionId);
+    return document.getField('CAF_WORKFLOW_ACTIONS_COMPLETED').getStringValues().contains(actionId);
 }
 
 function recordRuleCompleted(document, ruleId) {
-    document.getField('CAF_PROCESSING_RULES_COMPLETED').add(ruleId);
+    document.getField('CAF_WORKFLOW_RULES_COMPLETED').add(ruleId);
 }
 
 function recordActionCompleted(document, actionId) {
-    document.getField('CAF_ACTIONS_COMPLETED').add(actionId);
+    document.getField('CAF_WORKFLOW_ACTIONS_COMPLETED').add(actionId);
 }
 
 function recordActionToExecute(document, actionId) {
-    document.getField('CAF_ACTION_TO_EXECUTE').add(actionId);
+    document.getField('CAF_WORKFLOW_ACTION').add(actionId);
 }
 
 function updateActionStatus(document) {
     // This may be the first time the document has been presented to the workflow
-    if (!document.getField('CAF_ACTION_TO_EXECUTE').hasValues()) {
+    if (!document.getField('CAF_WORKFLOW_ACTION').hasValues()) {
         return;
     }
-    recordActionCompleted(document, document.getField('CAF_ACTION_TO_EXECUTE').getStringValues().get(0));
-    document.getField('CAF_ACTION_TO_EXECUTE').clear();
+    recordActionCompleted(document, document.getField('CAF_WORKFLOW_ACTION').getStringValues().get(0));
+    document.getField('CAF_WORKFLOW_ACTION').clear();
 }
 </xsl:template>
 
