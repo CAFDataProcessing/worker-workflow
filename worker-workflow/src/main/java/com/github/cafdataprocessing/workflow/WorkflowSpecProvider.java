@@ -17,6 +17,7 @@ package com.github.cafdataprocessing.workflow;
 
 import com.github.cafdataprocessing.workflow.constants.WorkflowWorkerConstants;
 import com.hpe.caf.worker.document.model.Document;
+import com.hpe.caf.worker.document.model.Field;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,11 +33,14 @@ final class WorkflowSpecProvider
     }
 
     /**
-     * Retrieves Workflow Worker specific properties from custom data of document. If any required properties are not present then a
-     * failure will be recorded on the document and an exception will be thrown.
+     * Retrieves Workflow Worker specific properties from the custom data or fields of the document. If any required properties are not
+     * present then a failure will be recorded on the document and an exception will be thrown.
+     * <p>
+     * Important Side Effect: If the data is provided via custom data then it will be set into the fields so that it can be examined later
+     * in the workflow.
      *
      * @param document document to retrieve properties from and potentially update with failures if any are missing.
-     * @return the result containing properties extracted from the custom data
+     * @return the result containing properties extracted from the custom data or fields
      */
     public static WorkflowSpec fromDocument(final Document document)
         throws InvalidWorkflowSpecException
@@ -47,33 +51,33 @@ final class WorkflowSpecProvider
         long workflowId = -1;
         boolean customDataValid = true;
 
-        outputPartialReference = WorkflowSpecProvider.getOutputPartialReference(document);
+        outputPartialReference = WorkflowSpecProvider.getSetOutputPartialReference(document);
         if (outputPartialReference == null || outputPartialReference.isEmpty()) {
-            LOG.debug("No output partial reference value passed to worker in custom data.");
+            LOG.debug("No output partial reference value passed to worker.");
         }
 
-        projectId = WorkflowSpecProvider.getProjectId(document);
+        projectId = WorkflowSpecProvider.getSetProjectId(document);
         if (projectId == null || projectId.isEmpty()) {
-            LOG.error("No project ID value passed to worker in custom data.");
+            LOG.error("No project ID value passed to worker.");
             document.addFailure(WorkflowWorkerConstants.ErrorCodes.INVALID_CUSTOM_DATA,
-                                "No project ID value passed to worker in custom data.");
+                                "No project ID value passed to worker.");
             customDataValid = false;
         }
 
-        tenantId = WorkflowSpecProvider.getTenantId(document);
+        tenantId = WorkflowSpecProvider.getSetTenantId(document);
         if (tenantId == null || tenantId.isEmpty()) {
-            LOG.error("No tenant ID value passed to worker in custom data.");
+            LOG.error("No tenant ID value passed to worker.");
             document.addFailure(WorkflowWorkerConstants.ErrorCodes.INVALID_CUSTOM_DATA,
-                                "No tenant ID value passed to worker in custom data.");
+                                "No tenant ID value passed to worker.");
             customDataValid = false;
         }
 
         try {
-            final Long extractedWorkflowId = WorkflowSpecProvider.getWorkflowId(document);
+            final Long extractedWorkflowId = WorkflowSpecProvider.getSetWorkflowId(document);
             if (extractedWorkflowId == null) {
-                LOG.error("No workflow ID value passed to worker in custom data.");
+                LOG.error("No workflow ID value passed to worker.");
                 document.addFailure(WorkflowWorkerConstants.ErrorCodes.INVALID_CUSTOM_DATA,
-                                    "No workflow ID value passed to worker in custom data.");
+                                    "No workflow ID value passed to worker.");
                 customDataValid = false;
             } else {
                 workflowId = extractedWorkflowId;
@@ -97,9 +101,12 @@ final class WorkflowSpecProvider
      * @param document document to examine for property.
      * @return the output partial reference property or null if it is not present.
      */
-    private static String getOutputPartialReference(final Document document)
+    private static String getSetOutputPartialReference(final Document document)
     {
-        return document.getCustomData(WorkflowWorkerConstants.CustomData.OUTPUT_PARTIAL_REFERENCE);
+        return getSetCustomDataField(
+            document,
+            WorkflowWorkerConstants.CustomData.OUTPUT_PARTIAL_REFERENCE,
+            "CAF_WORKFLOW_OUTPUT_PARTIAL_REFERENCE");
     }
 
     /**
@@ -108,9 +115,12 @@ final class WorkflowSpecProvider
      * @param document document to examine for property.
      * @return the project ID property or null if it is not present.
      */
-    private static String getProjectId(final Document document)
+    private static String getSetProjectId(final Document document)
     {
-        return document.getCustomData(WorkflowWorkerConstants.CustomData.PROJECT_ID);
+        return getSetCustomDataField(
+            document,
+            WorkflowWorkerConstants.CustomData.PROJECT_ID,
+            "CAF_WORKFLOW_PROJECT_ID");
     }
 
     /**
@@ -119,9 +129,12 @@ final class WorkflowSpecProvider
      * @param document document to examine for property.
      * @return the tenant ID property or null if it is not present.
      */
-    private static String getTenantId(final Document document)
+    private static String getSetTenantId(final Document document)
     {
-        return document.getCustomData(WorkflowWorkerConstants.CustomData.TENANT_ID);
+        return getSetCustomDataField(
+            document,
+            WorkflowWorkerConstants.CustomData.TENANT_ID,
+            "CAF_WORKFLOW_TENANT_ID");
     }
 
     /**
@@ -131,12 +144,58 @@ final class WorkflowSpecProvider
      * @return the workflow ID property or null if it is not present.
      * @throws NumberFormatException if the workflow ID property on the document is not a valid long.
      */
-    private static Long getWorkflowId(final Document document) throws NumberFormatException
+    private static Long getSetWorkflowId(final Document document) throws NumberFormatException
     {
-        final String workflowIdStr = document.getCustomData(WorkflowWorkerConstants.CustomData.WORKFLOW_ID);
+        final String workflowIdStr = getSetCustomDataField(
+            document,
+            WorkflowWorkerConstants.CustomData.WORKFLOW_ID,
+            "CAF_WORKFLOW_ID");
         if (workflowIdStr == null || workflowIdStr.isEmpty()) {
             return null;
         }
         return Long.parseLong(workflowIdStr);
+    }
+
+    /**
+     * Gets the value either from the specified custom data entry or from the specified document field.
+     * <p>
+     * Important Side Effect: If the value is retrieved from the custom data entry then it is also set in the document field.
+     */
+    private static String getSetCustomDataField(
+        final Document document,
+        final String customDataKey,
+        final String documentFieldName
+    )
+    {
+        final String customDataValue = document.getCustomData(customDataKey);
+
+        final Field field = document.getField(documentFieldName);
+        if (customDataValue == null) {
+            return getFirstStringValue(field);
+        } else {
+            field.set(customDataValue);
+            return customDataValue;
+        }
+    }
+
+    /**
+     * Returns one of the the non-reference field values that contains a valid UTF-8 encoded string, or {@code null} if the field does not
+     * contain such a value.
+     *
+     * @param field the field to read the value from
+     * @return one of the non-reference string field values
+     */
+    private static String getFirstStringValue(final Field field)
+    {
+        if (!field.hasValues()) {
+            return null;
+        }
+
+        return field.getValues()
+            .stream()
+            .filter(fieldValue -> (!fieldValue.isReference()) && fieldValue.isStringValue())
+            .map(fieldValue -> fieldValue.getStringValue())
+            .findFirst()
+            .orElse(null);
     }
 }
