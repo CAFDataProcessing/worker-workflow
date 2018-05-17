@@ -397,6 +397,12 @@
                                     <CAF_PROCESSING_SERVICE_PORT>8080</CAF_PROCESSING_SERVICE_PORT>
                                     <CAF_PROCESSING_SERVICE_POLICY_API_HOST>policy-admin</CAF_PROCESSING_SERVICE_POLICY_API_HOST>
                                     <CAF_PROCESSING_SERVICE_POLICY_API_PORT>8080</CAF_PROCESSING_SERVICE_POLICY_API_PORT>
+
+                                    <CAF_PROCESSING_SERVICE_DATABASE_HOST>workflow-db</CAF_PROCESSING_SERVICE_DATABASE_HOST>
+                                    <CAF_PROCESSING_SERVICE_DATABASE_PORT>5432</CAF_PROCESSING_SERVICE_DATABASE_PORT>
+                                    <CAF_PROCESSING_SERVICE_DATABASE_NAME>${postgresDbName}</CAF_PROCESSING_SERVICE_DATABASE_NAME>
+                                    <CAF_PROCESSING_SERVICE_DATABASE_USERNAME>${postgresDbUser}</CAF_PROCESSING_SERVICE_DATABASE_USERNAME>
+                                    <CAF_PROCESSING_SERVICE_DATABASE_PASSWORD>${postgresDbPassword}</CAF_PROCESSING_SERVICE_DATABASE_PASSWORD>
                                 </env>
                                 <wait>
                                     <http>
@@ -407,6 +413,7 @@
                                     <shutdown>500</shutdown>
                                 </wait>
                                 <links>
+                                    <link>workflow-db</link>
                                     <link>policy-admin</link>
                                 </links>
                                 <log>
