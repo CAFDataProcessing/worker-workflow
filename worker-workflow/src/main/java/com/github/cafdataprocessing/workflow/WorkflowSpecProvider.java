@@ -48,7 +48,6 @@ final class WorkflowSpecProvider
         final String outputPartialReference;
         final String projectId;
         final String tenantId;
-        long workflowId = -1;
         boolean customDataValid = true;
 
         outputPartialReference = WorkflowSpecProvider.getSetOutputPartialReference(document);
@@ -72,24 +71,32 @@ final class WorkflowSpecProvider
             customDataValid = false;
         }
 
+        final String workflowName;
+        Long extractedWorkflowId;
+        final WorkflowSpec workflowSpec;
         try {
-            final Long extractedWorkflowId = WorkflowSpecProvider.getSetWorkflowId(document);
-            if (extractedWorkflowId == null) {
-                LOG.error("No workflow ID value passed to worker.");
-                document.addFailure(WorkflowWorkerConstants.ErrorCodes.INVALID_CUSTOM_DATA,
-                                    "No workflow ID value passed to worker.");
-                customDataValid = false;
-            } else {
-                workflowId = extractedWorkflowId;
-            }
+            extractedWorkflowId = getSetWorkflowId(document);
         } catch (final NumberFormatException e) {
             LOG.error("Failed to read passed workflow ID as a number.", e);
             document.addFailure(WorkflowWorkerConstants.ErrorCodes.INVALID_CUSTOM_DATA, e.getMessage());
+            extractedWorkflowId = null;
             customDataValid = false;
+        }
+        if (extractedWorkflowId == null) {
+            workflowName = getSetWorkflowName(document);
+            if (workflowName == null) {
+                LOG.error("No workflow ID or name value passed to worker.");
+                document.addFailure(WorkflowWorkerConstants.ErrorCodes.INVALID_CUSTOM_DATA,
+                                    "No workflow ID or name value passed to worker.");
+                customDataValid = false;
+            }
+            workflowSpec = new WorkflowSpec(outputPartialReference, projectId, tenantId, workflowName);
+        } else {
+            workflowSpec = new WorkflowSpec(outputPartialReference, projectId, tenantId, extractedWorkflowId);
         }
 
         if (customDataValid) {
-            return new WorkflowSpec(outputPartialReference, projectId, tenantId, workflowId);
+            return workflowSpec;
         } else {
             throw new InvalidWorkflowSpecException();
         }
@@ -154,6 +161,24 @@ final class WorkflowSpecProvider
             return null;
         }
         return Long.parseLong(workflowIdStr);
+    }
+
+    /**
+     * Gets the workflow name property from provided document.
+     *
+     * @param document document to examine for property.
+     * @return the workflow name property or null if it is not present.
+     */
+    private static String getSetWorkflowName(final Document document) throws NumberFormatException
+    {
+        final String workflowName = getSetCustomDataField(
+            document,
+            WorkflowWorkerConstants.CustomData.WORKFLOW_ID,
+            "CAF_WORKFLOW_NAME");
+        if (workflowName == null || workflowName.isEmpty()) {
+            return null;
+        }
+        return workflowName;
     }
 
     /**

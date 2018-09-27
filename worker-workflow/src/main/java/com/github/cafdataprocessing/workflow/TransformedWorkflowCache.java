@@ -73,7 +73,7 @@ final class TransformedWorkflowCache
                 @Override
                 public TransformWorkflowResult load(final WorkflowSpec key)
                     throws ApiException, DataStoreException, WorkflowRetrievalException,
-                           WorkflowTransformerException
+                           WorkflowTransformerException, ExecutionException
                 {
                     return transformWorkflow(key);
                 }
@@ -154,12 +154,13 @@ final class TransformedWorkflowCache
      */
     private TransformWorkflowResult transformWorkflow(
         final WorkflowSpec cacheKey
-    ) throws ApiException, DataStoreException, WorkflowRetrievalException, WorkflowTransformerException
+    ) throws ApiException, DataStoreException, WorkflowRetrievalException, WorkflowTransformerException, ExecutionException
     {
         final String workflowJavaScript;
+        
         try {
             workflowJavaScript = WorkflowTransformer.retrieveAndTransformWorkflowToJavaScript(
-                cacheKey.getWorkflowId(), cacheKey.getProjectId(),
+                cacheKey.getWorkflowId(), cacheKey.getWorkflowName(), cacheKey.getProjectId(),
                 processingApiUrl, cacheKey.getTenantId());
         } catch (final ApiException | WorkflowRetrievalException | WorkflowTransformerException e) {
             LOG.error("A failure occurred trying to transform Workflow to JavaScript representation.", e);

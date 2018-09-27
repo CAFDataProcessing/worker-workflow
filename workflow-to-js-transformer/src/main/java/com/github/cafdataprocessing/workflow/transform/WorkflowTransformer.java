@@ -41,6 +41,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.Objects;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Transforms a processing workflow to a JavaScript representation of its logic that can be executed against a Document Worker document.
@@ -69,16 +70,17 @@ public class WorkflowTransformer
      */
     public static String retrieveAndTransformWorkflowToJavaScript(
         long workflowId,
+        String workflowName,
         String projectId,
         String processingApiUrl,
         final String tenantId
-    ) throws ApiException, WorkflowTransformerException, WorkflowRetrievalException
+    ) throws ApiException, WorkflowTransformerException, WorkflowRetrievalException, ExecutionException
     {
         Objects.requireNonNull(projectId);
         Objects.requireNonNull(tenantId);
         final ApiClient apiClient = new ApiClient();
         apiClient.setBasePath(processingApiUrl);
-        final String workflowAsXML = retrieveAndTransformWorkflowToXml(workflowId, projectId, apiClient);
+        final String workflowAsXML = retrieveAndTransformWorkflowToXml(workflowId, workflowName, projectId, apiClient);
         return transformXmlWorkflowToJavaScript(workflowAsXML, projectId, tenantId, apiClient);
     }
 
@@ -97,12 +99,12 @@ public class WorkflowTransformer
      * @throws WorkflowTransformerException if there is an error transforming workflow returned to XML representation
      * @throws NullPointerException if the projectId passed to the method is null
      */
-    public static String retrieveAndTransformWorkflowToXml(long workflowId, String projectId, ApiClient apiClient)
-        throws ApiException, WorkflowTransformerException, WorkflowRetrievalException
+    public static String retrieveAndTransformWorkflowToXml(long workflowId, String workflowName, String projectId, ApiClient apiClient)
+        throws ApiException, WorkflowTransformerException, WorkflowRetrievalException, ExecutionException
     {
         Objects.requireNonNull(projectId);
         final FullWorkflowRetriever workflowRetriever = new FullWorkflowRetriever(apiClient);
-        final FullWorkflow fullWorkflow = workflowRetriever.getFullWorkflow(projectId, workflowId);
+        final FullWorkflow fullWorkflow = workflowRetriever.getFullWorkflow(projectId, workflowId, workflowName);
         return transformFullWorkflowToXml(fullWorkflow);
     }
 

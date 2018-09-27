@@ -26,6 +26,25 @@ final class WorkflowSpec
     private final String projectId;
     private final String tenantId;
     private final long workflowId;
+    private final String workflowName;
+
+    public WorkflowSpec(
+        final String outputPartialReference,
+        final String projectId,
+        final String tenantId,
+        final long workflowId)
+    {
+        this(outputPartialReference, projectId, tenantId, workflowId, null);
+    }
+
+    public WorkflowSpec(
+        final String outputPartialReference,
+        final String projectId,
+        final String tenantId,
+        final String workflowName)
+    {
+        this(outputPartialReference, projectId, tenantId, -1, workflowName);
+    }
 
     /**
      * Create the workflow specification object using the partial storage reference, project ID and workflow ID provided.
@@ -39,13 +58,14 @@ final class WorkflowSpec
         final String outputPartialReference,
         final String projectId,
         final String tenantId,
-        final long workflowId
-    )
+        final long workflowId,
+        final String workflowName)
     {
         this.outputPartialReference = outputPartialReference;
         this.projectId = projectId;
         this.tenantId = tenantId;
         this.workflowId = workflowId;
+        this.workflowName = workflowName;
     }
 
     public String getOutputPartialReference()
@@ -66,6 +86,11 @@ final class WorkflowSpec
     public long getWorkflowId()
     {
         return workflowId;
+    }
+
+    public String getWorkflowName()
+    {
+        return workflowName;
     }
 
     @Override

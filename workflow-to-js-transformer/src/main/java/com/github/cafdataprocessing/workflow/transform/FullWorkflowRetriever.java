@@ -28,14 +28,25 @@ import com.github.cafdataprocessing.processing.service.client.model.ExistingCond
 import com.github.cafdataprocessing.processing.service.client.model.ExistingConditions;
 import com.github.cafdataprocessing.processing.service.client.model.ExistingProcessingRule;
 import com.github.cafdataprocessing.processing.service.client.model.ExistingWorkflow;
+import com.github.cafdataprocessing.processing.service.client.model.ExistingWorkflows;
 import com.github.cafdataprocessing.processing.service.client.model.ProcessingRules;
+import com.github.cafdataprocessing.workflow.transform.exceptions.InvalidWorkflowSpecification;
 import com.github.cafdataprocessing.workflow.transform.models.FullAction;
 import com.github.cafdataprocessing.workflow.transform.models.FullProcessingRule;
 import com.github.cafdataprocessing.workflow.transform.models.FullWorkflow;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.sun.jersey.api.client.ClientHandlerException;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * Retrieves details of specified workflow and its children i.e. processing rules, rule conditions, actions, action conditions.
@@ -43,6 +54,7 @@ import java.util.List;
 public class FullWorkflowRetriever
 {
     private final ProcessingApisProvider apisProvider;
+    private final LoadingCache<CacheInfoSupplier, Long> workflowIdCache;
 
     /**
      * Creates a FullWorkflowRetriever using the provided ApiClient.
@@ -51,7 +63,7 @@ public class FullWorkflowRetriever
      */
     public FullWorkflowRetriever(final ApiClient apiClient)
     {
-        this(new ProcessingApisProvider(apiClient));
+        this(new ProcessingApisProvider(apiClient), null);
     }
 
     /**
@@ -59,9 +71,22 @@ public class FullWorkflowRetriever
      *
      * @param apisProvider for use in accessing processing-service APIs
      */
-    public FullWorkflowRetriever(final ProcessingApisProvider apisProvider)
+    public FullWorkflowRetriever(final ProcessingApisProvider apisProvider, final String workflowIdsCachePeriodAsStr)
     {
         this.apisProvider = apisProvider;
+        final Duration workflowCachePeriod = workflowIdsCachePeriodAsStr == null || workflowIdsCachePeriodAsStr.isEmpty()
+            ? Duration.parse("PT5M")
+            : Duration.parse(workflowIdsCachePeriodAsStr);
+        this.workflowIdCache = CacheBuilder.newBuilder()
+            .expireAfterWrite(workflowCachePeriod.get(ChronoUnit.SECONDS), TimeUnit.SECONDS)
+            .build(new CacheLoader<CacheInfoSupplier, Long>()
+            {
+                @Override
+                public Long load(final CacheInfoSupplier key) throws Exception
+                {
+                    return getWorkflowId(key.getProjectId(), key.workflowsApi, key.workflowName);
+                }
+            });
     }
 
     /**
@@ -75,12 +100,16 @@ public class FullWorkflowRetriever
      * @throws WorkflowRetrievalException if certain failures occur communicating with the processing service to retrieve the workflow.
      * e.g. The processing service not being contactable.
      */
-    public FullWorkflow getFullWorkflow(String projectId, long workflowId) throws ApiException, WorkflowRetrievalException
+    public FullWorkflow getFullWorkflow(String projectId, long workflowId, String workflowName)
+        throws ApiException, WorkflowRetrievalException, ExecutionException
     {
 
         final WorkflowsApi workflowsApi = this.apisProvider.getWorkflowsApi();
         final ExistingWorkflow retrievedWorkflow;
         final List<FullProcessingRule> fullProcessingRules;
+        if (workflowId == -1) {
+            workflowId = workflowIdCache.get(new CacheInfoSupplier(projectId, workflowName, workflowsApi));
+        }
         try {
             retrievedWorkflow = workflowsApi.getWorkflow(projectId, workflowId);
             fullProcessingRules = buildFullProcessingRules(projectId, workflowId);
@@ -177,5 +206,46 @@ public class FullWorkflowRetriever
             pageNum++;
         }
         return new FullAction(existingAction, actionConditions);
+    }
+
+    private Long getWorkflowId(final String projectId, final WorkflowsApi workflowsApi, final String workflowName)
+        throws ApiException, InvalidWorkflowSpecification
+    {
+        final ExistingWorkflows existingWorkflows = workflowsApi.getWorkflows(projectId, 1, 100);
+        final Map<String, Long> workflows = existingWorkflows.getWorkflows().stream().collect(
+            Collectors.toMap(ExistingWorkflow::getName, ExistingWorkflow::getId));
+        if (!workflows.containsKey(workflowName)) {
+            throw new InvalidWorkflowSpecification("The name of the workflow provided could not be resolved.");
+        }
+        return workflows.get(workflowName);
+    }
+
+    private final class CacheInfoSupplier
+    {
+        private final String projectId;
+        private final String workflowName;
+        private final WorkflowsApi workflowsApi;
+
+        public CacheInfoSupplier(final String projectId, final String workflowName, final WorkflowsApi workflowsApi)
+        {
+            this.projectId = projectId;
+            this.workflowName = workflowName;
+            this.workflowsApi = workflowsApi;
+        }
+
+        public String getProjectId()
+        {
+            return this.projectId;
+        }
+
+        public String getWorkflowName()
+        {
+            return this.workflowName;
+        }
+
+        public WorkflowsApi getWorkflowsApi()
+        {
+            return this.workflowsApi;
+        }
     }
 }
