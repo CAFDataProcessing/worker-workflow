@@ -16,6 +16,7 @@
 package com.github.cafdataprocessing.workflow;
 
 import com.github.cafdataprocessing.processing.service.client.ApiException;
+import com.github.cafdataprocessing.worker.workflow.shared.WorkflowSpec;
 import com.github.cafdataprocessing.workflow.transform.WorkflowRetrievalException;
 import com.github.cafdataprocessing.workflow.transform.WorkflowTransformer;
 import com.github.cafdataprocessing.workflow.transform.WorkflowTransformerException;
@@ -99,9 +100,8 @@ final class TransformedWorkflowCache
      * expected by this method.
      * @throws WorkflowTransformerException if a failure occurs during transformation of workflow during load.
      */
-    public TransformWorkflowResult getTransformWorkflowResult(
-        final WorkflowSpec workflowSpec
-    ) throws ApiException, DataStoreException, WorkflowRetrievalException, WorkflowTransformerException
+    public TransformWorkflowResult getTransformWorkflowResult(final WorkflowSpec workflowSpec)
+        throws ApiException, DataStoreException, WorkflowRetrievalException, WorkflowTransformerException
     {
         try {
             return workflowCache.get(workflowSpec);
@@ -157,11 +157,9 @@ final class TransformedWorkflowCache
     ) throws ApiException, DataStoreException, WorkflowRetrievalException, WorkflowTransformerException, ExecutionException
     {
         final String workflowJavaScript;
-        
+
         try {
-            workflowJavaScript = WorkflowTransformer.retrieveAndTransformWorkflowToJavaScript(
-                cacheKey.getWorkflowId(), cacheKey.getWorkflowName(), cacheKey.getProjectId(),
-                processingApiUrl, cacheKey.getTenantId());
+            workflowJavaScript = WorkflowTransformer.retrieveAndTransformWorkflowToJavaScript(cacheKey, processingApiUrl);
         } catch (final ApiException | WorkflowRetrievalException | WorkflowTransformerException e) {
             LOG.error("A failure occurred trying to transform Workflow to JavaScript representation.", e);
             throw e;

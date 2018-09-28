@@ -13,38 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.cafdataprocessing.workflow;
+package com.github.cafdataprocessing.worker.workflow.shared;
 
 import java.util.Objects;
 
 /**
- * Represents the properties that define a specific workflow
+ *
+ * @author mcgreeva
  */
-final class WorkflowSpec
+public final class WorkflowNameBasedSpec extends WorkflowSpec
 {
-    private final String outputPartialReference;
-    private final String projectId;
-    private final String tenantId;
-    private final long workflowId;
     private final String workflowName;
-
-    public WorkflowSpec(
-        final String outputPartialReference,
-        final String projectId,
-        final String tenantId,
-        final long workflowId)
-    {
-        this(outputPartialReference, projectId, tenantId, workflowId, null);
-    }
-
-    public WorkflowSpec(
-        final String outputPartialReference,
-        final String projectId,
-        final String tenantId,
-        final String workflowName)
-    {
-        this(outputPartialReference, projectId, tenantId, -1, workflowName);
-    }
 
     /**
      * Create the workflow specification object using the partial storage reference, project ID and workflow ID provided.
@@ -52,40 +31,13 @@ final class WorkflowSpec
      * @param outputPartialReference partial storage reference for the transformed workflow this key is to be associated with.
      * @param projectId project ID of the transformed workflow this key is to be associated with.
      * @param tenantId a tenant ID to use in evaluating the workflow.
-     * @param workflowId workflow ID of the transformed workflow this key is to be associated with.
+     * @param workflowName workflow name of the transformed workflow this key is to be associated with.
      */
-    public WorkflowSpec(
-        final String outputPartialReference,
-        final String projectId,
-        final String tenantId,
-        final long workflowId,
-        final String workflowName)
+    public WorkflowNameBasedSpec(final String outputPartialReference, final String projectId, final String tenantId,
+                                 final String workflowName)
     {
-        this.outputPartialReference = outputPartialReference;
-        this.projectId = projectId;
-        this.tenantId = tenantId;
-        this.workflowId = workflowId;
+        super(outputPartialReference, projectId, tenantId);
         this.workflowName = workflowName;
-    }
-
-    public String getOutputPartialReference()
-    {
-        return outputPartialReference;
-    }
-
-    public String getProjectId()
-    {
-        return projectId;
-    }
-
-    public String getTenantId()
-    {
-        return tenantId;
-    }
-
-    public long getWorkflowId()
-    {
-        return workflowId;
     }
 
     public String getWorkflowName()
@@ -104,16 +56,16 @@ final class WorkflowSpec
             return false;
         }
 
-        final WorkflowSpec cacheKeyToCheck = (WorkflowSpec) o;
+        final WorkflowNameBasedSpec cacheKeyToCheck = (WorkflowNameBasedSpec) o;
         return Objects.equals(this.outputPartialReference, cacheKeyToCheck.getOutputPartialReference())
             && Objects.equals(this.projectId, cacheKeyToCheck.getProjectId())
             && Objects.equals(this.tenantId, cacheKeyToCheck.getTenantId())
-            && this.workflowId == cacheKeyToCheck.getWorkflowId();
+            && this.workflowName.equals(cacheKeyToCheck.getWorkflowName());
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(outputPartialReference, projectId, tenantId, workflowId);
+        return Objects.hash(outputPartialReference, projectId, tenantId, workflowName);
     }
 }

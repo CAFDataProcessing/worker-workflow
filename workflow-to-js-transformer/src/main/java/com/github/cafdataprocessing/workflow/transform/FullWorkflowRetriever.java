@@ -30,6 +30,9 @@ import com.github.cafdataprocessing.processing.service.client.model.ExistingProc
 import com.github.cafdataprocessing.processing.service.client.model.ExistingWorkflow;
 import com.github.cafdataprocessing.processing.service.client.model.ExistingWorkflows;
 import com.github.cafdataprocessing.processing.service.client.model.ProcessingRules;
+import com.github.cafdataprocessing.worker.workflow.shared.WorkflowIdBasedSpec;
+import com.github.cafdataprocessing.worker.workflow.shared.WorkflowNameBasedSpec;
+import com.github.cafdataprocessing.worker.workflow.shared.WorkflowSpec;
 import com.github.cafdataprocessing.workflow.transform.exceptions.InvalidWorkflowSpecification;
 import com.github.cafdataprocessing.workflow.transform.models.FullAction;
 import com.github.cafdataprocessing.workflow.transform.models.FullProcessingRule;
@@ -84,7 +87,7 @@ public class FullWorkflowRetriever
                 @Override
                 public Long load(final CacheInfoSupplier key) throws Exception
                 {
-                    return getWorkflowId(key.getProjectId(), key.workflowsApi, key.workflowName);
+                    return getWorkflowId(key.getProjectId(), apisProvider.getWorkflowsApi(), key.workflowName);
                 }
             });
     }
@@ -92,27 +95,34 @@ public class FullWorkflowRetriever
     /**
      * Uses the ID provided to retrieve a workflow, its processing rules, rule conditions, actions and action conditions.
      *
-     * @param projectId projectId value set for the workflow and children
-     * @param workflowId ID of the workflow to return details for
+     * @param workflowSpec projectId value set for the workflow and children
      * @return the full details of the workflow with provided ID
      * @throws ApiException if certain failures occur communicating with the processing service to retrieve the workflow e.g. Invalid
      * requests will result in this exception.
      * @throws WorkflowRetrievalException if certain failures occur communicating with the processing service to retrieve the workflow.
      * e.g. The processing service not being contactable.
      */
-    public FullWorkflow getFullWorkflow(String projectId, long workflowId, String workflowName)
+    public FullWorkflow getFullWorkflow(final WorkflowSpec workflowSpec)
         throws ApiException, WorkflowRetrievalException, ExecutionException
     {
-
         final WorkflowsApi workflowsApi = this.apisProvider.getWorkflowsApi();
         final ExistingWorkflow retrievedWorkflow;
         final List<FullProcessingRule> fullProcessingRules;
-        if (workflowId == -1) {
-            workflowId = workflowIdCache.get(new CacheInfoSupplier(projectId, workflowName, workflowsApi));
+        final long workflowId;
+
+        if (workflowSpec instanceof WorkflowIdBasedSpec) {
+            final WorkflowIdBasedSpec workflowIdbasedSpec = (WorkflowIdBasedSpec) workflowSpec;
+            workflowId = workflowIdbasedSpec.getWorkflowId();
+        } else if (workflowSpec instanceof WorkflowNameBasedSpec) {
+            final WorkflowNameBasedSpec workflowNameBasedSpec = (WorkflowNameBasedSpec) workflowSpec;
+            workflowId = workflowIdCache.get(new CacheInfoSupplier(workflowNameBasedSpec.getProjectId(),
+                                                                   workflowNameBasedSpec.getWorkflowName()));
+        } else {
+            throw new RuntimeException("Unkown type of workflow spec has been passed for processing");
         }
         try {
-            retrievedWorkflow = workflowsApi.getWorkflow(projectId, workflowId);
-            fullProcessingRules = buildFullProcessingRules(projectId, workflowId);
+            retrievedWorkflow = workflowsApi.getWorkflow(workflowSpec.getProjectId(), workflowId);
+            fullProcessingRules = buildFullProcessingRules(workflowSpec.getProjectId(), workflowId);
         } catch (final ClientHandlerException e) {
             throw new WorkflowRetrievalException("Failure retrieving the full workflow using processing service.", e);
         }
@@ -224,13 +234,11 @@ public class FullWorkflowRetriever
     {
         private final String projectId;
         private final String workflowName;
-        private final WorkflowsApi workflowsApi;
 
-        public CacheInfoSupplier(final String projectId, final String workflowName, final WorkflowsApi workflowsApi)
+        public CacheInfoSupplier(final String projectId, final String workflowName)
         {
             this.projectId = projectId;
             this.workflowName = workflowName;
-            this.workflowsApi = workflowsApi;
         }
 
         public String getProjectId()
@@ -241,11 +249,6 @@ public class FullWorkflowRetriever
         public String getWorkflowName()
         {
             return this.workflowName;
-        }
-
-        public WorkflowsApi getWorkflowsApi()
-        {
-            return this.workflowsApi;
         }
     }
 }

@@ -16,6 +16,10 @@
 package com.github.cafdataprocessing.workflow;
 
 import com.github.cafdataprocessing.workflow.constants.WorkflowWorkerConstants;
+import com.github.cafdataprocessing.worker.workflow.shared.WorkflowIdBasedSpec;
+import com.github.cafdataprocessing.worker.workflow.shared.WorkflowNameBasedSpec;
+import com.github.cafdataprocessing.worker.workflow.shared.WorkflowSpec;
+import com.github.cafdataprocessing.worker.workflow.shared.InvalidWorkflowSpecException;
 import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.model.Field;
 import org.slf4j.Logger;
@@ -90,9 +94,9 @@ final class WorkflowSpecProvider
                                     "No workflow ID or name value passed to worker.");
                 customDataValid = false;
             }
-            workflowSpec = new WorkflowSpec(outputPartialReference, projectId, tenantId, workflowName);
+            workflowSpec = new WorkflowNameBasedSpec(outputPartialReference, projectId, tenantId, workflowName);
         } else {
-            workflowSpec = new WorkflowSpec(outputPartialReference, projectId, tenantId, extractedWorkflowId);
+            workflowSpec = new WorkflowIdBasedSpec(outputPartialReference, projectId, tenantId, extractedWorkflowId);
         }
 
         if (customDataValid) {

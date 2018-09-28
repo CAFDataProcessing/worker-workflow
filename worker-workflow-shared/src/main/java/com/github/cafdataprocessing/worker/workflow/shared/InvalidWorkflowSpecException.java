@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.cafdataprocessing.workflow;
+package com.github.cafdataprocessing.worker.workflow.shared;
 
-final class InvalidWorkflowSpecException extends Exception
+public final class InvalidWorkflowSpecException extends Exception
 {
     public InvalidWorkflowSpecException()
     {

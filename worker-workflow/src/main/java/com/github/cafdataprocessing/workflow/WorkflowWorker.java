@@ -20,6 +20,8 @@ import com.github.cafdataprocessing.processing.service.client.ApiException;
 import com.github.cafdataprocessing.processing.service.client.api.AdminApi;
 import com.github.cafdataprocessing.processing.service.client.model.HealthStatus;
 import com.github.cafdataprocessing.processing.service.client.model.HealthStatusDependencies;
+import com.github.cafdataprocessing.worker.workflow.shared.InvalidWorkflowSpecException;
+import com.github.cafdataprocessing.worker.workflow.shared.WorkflowSpec;
 import com.github.cafdataprocessing.workflow.constants.WorkflowWorkerConstants;
 import com.github.cafdataprocessing.workflow.transform.WorkflowRetrievalException;
 import com.github.cafdataprocessing.workflow.transform.WorkflowTransformerException;

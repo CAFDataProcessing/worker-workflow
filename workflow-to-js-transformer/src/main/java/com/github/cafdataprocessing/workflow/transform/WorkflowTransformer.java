@@ -21,6 +21,7 @@ import com.github.cafdataprocessing.processing.service.client.model.Action;
 import com.github.cafdataprocessing.processing.service.client.model.BaseProcessingRule;
 import com.github.cafdataprocessing.processing.service.client.model.BaseWorkflow;
 import com.github.cafdataprocessing.processing.service.client.model.ExistingCondition;
+import com.github.cafdataprocessing.worker.workflow.shared.WorkflowSpec;
 import com.github.cafdataprocessing.workflow.transform.models.FullAction;
 import com.github.cafdataprocessing.workflow.transform.models.FullProcessingRule;
 import com.github.cafdataprocessing.workflow.transform.models.FullWorkflow;
@@ -56,10 +57,8 @@ public class WorkflowTransformer
      * Retrieves a Workflow, including its rules, actions and conditions, using provided workflow ID, project ID and processing API url
      * and converts the workflow to a JavaScript logic that a Document can be executed against.
      *
-     * @param workflowId ID of workflow to generate JavaScript for.
-     * @param projectId Project ID associated with the workflow and its children.
+     * @param workflowSpec ID of workflow to generate JavaScript for.
      * @param processingApiUrl Contactable URL for a processing API web service that the workflow can be retrieved from.
-     * @param tenantId A tenant ID that may be used during workflow transformation.
      * @return JavaScript representation of the workflow logic.
      * @throws ApiException if certain failures occur communicating with the processing service to retrieve the workflow e.g. Invalid
      * requests will result in this exception.
@@ -68,29 +67,22 @@ public class WorkflowTransformer
      * @throws WorkflowTransformerException if there is an error transforming workflow returned to JavaScript representation
      * @throws NullPointerException if the projectId or tenantId passed to the method is null
      */
-    public static String retrieveAndTransformWorkflowToJavaScript(
-        long workflowId,
-        String workflowName,
-        String projectId,
-        String processingApiUrl,
-        final String tenantId
-    ) throws ApiException, WorkflowTransformerException, WorkflowRetrievalException, ExecutionException
+    public static String retrieveAndTransformWorkflowToJavaScript(final WorkflowSpec workflowSpec, final String processingApiUrl)
+        throws ApiException, WorkflowTransformerException, WorkflowRetrievalException, ExecutionException
     {
-        Objects.requireNonNull(projectId);
-        Objects.requireNonNull(tenantId);
+        Objects.requireNonNull(workflowSpec.getProjectId());
+        Objects.requireNonNull(workflowSpec.getTenantId());
         final ApiClient apiClient = new ApiClient();
         apiClient.setBasePath(processingApiUrl);
-        final String workflowAsXML = retrieveAndTransformWorkflowToXml(workflowId, workflowName, projectId, apiClient);
-        return transformXmlWorkflowToJavaScript(workflowAsXML, projectId, tenantId, apiClient);
+        final String workflowAsXML = retrieveAndTransformWorkflowToXml(workflowSpec, apiClient);
+        return transformXmlWorkflowToJavaScript(workflowAsXML, workflowSpec.getProjectId(), workflowSpec.getTenantId(), apiClient);
     }
 
     /**
      * Retrieves a Workflow, including its rules, actions and conditions, using provided workflow ID, project ID and processing API url
      * and returns its as an XML representation.
      *
-     * @param workflowId ID of workflow to generate XML for.
-     * @param projectId Project ID associated with the workflow and its children.
-     * @param apiClient ApiClient to use when retrieving the workflow.
+     * @param workflowSpec ID of workflow to generate XML for.
      * @return XML representation of the workflow and its children.
      * @throws ApiException if certain failures occur communicating with the processing service to retrieve the workflow e.g. Invalid
      * requests will result in this exception.
@@ -99,12 +91,12 @@ public class WorkflowTransformer
      * @throws WorkflowTransformerException if there is an error transforming workflow returned to XML representation
      * @throws NullPointerException if the projectId passed to the method is null
      */
-    public static String retrieveAndTransformWorkflowToXml(long workflowId, String workflowName, String projectId, ApiClient apiClient)
+    public static String retrieveAndTransformWorkflowToXml(final WorkflowSpec workflowSpec, final ApiClient apiClient)
         throws ApiException, WorkflowTransformerException, WorkflowRetrievalException, ExecutionException
     {
-        Objects.requireNonNull(projectId);
+        Objects.requireNonNull(workflowSpec);
         final FullWorkflowRetriever workflowRetriever = new FullWorkflowRetriever(apiClient);
-        final FullWorkflow fullWorkflow = workflowRetriever.getFullWorkflow(projectId, workflowId, workflowName);
+        final FullWorkflow fullWorkflow = workflowRetriever.getFullWorkflow(workflowSpec);
         return transformFullWorkflowToXml(fullWorkflow);
     }
 

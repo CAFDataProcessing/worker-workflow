@@ -108,6 +108,7 @@
 
     <modules>
         <module>worker-workflow-constants</module>
+        <module>worker-workflow-shared</module>
         <module>workflow-to-js-transformer</module>
         <module>worker-workflow</module>
         <module>worker-workflow-container</module>
