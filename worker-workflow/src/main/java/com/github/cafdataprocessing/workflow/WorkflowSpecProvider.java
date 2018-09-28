@@ -173,7 +173,7 @@ final class WorkflowSpecProvider
     {
         final String workflowName = getSetCustomDataField(
             document,
-            WorkflowWorkerConstants.CustomData.WORKFLOW_ID,
+            WorkflowWorkerConstants.CustomData.WORKFLOW_NAME,
             "CAF_WORKFLOW_NAME");
         if (workflowName == null || workflowName.isEmpty()) {
             return null;
