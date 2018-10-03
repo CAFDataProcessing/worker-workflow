@@ -25,6 +25,7 @@ import com.github.cafdataprocessing.worker.workflow.shared.WorkflowSpec;
 import com.github.cafdataprocessing.workflow.constants.WorkflowWorkerConstants;
 import com.github.cafdataprocessing.workflow.transform.WorkflowRetrievalException;
 import com.github.cafdataprocessing.workflow.transform.WorkflowTransformerException;
+import com.github.cafdataprocessing.workflow.transform.exceptions.InvalidWorkflowSpecificationException;
 import com.hpe.caf.api.ConfigurationException;
 import com.hpe.caf.api.ConfigurationSource;
 import com.hpe.caf.api.worker.DataStore;
@@ -198,6 +199,9 @@ public final class WorkflowWorker implements DocumentWorker
         } catch (final WorkflowRetrievalException e) {
             throw new DocumentWorkerTransientException(
                 "Unable to transform workflow. Processing API communication is unhealthy.", e);
+        } catch (final InvalidWorkflowSpecificationException e) {
+            throw new DocumentWorkerTransientException(
+                "Unable to generate workflow. Unable to resolve workflow name to workflow id.", e);
         }
         return null;
     }

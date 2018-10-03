@@ -22,6 +22,7 @@ import com.github.cafdataprocessing.processing.service.client.model.BaseProcessi
 import com.github.cafdataprocessing.processing.service.client.model.BaseWorkflow;
 import com.github.cafdataprocessing.processing.service.client.model.ExistingCondition;
 import com.github.cafdataprocessing.worker.workflow.shared.WorkflowSpec;
+import com.github.cafdataprocessing.workflow.transform.exceptions.InvalidWorkflowSpecificationException;
 import com.github.cafdataprocessing.workflow.transform.models.FullAction;
 import com.github.cafdataprocessing.workflow.transform.models.FullProcessingRule;
 import com.github.cafdataprocessing.workflow.transform.models.FullWorkflow;
@@ -42,7 +43,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.Objects;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Transforms a processing workflow to a JavaScript representation of its logic that can be executed against a Document Worker document.
@@ -68,7 +68,7 @@ public class WorkflowTransformer
      * @throws NullPointerException if the projectId or tenantId passed to the method is null
      */
     public static String retrieveAndTransformWorkflowToJavaScript(final WorkflowSpec workflowSpec, final String processingApiUrl)
-        throws ApiException, WorkflowTransformerException, WorkflowRetrievalException, ExecutionException
+        throws ApiException, WorkflowTransformerException, WorkflowRetrievalException, InvalidWorkflowSpecificationException
     {
         Objects.requireNonNull(workflowSpec.getProjectId());
         Objects.requireNonNull(workflowSpec.getTenantId());
@@ -92,7 +92,7 @@ public class WorkflowTransformer
      * @throws NullPointerException if the projectId passed to the method is null
      */
     public static String retrieveAndTransformWorkflowToXml(final WorkflowSpec workflowSpec, final ApiClient apiClient)
-        throws ApiException, WorkflowTransformerException, WorkflowRetrievalException, ExecutionException
+        throws ApiException, WorkflowTransformerException, WorkflowRetrievalException, InvalidWorkflowSpecificationException
     {
         Objects.requireNonNull(workflowSpec);
         final FullWorkflowRetriever workflowRetriever = new FullWorkflowRetriever(apiClient);

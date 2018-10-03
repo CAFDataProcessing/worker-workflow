@@ -20,6 +20,7 @@ import com.github.cafdataprocessing.worker.workflow.shared.WorkflowSpec;
 import com.github.cafdataprocessing.workflow.transform.WorkflowRetrievalException;
 import com.github.cafdataprocessing.workflow.transform.WorkflowTransformer;
 import com.github.cafdataprocessing.workflow.transform.WorkflowTransformerException;
+import com.github.cafdataprocessing.workflow.transform.exceptions.InvalidWorkflowSpecificationException;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -74,7 +75,7 @@ final class TransformedWorkflowCache
                 @Override
                 public TransformWorkflowResult load(final WorkflowSpec key)
                     throws ApiException, DataStoreException, WorkflowRetrievalException,
-                           WorkflowTransformerException, ExecutionException
+                           WorkflowTransformerException, InvalidWorkflowSpecificationException
                 {
                     return transformWorkflow(key);
                 }
@@ -101,7 +102,7 @@ final class TransformedWorkflowCache
      * @throws WorkflowTransformerException if a failure occurs during transformation of workflow during load.
      */
     public TransformWorkflowResult getTransformWorkflowResult(final WorkflowSpec workflowSpec)
-        throws ApiException, DataStoreException, WorkflowRetrievalException, WorkflowTransformerException
+        throws ApiException, DataStoreException, WorkflowRetrievalException, WorkflowTransformerException, InvalidWorkflowSpecificationException
     {
         try {
             return workflowCache.get(workflowSpec);
@@ -120,6 +121,9 @@ final class TransformedWorkflowCache
             }
             if (cause instanceof WorkflowTransformerException) {
                 throw (WorkflowTransformerException) cause;
+            }
+            if (cause instanceof InvalidWorkflowSpecificationException) {
+                throw (InvalidWorkflowSpecificationException) cause;
             }
             throw new RuntimeException(e);
         }
@@ -154,7 +158,7 @@ final class TransformedWorkflowCache
      */
     private TransformWorkflowResult transformWorkflow(
         final WorkflowSpec cacheKey
-    ) throws ApiException, DataStoreException, WorkflowRetrievalException, WorkflowTransformerException, ExecutionException
+    ) throws ApiException, DataStoreException, WorkflowRetrievalException, WorkflowTransformerException, InvalidWorkflowSpecificationException
     {
         final String workflowJavaScript;
 

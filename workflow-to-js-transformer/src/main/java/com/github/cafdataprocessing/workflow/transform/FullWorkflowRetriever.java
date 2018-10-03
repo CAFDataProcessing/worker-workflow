@@ -33,7 +33,7 @@ import com.github.cafdataprocessing.processing.service.client.model.ProcessingRu
 import com.github.cafdataprocessing.worker.workflow.shared.WorkflowIdBasedSpec;
 import com.github.cafdataprocessing.worker.workflow.shared.WorkflowNameBasedSpec;
 import com.github.cafdataprocessing.worker.workflow.shared.WorkflowSpec;
-import com.github.cafdataprocessing.workflow.transform.exceptions.InvalidWorkflowSpecification;
+import com.github.cafdataprocessing.workflow.transform.exceptions.InvalidWorkflowSpecificationException;
 import com.github.cafdataprocessing.workflow.transform.models.FullAction;
 import com.github.cafdataprocessing.workflow.transform.models.FullProcessingRule;
 import com.github.cafdataprocessing.workflow.transform.models.FullWorkflow;
@@ -85,7 +85,7 @@ public class FullWorkflowRetriever
             .build(new CacheLoader<CacheInfoSupplier, Long>()
             {
                 @Override
-                public Long load(final CacheInfoSupplier key) throws Exception
+                public Long load(final CacheInfoSupplier key) throws ApiException, InvalidWorkflowSpecificationException
                 {
                     return getWorkflowId(key.getProjectId(), apisProvider.getWorkflowsApi(), key.workflowName);
                 }
@@ -103,7 +103,7 @@ public class FullWorkflowRetriever
      * e.g. The processing service not being contactable.
      */
     public FullWorkflow getFullWorkflow(final WorkflowSpec workflowSpec)
-        throws ApiException, WorkflowRetrievalException, ExecutionException
+        throws ApiException, WorkflowRetrievalException, InvalidWorkflowSpecificationException
     {
         final WorkflowsApi workflowsApi = this.apisProvider.getWorkflowsApi();
         final ExistingWorkflow retrievedWorkflow;
@@ -115,8 +115,18 @@ public class FullWorkflowRetriever
             workflowId = workflowIdbasedSpec.getWorkflowId();
         } else if (workflowSpec instanceof WorkflowNameBasedSpec) {
             final WorkflowNameBasedSpec workflowNameBasedSpec = (WorkflowNameBasedSpec) workflowSpec;
-            workflowId = workflowIdCache.get(new CacheInfoSupplier(workflowNameBasedSpec.getProjectId(),
-                                                                   workflowNameBasedSpec.getWorkflowName()));
+            try {
+                workflowId = workflowIdCache.get(new CacheInfoSupplier(workflowNameBasedSpec.getProjectId(),
+                                                                       workflowNameBasedSpec.getWorkflowName()));
+            } catch (final ExecutionException ex) {
+                if(ex.getCause() instanceof ApiException){
+                    throw (ApiException) ex.getCause();
+                }
+                if(ex.getCause() instanceof InvalidWorkflowSpecificationException){
+                    throw (InvalidWorkflowSpecificationException) ex.getCause();
+                }
+                throw new RuntimeException(ex.getCause());
+            }
         } else {
             throw new RuntimeException("Unkown type of workflow spec has been passed for processing");
         }
@@ -219,13 +229,13 @@ public class FullWorkflowRetriever
     }
 
     private Long getWorkflowId(final String projectId, final WorkflowsApi workflowsApi, final String workflowName)
-        throws ApiException, InvalidWorkflowSpecification
+        throws ApiException, InvalidWorkflowSpecificationException
     {
         final ExistingWorkflows existingWorkflows = workflowsApi.getWorkflows(projectId, 1, 100);
         final Map<String, Long> workflows = existingWorkflows.getWorkflows().stream().collect(
             Collectors.toMap(ExistingWorkflow::getName, ExistingWorkflow::getId));
         if (!workflows.containsKey(workflowName)) {
-            throw new InvalidWorkflowSpecification("The name of the workflow provided could not be resolved.");
+            throw new InvalidWorkflowSpecificationException("The name of the workflow provided could not be resolved.");
         }
         return workflows.get(workflowName);
     }

@@ -15,9 +15,9 @@
  */
 package com.github.cafdataprocessing.workflow.transform.exceptions;
 
-public class InvalidWorkflowSpecification extends Exception
+public class InvalidWorkflowSpecificationException extends Exception
 {
-    public InvalidWorkflowSpecification(final String message)
+    public InvalidWorkflowSpecificationException(final String message)
     {
         super(message);
     }
