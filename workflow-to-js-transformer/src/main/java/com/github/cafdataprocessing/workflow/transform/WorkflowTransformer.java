@@ -57,7 +57,7 @@ public class WorkflowTransformer
      * Retrieves a Workflow, including its rules, actions and conditions, using provided workflow ID, project ID and processing API url
      * and converts the workflow to a JavaScript logic that a Document can be executed against.
      *
-     * @param workflowSpec ID of workflow to generate JavaScript for.
+     * @param workflowSpec specification of workflow to generate JavaScript for.
      * @param processingApiUrl Contactable URL for a processing API web service that the workflow can be retrieved from.
      * @return JavaScript representation of the workflow logic.
      * @throws ApiException if certain failures occur communicating with the processing service to retrieve the workflow e.g. Invalid
@@ -82,7 +82,7 @@ public class WorkflowTransformer
      * Retrieves a Workflow, including its rules, actions and conditions, using provided workflow ID, project ID and processing API url
      * and returns its as an XML representation.
      *
-     * @param workflowSpec ID of workflow to generate XML for.
+     * @param workflowSpec specification of workflow to generate JavaScript for.
      * @return XML representation of the workflow and its children.
      * @throws ApiException if certain failures occur communicating with the processing service to retrieve the workflow e.g. Invalid
      * requests will result in this exception.
