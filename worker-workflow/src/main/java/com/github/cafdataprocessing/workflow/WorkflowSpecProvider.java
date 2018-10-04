@@ -75,7 +75,6 @@ final class WorkflowSpecProvider
             customDataValid = false;
         }
 
-        final String workflowName;
         Long extractedWorkflowId;
         final WorkflowSpec workflowSpec;
         try {
@@ -86,8 +85,9 @@ final class WorkflowSpecProvider
             extractedWorkflowId = null;
             customDataValid = false;
         }
+
         if (extractedWorkflowId == null) {
-            workflowName = getSetWorkflowName(document);
+            final String workflowName = getSetWorkflowName(document);
             if (workflowName == null) {
                 LOG.error("No workflow ID or name value passed to worker.");
                 document.addFailure(WorkflowWorkerConstants.ErrorCodes.INVALID_CUSTOM_DATA,
