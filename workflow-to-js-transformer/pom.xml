@@ -73,7 +73,7 @@
         </dependency>
         <dependency>
             <groupId>com.github.cafdataprocessing</groupId>
-            <artifactId>worker-workflow-shared</artifactId>
+            <artifactId>worker-workflow-spec</artifactId>
             <version>1.1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
