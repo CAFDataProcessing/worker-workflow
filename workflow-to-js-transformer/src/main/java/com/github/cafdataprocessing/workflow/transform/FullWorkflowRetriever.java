@@ -47,10 +47,8 @@ import java.time.temporal.ChronoUnit;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * Retrieves details of specified workflow and its children i.e. processing rules, rule conditions, actions, action conditions.
@@ -246,12 +244,11 @@ public class FullWorkflowRetriever
     {
         final WorkflowsApi workflowsApi = apisProvider.getWorkflowsApi();
         final ExistingWorkflows existingWorkflows = workflowsApi.getWorkflows(projectId, 1, 100);
-        final Map<String, Long> workflows = existingWorkflows.getWorkflows().stream().collect(
-            Collectors.toMap(ExistingWorkflow::getName, ExistingWorkflow::getId));
-        if (!workflows.containsKey(workflowName)) {
-            throw new InvalidWorkflowSpecificationException("The name of the workflow provided could not be resolved.");
-        }
-        return workflows.get(workflowName);
+        return existingWorkflows.getWorkflows().stream()
+            .filter(wf -> wf.getName().equals(workflowName))
+            .map(ExistingWorkflow::getId)
+            .findAny()
+            .orElseThrow(() -> new InvalidWorkflowSpecificationException("The name of the workflow provided could not be resolved."));
     }
 
     private static final class WorkflowIdCacheKey
