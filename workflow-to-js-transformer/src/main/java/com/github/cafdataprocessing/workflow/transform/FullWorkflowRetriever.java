@@ -37,6 +37,7 @@ import com.github.cafdataprocessing.workflow.transform.exceptions.InvalidWorkflo
 import com.github.cafdataprocessing.workflow.transform.models.FullAction;
 import com.github.cafdataprocessing.workflow.transform.models.FullProcessingRule;
 import com.github.cafdataprocessing.workflow.transform.models.FullWorkflow;
+import com.google.common.base.Objects;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -57,7 +58,7 @@ import java.util.stream.Collectors;
 public class FullWorkflowRetriever
 {
     private final ProcessingApisProvider apisProvider;
-    private final LoadingCache<CacheInfoSupplier, Long> workflowIdCache;
+    private final LoadingCache<WorkflowIdCacheKey, Long> workflowIdCache;
 
     /**
      * Creates a FullWorkflowRetriever using the provided ApiClient.
@@ -82,10 +83,10 @@ public class FullWorkflowRetriever
             : Duration.parse(workflowIdsCachePeriodAsStr);
         this.workflowIdCache = CacheBuilder.newBuilder()
             .expireAfterWrite(workflowCachePeriod.get(ChronoUnit.SECONDS), TimeUnit.SECONDS)
-            .build(new CacheLoader<CacheInfoSupplier, Long>()
+            .build(new CacheLoader<WorkflowIdCacheKey, Long>()
             {
                 @Override
-                public Long load(final CacheInfoSupplier key) throws ApiException, InvalidWorkflowSpecificationException
+                public Long load(final WorkflowIdCacheKey key) throws ApiException, InvalidWorkflowSpecificationException
                 {
                     return getWorkflowId(key.getProjectId(), apisProvider.getWorkflowsApi(), key.workflowName);
                 }
@@ -116,13 +117,13 @@ public class FullWorkflowRetriever
         } else if (workflowSpec instanceof WorkflowNameBasedSpec) {
             final WorkflowNameBasedSpec workflowNameBasedSpec = (WorkflowNameBasedSpec) workflowSpec;
             try {
-                workflowId = workflowIdCache.get(new CacheInfoSupplier(workflowNameBasedSpec.getProjectId(),
-                                                                       workflowNameBasedSpec.getWorkflowName()));
+                workflowId = workflowIdCache.get(new WorkflowIdCacheKey(workflowNameBasedSpec.getProjectId(),
+                                                                        workflowNameBasedSpec.getWorkflowName()));
             } catch (final ExecutionException ex) {
-                if(ex.getCause() instanceof ApiException){
+                if (ex.getCause() instanceof ApiException) {
                     throw (ApiException) ex.getCause();
                 }
-                if(ex.getCause() instanceof InvalidWorkflowSpecificationException){
+                if (ex.getCause() instanceof InvalidWorkflowSpecificationException) {
                     throw (InvalidWorkflowSpecificationException) ex.getCause();
                 }
                 throw new RuntimeException(ex.getCause());
@@ -240,12 +241,12 @@ public class FullWorkflowRetriever
         return workflows.get(workflowName);
     }
 
-    private final class CacheInfoSupplier
+    private static final class WorkflowIdCacheKey
     {
         private final String projectId;
         private final String workflowName;
 
-        public CacheInfoSupplier(final String projectId, final String workflowName)
+        public WorkflowIdCacheKey(final String projectId, final String workflowName)
         {
             this.projectId = projectId;
             this.workflowName = workflowName;
@@ -259,6 +260,28 @@ public class FullWorkflowRetriever
         public String getWorkflowName()
         {
             return this.workflowName;
+        }
+
+        @Override
+        public boolean equals(final Object obj)
+        {
+            if (!(obj instanceof WorkflowIdCacheKey)) {
+                return false;
+            }
+
+            final WorkflowIdCacheKey other = (WorkflowIdCacheKey) obj;
+
+            return Objects.equal(this.projectId, other.projectId)
+                && Objects.equal(this.workflowName, other.workflowName);
+        }
+
+        @Override
+        public int hashCode()
+        {
+            int hash = 3;
+            hash = 83 * hash + java.util.Objects.hashCode(projectId);
+            hash = 83 * hash + java.util.Objects.hashCode(workflowName);
+            return hash;
         }
     }
 }
