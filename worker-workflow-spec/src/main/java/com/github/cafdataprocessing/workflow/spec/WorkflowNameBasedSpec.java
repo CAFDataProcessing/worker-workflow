@@ -17,10 +17,6 @@ package com.github.cafdataprocessing.workflow.spec;
 
 import java.util.Objects;
 
-/**
- *
- * @author mcgreeva
- */
 public final class WorkflowNameBasedSpec extends WorkflowSpec
 {
     private final String workflowName;
