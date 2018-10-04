@@ -48,7 +48,7 @@ public final class WorkflowNameBasedSpec extends WorkflowSpec
             return true;
         }
 
-        if (!(o instanceof WorkflowSpec)) {
+        if (!(o instanceof WorkflowNameBasedSpec)) {
             return false;
         }
 
