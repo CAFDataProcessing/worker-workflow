@@ -16,7 +16,7 @@
 package com.github.cafdataprocessing.workflow;
 
 import com.github.cafdataprocessing.processing.service.client.ApiException;
-import com.github.cafdataprocessing.worker.workflow.shared.WorkflowSpec;
+import com.github.cafdataprocessing.workflow.spec.WorkflowSpec;
 import com.github.cafdataprocessing.workflow.transform.WorkflowRetrievalException;
 import com.github.cafdataprocessing.workflow.transform.WorkflowTransformer;
 import com.github.cafdataprocessing.workflow.transform.WorkflowTransformerException;

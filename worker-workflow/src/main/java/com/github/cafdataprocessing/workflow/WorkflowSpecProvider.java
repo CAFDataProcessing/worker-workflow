@@ -16,10 +16,10 @@
 package com.github.cafdataprocessing.workflow;
 
 import com.github.cafdataprocessing.workflow.constants.WorkflowWorkerConstants;
-import com.github.cafdataprocessing.worker.workflow.shared.WorkflowIdBasedSpec;
-import com.github.cafdataprocessing.worker.workflow.shared.WorkflowNameBasedSpec;
-import com.github.cafdataprocessing.worker.workflow.shared.WorkflowSpec;
-import com.github.cafdataprocessing.worker.workflow.shared.InvalidWorkflowSpecException;
+import com.github.cafdataprocessing.workflow.spec.WorkflowIdBasedSpec;
+import com.github.cafdataprocessing.workflow.spec.WorkflowNameBasedSpec;
+import com.github.cafdataprocessing.workflow.spec.WorkflowSpec;
+import com.github.cafdataprocessing.workflow.spec.InvalidWorkflowSpecException;
 import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.model.Field;
 import org.slf4j.Logger;

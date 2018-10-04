@@ -30,9 +30,9 @@ import com.github.cafdataprocessing.processing.service.client.model.ExistingProc
 import com.github.cafdataprocessing.processing.service.client.model.ExistingWorkflow;
 import com.github.cafdataprocessing.processing.service.client.model.ExistingWorkflows;
 import com.github.cafdataprocessing.processing.service.client.model.ProcessingRules;
-import com.github.cafdataprocessing.worker.workflow.shared.WorkflowIdBasedSpec;
-import com.github.cafdataprocessing.worker.workflow.shared.WorkflowNameBasedSpec;
-import com.github.cafdataprocessing.worker.workflow.shared.WorkflowSpec;
+import com.github.cafdataprocessing.workflow.spec.WorkflowIdBasedSpec;
+import com.github.cafdataprocessing.workflow.spec.WorkflowNameBasedSpec;
+import com.github.cafdataprocessing.workflow.spec.WorkflowSpec;
 import com.github.cafdataprocessing.workflow.transform.exceptions.InvalidWorkflowSpecificationException;
 import com.github.cafdataprocessing.workflow.transform.models.FullAction;
 import com.github.cafdataprocessing.workflow.transform.models.FullProcessingRule;

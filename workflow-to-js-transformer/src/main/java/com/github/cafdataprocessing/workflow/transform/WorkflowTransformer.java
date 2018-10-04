@@ -21,7 +21,7 @@ import com.github.cafdataprocessing.processing.service.client.model.Action;
 import com.github.cafdataprocessing.processing.service.client.model.BaseProcessingRule;
 import com.github.cafdataprocessing.processing.service.client.model.BaseWorkflow;
 import com.github.cafdataprocessing.processing.service.client.model.ExistingCondition;
-import com.github.cafdataprocessing.worker.workflow.shared.WorkflowSpec;
+import com.github.cafdataprocessing.workflow.spec.WorkflowSpec;
 import com.github.cafdataprocessing.workflow.transform.exceptions.InvalidWorkflowSpecificationException;
 import com.github.cafdataprocessing.workflow.transform.models.FullAction;
 import com.github.cafdataprocessing.workflow.transform.models.FullProcessingRule;
