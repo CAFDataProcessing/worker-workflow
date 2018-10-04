@@ -101,8 +101,10 @@ final class TransformedWorkflowCache
      * expected by this method.
      * @throws WorkflowTransformerException if a failure occurs during transformation of workflow during load.
      */
-    public TransformWorkflowResult getTransformWorkflowResult(final WorkflowSpec workflowSpec)
-        throws ApiException, DataStoreException, WorkflowRetrievalException, WorkflowTransformerException, InvalidWorkflowSpecificationException
+    public TransformWorkflowResult getTransformWorkflowResult(
+        final WorkflowSpec workflowSpec
+    ) throws ApiException, DataStoreException, WorkflowRetrievalException, WorkflowTransformerException,
+             InvalidWorkflowSpecificationException
     {
         try {
             return workflowCache.get(workflowSpec);
@@ -158,7 +160,8 @@ final class TransformedWorkflowCache
      */
     private TransformWorkflowResult transformWorkflow(
         final WorkflowSpec cacheKey
-    ) throws ApiException, DataStoreException, WorkflowRetrievalException, WorkflowTransformerException, InvalidWorkflowSpecificationException
+    ) throws ApiException, DataStoreException, WorkflowRetrievalException, WorkflowTransformerException,
+             InvalidWorkflowSpecificationException
     {
         final String workflowJavaScript;
 
