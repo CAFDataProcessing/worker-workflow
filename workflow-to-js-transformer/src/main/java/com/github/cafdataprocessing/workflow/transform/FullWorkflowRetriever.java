@@ -88,7 +88,7 @@ public class FullWorkflowRetriever
                 @Override
                 public Long load(final WorkflowIdCacheKey key) throws ApiException, InvalidWorkflowSpecificationException
                 {
-                    return getWorkflowId(key.getProjectId(), apisProvider.getWorkflowsApi(), key.workflowName);
+                    return getWorkflowId(key.getProjectId(), key.getWorkflowName());
                 }
             });
     }
@@ -131,7 +131,7 @@ public class FullWorkflowRetriever
     }
 
     private long getWorkflowIdFromCache(final String projectId, final String workflowName)
-        throws InvalidWorkflowSpecificationException, ApiException, RuntimeException
+        throws ApiException, InvalidWorkflowSpecificationException
     {
         // Put together the cache key
         final WorkflowIdCacheKey key = new WorkflowIdCacheKey(projectId, workflowName);
@@ -241,9 +241,10 @@ public class FullWorkflowRetriever
         return new FullAction(existingAction, actionConditions);
     }
 
-    private Long getWorkflowId(final String projectId, final WorkflowsApi workflowsApi, final String workflowName)
+    private long getWorkflowId(final String projectId, final String workflowName)
         throws ApiException, InvalidWorkflowSpecificationException
     {
+        final WorkflowsApi workflowsApi = apisProvider.getWorkflowsApi();
         final ExistingWorkflows existingWorkflows = workflowsApi.getWorkflows(projectId, 1, 100);
         final Map<String, Long> workflows = existingWorkflows.getWorkflows().stream().collect(
             Collectors.toMap(ExistingWorkflow::getName, ExistingWorkflow::getId));
