@@ -109,6 +109,7 @@ public class FullWorkflowRetriever
         final WorkflowsApi workflowsApi = this.apisProvider.getWorkflowsApi();
         final ExistingWorkflow retrievedWorkflow;
         final List<FullProcessingRule> fullProcessingRules;
+        final String projectId = workflowSpec.getProjectId();
         final long workflowId;
 
         if (workflowSpec instanceof WorkflowIdBasedSpec) {
@@ -116,28 +117,39 @@ public class FullWorkflowRetriever
             workflowId = workflowIdbasedSpec.getWorkflowId();
         } else if (workflowSpec instanceof WorkflowNameBasedSpec) {
             final WorkflowNameBasedSpec workflowNameBasedSpec = (WorkflowNameBasedSpec) workflowSpec;
-            try {
-                workflowId = workflowIdCache.get(new WorkflowIdCacheKey(workflowNameBasedSpec.getProjectId(),
-                                                                        workflowNameBasedSpec.getWorkflowName()));
-            } catch (final ExecutionException ex) {
-                if (ex.getCause() instanceof ApiException) {
-                    throw (ApiException) ex.getCause();
-                }
-                if (ex.getCause() instanceof InvalidWorkflowSpecificationException) {
-                    throw (InvalidWorkflowSpecificationException) ex.getCause();
-                }
-                throw new RuntimeException(ex.getCause());
-            }
+            workflowId = getWorkflowIdFromCache(projectId, workflowNameBasedSpec.getWorkflowName());
         } else {
             throw new RuntimeException("Unkown type of workflow spec has been passed for processing");
         }
         try {
-            retrievedWorkflow = workflowsApi.getWorkflow(workflowSpec.getProjectId(), workflowId);
-            fullProcessingRules = buildFullProcessingRules(workflowSpec.getProjectId(), workflowId);
+            retrievedWorkflow = workflowsApi.getWorkflow(projectId, workflowId);
+            fullProcessingRules = buildFullProcessingRules(projectId, workflowId);
         } catch (final ClientHandlerException e) {
             throw new WorkflowRetrievalException("Failure retrieving the full workflow using processing service.", e);
         }
         return new FullWorkflow(retrievedWorkflow, fullProcessingRules);
+    }
+
+    private long getWorkflowIdFromCache(final String projectId, final String workflowName)
+        throws InvalidWorkflowSpecificationException, ApiException, RuntimeException
+    {
+        // Put together the cache key
+        final WorkflowIdCacheKey key = new WorkflowIdCacheKey(projectId, workflowName);
+
+        // Retrieve the workflow id from the cache
+        try {
+            return workflowIdCache.get(key);
+        } catch (final ExecutionException ex) {
+            final Throwable cause = ex.getCause();
+
+            if (cause instanceof ApiException) {
+                throw (ApiException) cause;
+            } else if (cause instanceof InvalidWorkflowSpecificationException) {
+                throw (InvalidWorkflowSpecificationException) cause;
+            } else {
+                throw new RuntimeException(ex);
+            }
+        }
     }
 
     private List<FullProcessingRule> buildFullProcessingRules(String projectId, long workflowId) throws ApiException
