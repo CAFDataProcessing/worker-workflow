@@ -104,9 +104,6 @@ public class FullWorkflowRetriever
     public FullWorkflow getFullWorkflow(final WorkflowSpec workflowSpec)
         throws ApiException, WorkflowRetrievalException, InvalidWorkflowSpecificationException
     {
-        final WorkflowsApi workflowsApi = this.apisProvider.getWorkflowsApi();
-        final ExistingWorkflow retrievedWorkflow;
-        final List<FullProcessingRule> fullProcessingRules;
         final String projectId = workflowSpec.getProjectId();
         final long workflowId;
 
@@ -119,13 +116,8 @@ public class FullWorkflowRetriever
         } else {
             throw new RuntimeException("Unkown type of workflow spec has been passed for processing");
         }
-        try {
-            retrievedWorkflow = workflowsApi.getWorkflow(projectId, workflowId);
-            fullProcessingRules = buildFullProcessingRules(projectId, workflowId);
-        } catch (final ClientHandlerException e) {
-            throw new WorkflowRetrievalException("Failure retrieving the full workflow using processing service.", e);
-        }
-        return new FullWorkflow(retrievedWorkflow, fullProcessingRules);
+
+        return getFullWorkflow(projectId, workflowId);
     }
 
     private long getWorkflowIdFromCache(final String projectId, final String workflowName)
@@ -148,6 +140,32 @@ public class FullWorkflowRetriever
                 throw new RuntimeException(ex);
             }
         }
+    }
+
+    /**
+     * Uses the ID provided to retrieve a workflow, its processing rules, rule conditions, actions and action conditions.
+     *
+     * @param projectId projectId value set for the workflow and children
+     * @param workflowId ID of the workflow to return details for
+     * @return the full details of the workflow with provided ID
+     * @throws ApiException if certain failures occur communicating with the processing service to retrieve the workflow e.g. Invalid
+     * requests will result in this exception.
+     * @throws WorkflowRetrievalException if certain failures occur communicating with the processing service to retrieve the workflow.
+     * e.g. The processing service not being contactable.
+     */
+    private FullWorkflow getFullWorkflow(String projectId, long workflowId) throws ApiException, WorkflowRetrievalException
+    {
+
+        final WorkflowsApi workflowsApi = this.apisProvider.getWorkflowsApi();
+        final ExistingWorkflow retrievedWorkflow;
+        final List<FullProcessingRule> fullProcessingRules;
+        try {
+            retrievedWorkflow = workflowsApi.getWorkflow(projectId, workflowId);
+            fullProcessingRules = buildFullProcessingRules(projectId, workflowId);
+        } catch (final ClientHandlerException e) {
+            throw new WorkflowRetrievalException("Failure retrieving the full workflow using processing service.", e);
+        }
+        return new FullWorkflow(retrievedWorkflow, fullProcessingRules);
     }
 
     private List<FullProcessingRule> buildFullProcessingRules(String projectId, long workflowId) throws ApiException
