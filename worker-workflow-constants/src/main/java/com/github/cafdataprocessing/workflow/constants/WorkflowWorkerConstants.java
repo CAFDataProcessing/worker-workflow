@@ -60,5 +60,6 @@ public final class WorkflowWorkerConstants
         public static final String STORE_WORKFLOW_FAILED = "WORKFLOW-StoreWorkflowFailed";
         public static final String ADD_WORKFLOW_SCRIPTS_FAILED = "WORKFLOW-FailedToAddScriptsToTask";
         public static final String WORKFLOW_TRANSFORM_FAILED = "WORKFLOW-WorkflowTransformFailed";
+        public static final String WORKFLOW_SPECIFICATION_INVALID = "WORKFLOW-WorkflowSpecInvalid";
     }
 }

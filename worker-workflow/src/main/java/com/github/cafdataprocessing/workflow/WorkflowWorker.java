@@ -200,8 +200,8 @@ public final class WorkflowWorker implements DocumentWorker
             throw new DocumentWorkerTransientException(
                 "Unable to transform workflow. Processing API communication is unhealthy.", e);
         } catch (final InvalidWorkflowSpecificationException e) {
-            throw new DocumentWorkerTransientException(
-                "Unable to generate workflow. Unable to resolve workflow name to workflow id.", e);
+            document.addFailure(WorkflowWorkerConstants.ErrorCodes.WORKFLOW_SPECIFICATION_INVALID,
+                                "Unable to generate workflow. Unable to resolve workflow name to workflow id.");
         }
         return null;
     }
