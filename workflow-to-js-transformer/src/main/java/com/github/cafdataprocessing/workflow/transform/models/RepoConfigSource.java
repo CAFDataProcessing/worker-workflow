@@ -52,7 +52,7 @@ public final class RepoConfigSource
         this.key = key;
     }
     
-    public static enum RepositoryIdSource{
+    public enum RepositoryIdSource{
         FIELD, CUSTOMDATA
     }
 }

@@ -33,6 +33,7 @@ import com.google.common.cache.LoadingCache;
 import com.google.gson.Gson;
 import com.hpe.caf.worker.document.exceptions.DocumentWorkerTransientException;
 import com.hpe.caf.worker.document.model.Document;
+import com.hpe.caf.worker.document.model.FieldValue;
 import com.sun.jersey.api.client.ClientHandlerException;
 import java.util.HashMap;
 import java.util.List;
@@ -79,7 +80,7 @@ public final class WorkflowSettingsRetriever
         repositoryConfigApi = new RepositoryConfigurationApi(apiClient);
     }
 
-    public void addCustomWorkflowConfig(final WorkflowSettings requiredConfig, final Document document)
+    public void retrieveWorkflowSettings(final WorkflowSettings requiredConfig, final Document document)
         throws ApiException, DocumentWorkerTransientException
     {
         final String tenantId = document.getCustomData("tenantId");
@@ -119,21 +120,25 @@ public final class WorkflowSettingsRetriever
     }
 
     private Map<String, String> processRepositoryConfigs(final Document document, final String tenantId,
-                                                         final Map<String, RepoConfigSource> configs) throws ApiException,
-                                                                                                             DocumentWorkerTransientException
+                                                         final Map<String, RepoConfigSource> configs)
+        throws ApiException, DocumentWorkerTransientException
     {
         final Map<String, String> customConfigs = new HashMap<>();
         String repositoryKey = null;
         for (final Map.Entry<String, RepoConfigSource> config : configs.entrySet()) {
             switch (config.getValue().getSource()) {
                 case FIELD:
-                    repositoryKey = document.getField(
-                        config.getValue().getKey()).getValues().stream().findFirst().get().getStringValue();
+                    final FieldValue repositoryKeyField = document.getField(
+                        config.getValue().getKey()).getValues().stream().findFirst().orElseThrow(()
+                        -> new RuntimeException("Unable to obtain repository id from document field for config "
+                            + config.getValue().getKey()));
+                    repositoryKey = repositoryKeyField.getStringValue();
                     break;
                 case CUSTOMDATA:
                     repositoryKey = document.getCustomData(config.getValue().getKey());
                     if (repositoryKey == null) {
-                        throw new RuntimeException("Unable to obtain repository id for config " + config.getValue().getKey());
+                        throw new RuntimeException("Unable to obtain repository id  from customdata for config "
+                            + config.getValue().getKey());
                     }
                     break;
                 default:
@@ -214,7 +219,7 @@ public final class WorkflowSettingsRetriever
      * @throws ApiException When an error occurs while trying to retrieve a config's value from the processing service.
      * @throws NullPointerException When the tenantId or key passed to the method is null.
      */
-    public String getTenantSpecificConfigValue(final String tenantId, final String key)
+    private String getTenantSpecificConfigValue(final String tenantId, final String key)
         throws ApiException, DocumentWorkerTransientException
     {
         Objects.requireNonNull(tenantId);

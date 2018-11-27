@@ -73,7 +73,7 @@ Which given a projectId of "myProjectId" would be output after transformation as
 
 *taskSettings*
 
-A source of taskSettings maybe specified to indicate that a the key specified can be used to look up the correct value on the input message's customdata. If the key is accompanied by a defaultValue then if the value is not present the default value will be used.
+A source of taskSettings may be specified to indicate that a value for a property should come from the input message's customdata. If defaultValue is supplied this will be used when a value is not present in the custom data.
 
 ```
 "customData": {
@@ -81,7 +81,7 @@ A source of taskSettings maybe specified to indicate that a the key specified ca
     "source": {
       "taskSettings": {
         "key": "ee.operationmode",
-	"defaultValue": "DETECT"
+        "defaultValue": "DETECT"
         }
     }
   }
@@ -98,11 +98,11 @@ Repository settings also specify where the repository id can be obtained on the 
   "OPERATION_MODE": {
     "source": {
       "repositorySettings": {
-	"key": "ee.grammarmap",
-	"repositoryId": {
-	  "source": "FIELD",
-	  "key": "REPOSITORY_ID"
-	}
+        "key": "ee.grammarmap",
+        "repositoryId": {
+          "source": "FIELD",
+          "key": "REPOSITORY_ID"
+        }
       }
     }
   }
@@ -111,7 +111,7 @@ Repository settings also specify where the repository id can be obtained on the 
 
 *sources*
 
-Multiple source can also be specified for a customdata element. This then allows for per job customization of the settings by having one source take precedence over another when supplied.
+Multiple sources can also be specified for a customdata element. This allows for per job customization of the settings by having one source take precedence over another when supplied.
 For instance, if supplied with a source of taskSettings and a source of repositorySettings for the same customdata element the taskSettings will take precedence over the repositorySetting if it is supplied, otherwise the repositorySettings will take effect.  
 
 ```
@@ -122,11 +122,11 @@ For instance, if supplied with a source of taskSettings and a source of reposito
         "key": "ee.grammarmap"
       },
       "repositorySettings": {
-	"key": "ee.grammarmap",
-	"repositoryId": {
-	  "source": "field",
-	  "key": "REPOSITORY_ID"
-	}
+        "key": "ee.grammarmap",
+        "repositoryId": {
+          "source": "field",
+          "key": "REPOSITORY_ID"
+        }
       }
     }
   }
