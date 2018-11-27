@@ -80,6 +80,16 @@ public final class WorkflowSettingsRetriever
         repositoryConfigApi = new RepositoryConfigurationApi(apiClient);
     }
 
+    /**
+     * Retrieves the values for all of the required settings provided and creates a Map from them. This is then JSON serialized and added
+     * to the document currently being processed.
+     *
+     * @param requiredConfig An WorkflowSettings object containing all of the configuration required by the document.
+     * @param document The document currently being processed.
+     * @throws ApiException When an error occurs during a look up of a setting's value.
+     * @throws DocumentWorkerTransientException When the service used to look up a settings value is temporarily unavailable and the
+     * request should be retried.
+     */
     public void retrieveWorkflowSettings(final WorkflowSettings requiredConfig, final Document document)
         throws ApiException, DocumentWorkerTransientException
     {
@@ -94,6 +104,18 @@ public final class WorkflowSettingsRetriever
         document.getTask().getResponse().getCustomData().put("CAF_WORKFLOW_SETTINGS", gson.toJson(settings));
     }
 
+    /**
+     * Creates a key value map of configuration key to string value. This method utilises a guava cache that is checked for the setting
+     * required, only if it is not present or the cache has expired will a request be made to the service to retrieve the setting value.
+     *
+     * @param document The document currently being processed, this is used when getting information from the task or from a document
+     * field that is required during processing, such as retrieval of the repository id.
+     * @param tenantId The unique identifier of the tenant that issues the request to have this document processed.
+     * @param configs The required repository configurations.
+     * @return A String to String map of repository setting key to repository setting value.
+     * @throws ApiException when the an error occurs contacting the service when attempting to retrieve the settings value.
+     * @throws DocumentWorkerTransientException When the service is temporarily unavailable and the request should be retried.
+     */
     private Map<String, String> processTenantConfigs(final String tenantId, final List<String> configs)
         throws ApiException, DocumentWorkerTransientException
     {
@@ -119,6 +141,18 @@ public final class WorkflowSettingsRetriever
         return customConfigs;
     }
 
+    /**
+     * Creates a key value map of configuration key to string value. This method utilises a guava cache that is checked for the setting
+     * required, only if it is not present or the cache has expired will a request be made to the service to retrieve the setting value.
+     *
+     * @param document The document currently being processed, this is used when getting information from the task or from a document
+     * field that is required during processing, such as retrieval of the repository id.
+     * @param tenantId The unique identifier of the tenant that issues the request to have this document processed.
+     * @param configs The required repository configurations.
+     * @return A String to String map of repository setting key to repository setting value.
+     * @throws ApiException when the an error occurs contacting the service when attempting to retrieve the settings value.
+     * @throws DocumentWorkerTransientException When the service is temporarily unavailable and the request should be retried.
+     */
     private Map<String, String> processRepositoryConfigs(final Document document, final String tenantId,
                                                          final Map<String, RepoConfigSource> configs)
         throws ApiException, DocumentWorkerTransientException
@@ -174,7 +208,7 @@ public final class WorkflowSettingsRetriever
     }
 
     /**
-     * Returns the value of the tenant's configuration that was requested.
+     * Returns the value of the configuration that was requested.
      *
      * @param tenantId A unique string that identifies the tenant.
      * @param key The unique string used to identify a specific configuration.
@@ -211,7 +245,7 @@ public final class WorkflowSettingsRetriever
     }
 
     /**
-     * Returns the value of the tenant's configuration that was requested.
+     * Returns the value of the configuration that was requested.
      *
      * @param tenantId A unique string that identifies the tenant.
      * @param key The unique string used to identify a specific configuration.
@@ -245,6 +279,18 @@ public final class WorkflowSettingsRetriever
         }
     }
 
+    /**
+     * Retrieves the setting value for the key provided in within the cache key supplied to the method. If the WorkflowSettingsCacheKey
+     * supplied to the method is of type WorkflowSettingsRepositoryCacheKey then the RepositoryConfigurationApi is used to get the value
+     * of the setting required. Otherwise if it is of type WorkflowSettingsTenantCacheKey then the TenantConfigurationApi is used. If the
+     * WorkflowSettingsCacheKey supplied is not of type WorkflowSettingsRepositoryCacheKey or WorkflowSettingsTenantCacheKey a
+     * RuntimeException will be thrown as this should never happen.
+     *
+     * @param key Cache key used to determine if the setting should be looked up by tenant or repository
+     * @return The value returned for the setting requested
+     * @throws ApiException When an error occurs contacting the service to retrieve the setting configuration
+     * @throws DocumentWorkerTransientException When the service is temporarily unable to be contacted and the request should be retried
+     */
     private String getSettingsFromServer(final WorkflowSettingsCacheKey key) throws ApiException, DocumentWorkerTransientException
     {
         if (key instanceof WorkflowSettingsRepositoryCacheKey) {
