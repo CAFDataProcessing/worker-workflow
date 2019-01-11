@@ -433,7 +433,6 @@
                                     <port>${settings.service.port}:8080</port>
                                 </ports>
                                 <env>
-                                    <CAF_SETTINGS_SERVICE_PORT>8080</CAF_SETTINGS_SERVICE_PORT>
                                     <CAF_SETTINGS_SERVICE_DATABASE_HOST>workflow-db</CAF_SETTINGS_SERVICE_DATABASE_HOST>
                                     <CAF_SETTINGS_SERVICE_DATABASE_PORT>5432</CAF_SETTINGS_SERVICE_DATABASE_PORT>
                                     <CAF_SETTINGS_SERVICE_DATABASE_NAME>${settingsPostgresDbName}</CAF_SETTINGS_SERVICE_DATABASE_NAME>
