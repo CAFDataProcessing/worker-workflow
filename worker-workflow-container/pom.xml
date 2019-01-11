@@ -33,9 +33,11 @@
         <externalProcessingServiceUrl>http://${docker.host.address}:${processing.service.port}/data-processing-service/v1</externalProcessingServiceUrl>
         <internalDbConnectionString>jdbc:postgresql://workflow-db:5432/&lt;dbname&gt;</internalDbConnectionString>
         <internalProcessingServiceUrl>http://processing-service:8080/data-processing-service/v1</internalProcessingServiceUrl>
+        <settingsServiceUrl>http://${docker.host.address}:${settings.service.port}</settingsServiceUrl>
         <maven.install.skip>true</maven.install.skip>
         <maven.deploy.skip>true</maven.deploy.skip>
         <postgresDbName>workflow</postgresDbName>
+        <settingsPostgresDbName>settings</settingsPostgresDbName>
         <postgresDbPassword>root</postgresDbPassword>
         <postgresDbUser>root</postgresDbUser>
         <test.case.generation>false</test.case.generation>
@@ -422,6 +424,39 @@
                             </run>
                         </image>
 
+                        <!-- Settings Service -->
+                        <image>
+                            <alias>settings-service</alias>
+                            <name>${settingsServiceContainerName}</name>
+                            <run>
+                                <ports>
+                                    <port>${settings.service.port}:8080</port>
+                                </ports>
+                                <env>
+                                    <CAF_SETTINGS_SERVICE_PORT>8080</CAF_SETTINGS_SERVICE_PORT>
+                                    <CAF_SETTINGS_SERVICE_DATABASE_HOST>workflow-db</CAF_SETTINGS_SERVICE_DATABASE_HOST>
+                                    <CAF_SETTINGS_SERVICE_DATABASE_PORT>5432</CAF_SETTINGS_SERVICE_DATABASE_PORT>
+                                    <CAF_SETTINGS_SERVICE_DATABASE_NAME>${settingsPostgresDbName}</CAF_SETTINGS_SERVICE_DATABASE_NAME>
+                                    <CAF_SETTINGS_SERVICE_DATABASE_USERNAME>${postgresDbUser}</CAF_SETTINGS_SERVICE_DATABASE_USERNAME>
+                                    <CAF_SETTINGS_SERVICE_DATABASE_PASSWORD>${postgresDbPassword}</CAF_SETTINGS_SERVICE_DATABASE_PASSWORD>
+                                </env>
+                                <wait>
+                                    <http>
+                                        <url>${settingsServiceUrl}/healthcheck</url>
+                                        <method>GET</method>
+                                    </http>
+                                    <time>40000</time>
+                                    <shutdown>500</shutdown>
+                                </wait>
+                                <links>
+                                    <link>workflow-db</link>
+                                </links>
+                                <log>
+                                    <enabled>true</enabled>
+                                </log>
+                            </run>
+                        </image>
+
                         <!-- Configuration for the worker-workflow image -->
                         <image>
                             <alias>worker-workflow</alias>
@@ -494,6 +529,7 @@
                                     <CAF_WORKER_MAX_BATCH_TIME>5000</CAF_WORKER_MAX_BATCH_TIME>
                                     <CAF_WORKER_RETRY_LIMIT>2</CAF_WORKER_RETRY_LIMIT>
                                     <CAF_WORKFLOW_WORKER_PROCESSING_API_URL>${internalProcessingServiceUrl}</CAF_WORKFLOW_WORKER_PROCESSING_API_URL>
+                                    <CAF_SETTINGS_SERVICE_URL>${settingsServiceUrl}</CAF_SETTINGS_SERVICE_URL>
                                 </env>
                                 <volumes>
                                     <from>
@@ -503,6 +539,7 @@
                                 <links>
                                     <link>rabbitmq</link>
                                     <link>processing-service</link>
+                                    <link>settings-service</link>
                                 </links>
                                 <log>
                                     <enabled>true</enabled>

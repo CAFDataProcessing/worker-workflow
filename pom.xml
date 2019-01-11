@@ -52,6 +52,7 @@
         <processingServiceContainerName>
             cafdataprocessing/processing-service:1
         </processingServiceContainerName>
+        <settingsServiceContainerName>cafinternal/prereleases:settings-service-1.0.0-SNAPSHOT</settingsServiceContainerName>
         <gitRepo>https://github.com/CAFDataProcessing/worker-workflow</gitRepo>
     </properties>
 

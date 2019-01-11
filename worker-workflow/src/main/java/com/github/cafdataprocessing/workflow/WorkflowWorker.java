@@ -96,6 +96,14 @@ public final class WorkflowWorker implements DocumentWorker
             LOG.error("Problem encountered when contacting Processing API to check health: ", e);
             healthMonitor.reportUnhealthy("Processing API communication is unhealthy: " + e.getMessage());
         }
+
+        try {
+            workflowSettingsRetriever.checkHealth();
+        }
+        catch (final Exception e) {
+            LOG.error("Problem encountered when contacting Settings Service to check health: ", e);
+            healthMonitor.reportUnhealthy("Settings Service communication is unhealthy: " + e.getMessage());
+        }
     }
 
     /**

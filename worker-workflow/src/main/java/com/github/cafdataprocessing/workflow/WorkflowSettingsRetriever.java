@@ -28,10 +28,7 @@ import com.google.gson.Gson;
 import com.hpe.caf.worker.document.exceptions.DocumentWorkerTransientException;
 import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.model.FieldValue;
-import com.microfocus.darwin.settings.client.ApiClient;
-import com.microfocus.darwin.settings.client.ApiException;
-import com.microfocus.darwin.settings.client.ResolvedSetting;
-import com.microfocus.darwin.settings.client.SettingsApi;
+import com.microfocus.darwin.settings.client.*;
 import com.sun.jersey.api.client.ClientHandlerException;
 import java.util.HashMap;
 import java.util.List;
@@ -99,6 +96,17 @@ public final class WorkflowSettingsRetriever
         settings.put("tenant", processTenantConfigs(tenantId, requiredConfig.getTenantSettings()));
         document.getField("CAF_WORKFLOW_SETTINGS").set(gson.toJson(settings));
         document.getTask().getResponse().getCustomData().put("CAF_WORKFLOW_SETTINGS", gson.toJson(settings));
+    }
+
+    public void checkHealth() {
+        try {
+            final Setting setting = settingsApi.getSetting("healthcheck");
+        }
+        catch (ApiException ex){
+            if(ex.getCode()!=404){
+                throw new RuntimeException(ex.getMessage(), ex);
+            }
+        }
     }
 
     /**
