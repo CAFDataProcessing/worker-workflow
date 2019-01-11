@@ -166,7 +166,7 @@ public final class WorkflowWorker implements DocumentWorker
                 LOG.error("A failure occurred trying to add the scripts to the task.", e);
                 document.addFailure(WorkflowWorkerConstants.ErrorCodes.ADD_WORKFLOW_SCRIPTS_FAILED, e.getMessage());
             }
-        } catch (final ApiException ex) {
+        } catch (final com.microfocus.darwin.settings.client.ApiException ex) {
             document.addFailure("API_EXCEPTION", ex.getMessage());
         }
     }

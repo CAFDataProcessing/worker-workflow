@@ -85,6 +85,10 @@
             <artifactId>processing-service-client</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.microfocus.darwin</groupId>
+            <artifactId>settings-service-client</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
         </dependency>

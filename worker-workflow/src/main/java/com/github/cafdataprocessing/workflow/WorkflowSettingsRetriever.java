@@ -15,12 +15,6 @@
  */
 package com.github.cafdataprocessing.workflow;
 
-import com.github.cafdataprocessing.processing.service.client.ApiClient;
-import com.github.cafdataprocessing.processing.service.client.ApiException;
-import com.github.cafdataprocessing.processing.service.client.api.RepositoryConfigurationApi;
-import com.github.cafdataprocessing.processing.service.client.api.TenantConfigurationApi;
-import com.github.cafdataprocessing.processing.service.client.model.EffectiveRepositoryConfigValue;
-import com.github.cafdataprocessing.processing.service.client.model.EffectiveTenantConfigValue;
 import com.github.cafdataprocessing.workflow.cache.WorkflowSettingsCacheKey;
 import com.github.cafdataprocessing.workflow.cache.WorkflowSettingsRepositoryCacheKey;
 import com.github.cafdataprocessing.workflow.cache.WorkflowSettingsTenantCacheKey;
@@ -34,6 +28,10 @@ import com.google.gson.Gson;
 import com.hpe.caf.worker.document.exceptions.DocumentWorkerTransientException;
 import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.model.FieldValue;
+import com.microfocus.darwin.settings.client.ApiClient;
+import com.microfocus.darwin.settings.client.ApiException;
+import com.microfocus.darwin.settings.client.ResolvedSetting;
+import com.microfocus.darwin.settings.client.SettingsApi;
 import com.sun.jersey.api.client.ClientHandlerException;
 import java.util.HashMap;
 import java.util.List;
@@ -51,8 +49,7 @@ public final class WorkflowSettingsRetriever
     private final LoadingCache<WorkflowSettingsCacheKey, String> settingsCache;
     private final ApiClient apiClient;
     private final Gson gson;
-    private final RepositoryConfigurationApi repositoryConfigApi;
-    private final TenantConfigurationApi tenantConfigApi;
+    private final SettingsApi settingsApi;
 
     public WorkflowSettingsRetriever()
     {
@@ -73,11 +70,11 @@ public final class WorkflowSettingsRetriever
                 }
             });
         gson = new Gson();
-        final String processingServiceBaseUrl = System.getenv("CAF_WORKFLOW_WORKER_PROCESSING_API_URL");
-        Objects.requireNonNull(processingServiceBaseUrl);
-        apiClient.setBasePath(processingServiceBaseUrl);
-        tenantConfigApi = new TenantConfigurationApi(apiClient);
-        repositoryConfigApi = new RepositoryConfigurationApi(apiClient);
+        final String settingsServiceUrl = System.getenv("CAF_SETTINGS_SERVICE_URL");
+        Objects.requireNonNull(settingsServiceUrl);
+        apiClient.setBasePath(settingsServiceUrl);
+        settingsApi = new SettingsApi();
+        settingsApi.setApiClient(apiClient);
     }
 
     /**
@@ -108,8 +105,6 @@ public final class WorkflowSettingsRetriever
      * Creates a key value map of configuration key to string value. This method utilises a guava cache that is checked for the setting
      * required, only if it is not present or the cache has expired will a request be made to the service to retrieve the setting value.
      *
-     * @param document The document currently being processed, this is used when getting information from the task or from a document
-     * field that is required during processing, such as retrieval of the repository id.
      * @param tenantId The unique identifier of the tenant that issues the request to have this document processed.
      * @param configs The required repository configurations.
      * @return A String to String map of repository setting key to repository setting value.
@@ -224,12 +219,14 @@ public final class WorkflowSettingsRetriever
         Objects.requireNonNull(key);
         Objects.requireNonNull(repositoryId);
         try {
-            final EffectiveRepositoryConfigValue effectiveRepoConfigValue
-                = repositoryConfigApi.getEffectiveRepositoryConfig(tenantId, repositoryId, key);
+            final String repositoryScope = String.format("repository-%s", repositoryId);
+            final String tenantScope = String.format("tenant-%s", tenantId);
+            final ResolvedSetting resolvedSetting = settingsApi
+                    .getResolvedSetting(key, String.join(",", new String[]{repositoryScope, tenantScope}));
             LOG.debug("Retrieved value for repository configuration using key: {}", key);
-            LOG.debug("Retrieved value for repository configuration is of type: {}", effectiveRepoConfigValue.getValueType());
+            LOG.debug("Retrieved value for repository configuration is of type: {}", resolvedSetting.getScope());
             // escape the config value in case it has characters that would cause issues in JavaScript
-            return effectiveRepoConfigValue.getValue();
+            return resolvedSetting.getValue();
         } catch (final ApiException ex) {
             if (ex.getCode() == 404) {
                 LOG.error("Unable to obtain repository configuration from processing service for tenant: {} using key: {} as no "
@@ -259,12 +256,14 @@ public final class WorkflowSettingsRetriever
         Objects.requireNonNull(tenantId);
         Objects.requireNonNull(key);
         try {
-            final EffectiveTenantConfigValue effectiveRepoConfigValue
-                = tenantConfigApi.getEffectiveTenantConfig(tenantId, key);
+            final String tenantScope = String.format("tenant-%s", tenantId);
+            final ResolvedSetting resolvedSetting = settingsApi
+                    .getResolvedSetting(key, String.join(",", new String[]{tenantScope}));
+
             LOG.debug("Retrieved value for tenant configuration using key: {}", key);
-            LOG.debug("Retrieved value for tenant configuration is of type: {}", effectiveRepoConfigValue.getValueType());
+            LOG.debug("Retrieved value for tenant configuration is of type: {}", resolvedSetting.getScope());
             // escape the config value in case it has characters that would cause issues in JavaScript
-            return effectiveRepoConfigValue.getValue();
+            return resolvedSetting.getValue();
         } catch (final ApiException ex) {
             if (ex.getCode() == 404) {
                 LOG.error("Unable to obtain tenant configuration from processing service for tenant: {} using key: {} as no "
