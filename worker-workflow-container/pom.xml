@@ -438,6 +438,7 @@
                                     <CAF_SETTINGS_SERVICE_DATABASE_NAME>${settingsPostgresDbName}</CAF_SETTINGS_SERVICE_DATABASE_NAME>
                                     <CAF_SETTINGS_SERVICE_DATABASE_USERNAME>${postgresDbUser}</CAF_SETTINGS_SERVICE_DATABASE_USERNAME>
                                     <CAF_SETTINGS_SERVICE_DATABASE_PASSWORD>${postgresDbPassword}</CAF_SETTINGS_SERVICE_DATABASE_PASSWORD>
+                                    <CAF_SETTINGS_SERVICE_DATABASE_APPNAME>settings_service</CAF_SETTINGS_SERVICE_DATABASE_APPNAME>
                                 </env>
                                 <wait>
                                     <http>
