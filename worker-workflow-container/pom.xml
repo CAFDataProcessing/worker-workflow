@@ -34,6 +34,7 @@
         <internalDbConnectionString>jdbc:postgresql://workflow-db:5432/&lt;dbname&gt;</internalDbConnectionString>
         <internalProcessingServiceUrl>http://processing-service:8080/data-processing-service/v1</internalProcessingServiceUrl>
         <settingsServiceUrl>http://${docker.host.address}:${settings.service.port}</settingsServiceUrl>
+        <settingsServiceAdminUrl>http://${docker.host.address}:${settings.service.admin.port}</settingsServiceAdminUrl>
         <maven.install.skip>true</maven.install.skip>
         <maven.deploy.skip>true</maven.deploy.skip>
         <postgresDbName>workflow</postgresDbName>
@@ -293,8 +294,31 @@
                                     <POSTGRES_DB>${postgresDbName}</POSTGRES_DB>
                                 </env>
                                 <wait>
-                                    <log>PostgreSQL init process complete</log>
-                                    <time>120000</time>
+                                    <!--<log>PostgreSQL init process complete</log>-->
+                                    <time>10000</time>
+                                    <shutdown>500</shutdown>
+                                </wait>
+                                <log>
+                                    <enabled>true</enabled>
+                                </log>
+                            </run>
+                        </image>
+
+                        <!-- Settings database -->
+                        <image>
+                            <alias>settings-db</alias>
+                            <name>postgres:9.4</name>
+                            <run>
+                                <ports>
+                                    <port>${settings.postgres.db.port}:5432</port>
+                                </ports>
+                                <env>
+                                    <POSTGRES_PASSWORD>${postgresDbPassword}</POSTGRES_PASSWORD>
+                                    <POSTGRES_USER>${postgresDbUser}</POSTGRES_USER>
+                                </env>
+                                <wait>
+                                    <!--<log>PostgreSQL init process complete</log>-->
+                                    <time>10000</time>
                                     <shutdown>500</shutdown>
                                 </wait>
                                 <log>
@@ -431,25 +455,26 @@
                             <run>
                                 <ports>
                                     <port>${settings.service.port}:8080</port>
+                                    <port>${settings.service.admin.port}:8081</port>
                                 </ports>
                                 <env>
-                                    <CAF_SETTINGS_SERVICE_DATABASE_HOST>workflow-db</CAF_SETTINGS_SERVICE_DATABASE_HOST>
+                                    <CAF_SETTINGS_SERVICE_DATABASE_HOST>settings-db</CAF_SETTINGS_SERVICE_DATABASE_HOST>
                                     <CAF_SETTINGS_SERVICE_DATABASE_PORT>5432</CAF_SETTINGS_SERVICE_DATABASE_PORT>
                                     <CAF_SETTINGS_SERVICE_DATABASE_NAME>${settingsPostgresDbName}</CAF_SETTINGS_SERVICE_DATABASE_NAME>
                                     <CAF_SETTINGS_SERVICE_DATABASE_USERNAME>${postgresDbUser}</CAF_SETTINGS_SERVICE_DATABASE_USERNAME>
                                     <CAF_SETTINGS_SERVICE_DATABASE_PASSWORD>${postgresDbPassword}</CAF_SETTINGS_SERVICE_DATABASE_PASSWORD>
-                                    <CAF_SETTINGS_SERVICE_DATABASE_APPNAME>settings_service</CAF_SETTINGS_SERVICE_DATABASE_APPNAME>
+                                    <CAF_SETTINGS_SERVICE_DATABASE_APPNAME>caf_settings_service</CAF_SETTINGS_SERVICE_DATABASE_APPNAME>
                                 </env>
                                 <wait>
                                     <http>
-                                        <url>${settingsServiceUrl}/healthcheck</url>
+                                        <url>${settingsServiceAdminUrl}/healthcheck</url>
                                         <method>GET</method>
                                     </http>
                                     <time>40000</time>
                                     <shutdown>500</shutdown>
                                 </wait>
                                 <links>
-                                    <link>workflow-db</link>
+                                    <link>settings-db</link>
                                 </links>
                                 <log>
                                     <enabled>true</enabled>
@@ -592,6 +617,7 @@
             <properties>
                 <policyapi.service.port>9001</policyapi.service.port>
                 <postgres.db.port>5432</postgres.db.port>
+                <settings.postgres.db.port>5532</settings.postgres.db.port>
                 <processing.service.port>9051</processing.service.port>
                 <rabbitmq.ctrl.port>15672</rabbitmq.ctrl.port>
                 <rabbitmq.node.port>5672</rabbitmq.node.port>
