@@ -48,30 +48,28 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>com.github.workerframework</groupId>
+            <artifactId>standard-worker-container</artifactId>
+            <type>pom</type>
+        </dependency>
         <!-- database installer for use in testing container, not to be included in the worker container -->
         <dependency>
             <groupId>com.github.cafdataprocessing</groupId>
             <artifactId>corepolicy-database</artifactId>
-            <version>${corePolicyVersion}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.github.cafdataprocessing</groupId>
-            <artifactId>worker-document-testing</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.github.cafdataprocessing</groupId>
             <artifactId>worker-workflow</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.github.cafdataprocessing</groupId>
             <artifactId>worker-document</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.github.workerframework</groupId>
-            <artifactId>standard-worker-container</artifactId>
-            <type>pom</type>
+            <groupId>com.github.cafdataprocessing</groupId>
+            <artifactId>worker-document-testing</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

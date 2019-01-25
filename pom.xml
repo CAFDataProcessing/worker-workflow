@@ -40,7 +40,6 @@
         <caf.worker-document-framework.version>4.1.0-292</caf.worker-document-framework.version>
         <copyrightYear>2018</copyrightYear>
         <copyrightNotice>Copyright ${project.inceptionYear}-${copyrightYear} Micro Focus or one of its affiliates.</copyrightNotice>
-        <corePolicyVersion>1.2.0-165</corePolicyVersion>
         <corePolicyElasticsearchContainerName>
             cafdataprocessing/policy-admin-elasticsearch:1.2.0
         </corePolicyElasticsearchContainerName>
@@ -54,6 +53,7 @@
         </processingServiceContainerName>
         <settingsServiceContainerName>cafinternal/prereleases:settings-service-1.0.0-SNAPSHOT</settingsServiceContainerName>
         <gitRepo>https://github.com/CAFDataProcessing/worker-workflow</gitRepo>
+        <enforceCorrectDependencies>true</enforceCorrectDependencies>
     </properties>
 
     <developers>
@@ -83,6 +83,18 @@
         <dependencies>
             <dependency>
                 <groupId>com.github.cafdataprocessing</groupId>
+                <artifactId>worker-document-framework</artifactId>
+                <version>${caf.worker-document-framework.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.github.cafdataprocessing</groupId>
+                <artifactId>corepolicy-database</artifactId>
+                <version>1.2.0-165</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.cafdataprocessing</groupId>
                 <artifactId>processing-service-client</artifactId>
                 <version>1.5.0-390</version>
             </dependency>
@@ -93,10 +105,18 @@
             </dependency>
             <dependency>
                 <groupId>com.github.cafdataprocessing</groupId>
-                <artifactId>worker-document-framework</artifactId>
-                <version>${caf.worker-document-framework.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
+                <artifactId>worker-workflow</artifactId>
+                <version>2.1.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.cafdataprocessing</groupId>
+                <artifactId>worker-workflow-constants</artifactId>
+                <version>2.1.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.cafdataprocessing</groupId>
+                <artifactId>worker-workflow-spec</artifactId>
+                <version>2.1.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>com.github.cafdataprocessing</groupId>
@@ -104,9 +124,14 @@
                 <version>2.1.0-SNAPSHOT</version>
             </dependency>
             <dependency>
-                <groupId>com.github.cafdataprocessing</groupId>
-                <artifactId>worker-workflow-constants</artifactId>
-                <version>2.1.0-SNAPSHOT</version>
+                <groupId>com.thoughtworks.xstream</groupId>
+                <artifactId>xstream</artifactId>
+                <version>1.4.8</version>
+            </dependency>
+            <dependency>
+                <groupId>org.json</groupId>
+                <artifactId>json</artifactId>
+                <version>20160212</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
