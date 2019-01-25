@@ -61,6 +61,10 @@
             <artifactId>processing-service-client</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.microfocus.darwin</groupId>
+            <artifactId>settings-service-client</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
         </dependency>
@@ -97,15 +101,6 @@
         </dependency>
         <dependency>
             <groupId>com.github.cafdataprocessing</groupId>
-            <artifactId>processing-service-client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.microfocus.darwin</groupId>
-            <artifactId>settings-service-client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
             <artifactId>worker-document-shared</artifactId>
             <scope>test</scope>
         </dependency>
