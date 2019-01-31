@@ -63,6 +63,11 @@
             <email>anthony.mcgreevy@microfocus.com</email>
         </developer>
         <developer>
+            <id>davidegph</id>
+            <name>Davide Picchione</name>
+            <email>davide-giorgio.picchione@microfocus.com</email>
+        </developer>
+        <developer>
             <id>dermot-hardy</id>
             <name>Dermot Hardy</name>
             <email>dermot.hardy@microfocus.com</email>
@@ -71,11 +76,6 @@
             <id>michael-bryson</id>
             <name>Michael Bryson</name>
             <email>michael.bryson@microfocus.com</email>
-        </developer>
-        <developer>
-            <id>michael-mcalynn</id>
-            <name>Michael McAlynn</name>
-            <email>michael.mcalynn@microfocus.com</email>
         </developer>
     </developers>
 
@@ -95,27 +95,12 @@
             </dependency>
             <dependency>
                 <groupId>com.github.cafdataprocessing</groupId>
-                <artifactId>processing-service-client</artifactId>
-                <version>1.5.0-390</version>
-            </dependency>
-            <dependency>
-                <groupId>com.github.cafdataprocessing</groupId>
                 <artifactId>worker-workflow</artifactId>
                 <version>2.1.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>com.github.cafdataprocessing</groupId>
                 <artifactId>worker-workflow-constants</artifactId>
-                <version>2.1.0-SNAPSHOT</version>
-            </dependency>
-            <dependency>
-                <groupId>com.github.cafdataprocessing</groupId>
-                <artifactId>worker-workflow-spec</artifactId>
-                <version>2.1.0-SNAPSHOT</version>
-            </dependency>
-            <dependency>
-                <groupId>com.github.cafdataprocessing</groupId>
-                <artifactId>workflow-to-js-transformer</artifactId>
                 <version>2.1.0-SNAPSHOT</version>
             </dependency>
             <dependency>
@@ -138,8 +123,6 @@
 
     <modules>
         <module>worker-workflow-constants</module>
-        <module>worker-workflow-spec</module>
-        <module>workflow-to-js-transformer</module>
         <module>worker-workflow</module>
         <module>worker-workflow-container</module>
     </modules>

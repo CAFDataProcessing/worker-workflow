@@ -14,6 +14,5 @@
  * limitations under the License.
  */
 ({
-    processingApiUrl: getenv("CAF_WORKFLOW_WORKER_PROCESSING_API_URL") || undefined,
-    workflowCachePeriod: getenv("CAF_WORKFLOW_WORKER_CACHE_PERIOD") || "PT5M"
+    workflowsDirectory: getenv("CAF_WORKFLOW_WORKER_WORKFLOWS_DIRECTORY") || undefined
 });

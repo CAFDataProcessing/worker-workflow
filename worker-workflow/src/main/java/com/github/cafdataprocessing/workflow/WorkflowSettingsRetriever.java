@@ -18,9 +18,10 @@ package com.github.cafdataprocessing.workflow;
 import com.github.cafdataprocessing.workflow.cache.WorkflowSettingsCacheKey;
 import com.github.cafdataprocessing.workflow.cache.WorkflowSettingsRepositoryCacheKey;
 import com.github.cafdataprocessing.workflow.cache.WorkflowSettingsTenantCacheKey;
-import static com.github.cafdataprocessing.workflow.transform.TransformerFunctions.LOG;
-import com.github.cafdataprocessing.workflow.transform.models.RepoConfigSource;
-import com.github.cafdataprocessing.workflow.transform.models.WorkflowSettings;
+import com.github.cafdataprocessing.workflow.model.RepoConfigSource;
+import static com.github.cafdataprocessing.workflow.model.RepoConfigSource.RepositoryIdSource.CUSTOMDATA;
+import static com.github.cafdataprocessing.workflow.model.RepoConfigSource.RepositoryIdSource.FIELD;
+import com.github.cafdataprocessing.workflow.model.WorkflowSettings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -42,7 +43,7 @@ import org.slf4j.LoggerFactory;
 
 public final class WorkflowSettingsRetriever
 {
-    private final static Logger LOGGER = LoggerFactory.getLogger(WorkflowSettingsRetriever.class);
+    private final static Logger LOG = LoggerFactory.getLogger(WorkflowSettingsRetriever.class);
     private final LoadingCache<WorkflowSettingsCacheKey, String> settingsCache;
     private final ApiClient apiClient;
     private final Gson gson;
@@ -62,7 +63,7 @@ public final class WorkflowSettingsRetriever
                 public String load(final WorkflowSettingsCacheKey key)
                     throws ApiException, DocumentWorkerTransientException
                 {
-                    LOGGER.debug("Key not found in cache: " + key);
+                    LOG.debug("Key not found in cache: " + key);
                     return getSettingsFromServer(key);
                 }
             });

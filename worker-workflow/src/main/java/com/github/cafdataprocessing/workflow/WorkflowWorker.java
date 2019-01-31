@@ -15,18 +15,9 @@
  */
 package com.github.cafdataprocessing.workflow;
 
-import com.github.cafdataprocessing.processing.service.client.ApiClient;
-import com.github.cafdataprocessing.processing.service.client.ApiException;
-import com.github.cafdataprocessing.processing.service.client.api.AdminApi;
-import com.github.cafdataprocessing.processing.service.client.model.HealthStatus;
-import com.github.cafdataprocessing.processing.service.client.model.HealthStatusDependencies;
-import com.github.cafdataprocessing.workflow.spec.InvalidWorkflowSpecException;
-import com.github.cafdataprocessing.workflow.spec.WorkflowSpec;
-import com.github.cafdataprocessing.workflow.constants.WorkflowWorkerConstants;
-import com.github.cafdataprocessing.workflow.transform.WorkflowRetrievalException;
-import com.github.cafdataprocessing.workflow.transform.WorkflowTransformerException;
-import com.github.cafdataprocessing.workflow.transform.exceptions.InvalidWorkflowSpecificationException;
 import com.google.gson.Gson;
+import com.github.cafdataprocessing.workflow.constants.WorkflowWorkerConstants;
+import com.github.cafdataprocessing.workflow.model.WorkflowSettings;
 import com.hpe.caf.api.ConfigurationException;
 import com.hpe.caf.api.ConfigurationSource;
 import com.hpe.caf.api.worker.DataStore;
@@ -36,7 +27,16 @@ import com.hpe.caf.worker.document.extensibility.DocumentWorker;
 import com.hpe.caf.worker.document.model.Application;
 import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.model.HealthMonitor;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
 import javax.script.ScriptException;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,27 +47,48 @@ import org.slf4j.LoggerFactory;
 public final class WorkflowWorker implements DocumentWorker
 {
     private static final Logger LOG = LoggerFactory.getLogger(WorkflowWorker.class);
-    private final String processingApiUrl;
-    private final AdminApi workflowAdminApi;
-    private final TransformedWorkflowCache workflowCache;
     private final WorkflowSettingsRetriever workflowSettingsRetriever;
+    private final Map<String, String> availableWorkflows = new HashMap<>();
+    private final Map<String, String> availableStoredWorkflows = new HashMap<>();
+    private final Map<String, WorkflowSettings> workflowSettings = new HashMap<>();
+    private final DataStore dataStore;
 
     /**
      * Instantiates a WorkflowWorker instance to process documents, evaluating them against the workflow referred to by the document.
      *
      * @param application application context for this worker, used to derive configuration and data store for the worker.
+     * @throws IOException when the worker is unable to load the workflow scripts
      */
-    public WorkflowWorker(final Application application)
+    public WorkflowWorker(final Application application) throws IOException, ConfigurationException
     {
-        final DataStore dataStore = application.getService(DataStore.class);
+        dataStore = application.getService(DataStore.class);
+        final Map<String, String> workflowSettingsJson = new HashMap<>();
         final WorkflowWorkerConfiguration workflowWorkerConfiguration = getWorkflowWorkerConfiguration(application);
-        this.processingApiUrl = workflowWorkerConfiguration.getProcessingApiUrl();
-        this.workflowAdminApi = getWorkflowAdminApi();
-        this.workflowCache = new TransformedWorkflowCache(
-            workflowWorkerConfiguration.getWorkflowCachePeriod(),
-            dataStore,
-            processingApiUrl);
+        final String workflowsDirectory = workflowWorkerConfiguration.getWorkflowsDirectory();
+        if(workflowsDirectory == null){
+            throw new ConfigurationException("No workflow storage direction was set. Unable to load available workflows.");
+        }
+        createMapFromFiles(workflowsDirectory, "workflow.js", availableWorkflows);
+        createMapFromFiles(workflowsDirectory, "workflowsettings.js", workflowSettingsJson);
+        deserializeSettings(workflowSettingsJson);
         this.workflowSettingsRetriever = new WorkflowSettingsRetriever();
+        verifyWorkflows();
+    }
+
+    private void createMapFromFiles(final String workflowsDirectory, final String fileNameSuffix, final Map<String, String> mapToPopulate)
+        throws IOException
+    {
+        final File dir = new File(workflowsDirectory);
+        final FilenameFilter filter = (final File dir1, final String name) -> name.endsWith(fileNameSuffix);
+        final String[] workflows = dir.list(filter);
+        for (final String filename : workflows) {
+            try (FileInputStream fis = new FileInputStream(new File(workflowsDirectory + "/" + filename))) {
+                final String entryname = filename.endsWith("settings.js")
+                    ? filename.replace("settings.js", "")
+                    : filename.replace(".js", "");
+                mapToPopulate.put(entryname, IOUtils.toString(fis, StandardCharsets.UTF_8));
+            }
+        }
     }
 
     /**
@@ -80,43 +101,11 @@ public final class WorkflowWorker implements DocumentWorker
     public void checkHealth(final HealthMonitor healthMonitor)
     {
         try {
-            final HealthStatus healthStatus = workflowAdminApi.healthCheck();
-            if (HealthStatus.StatusEnum.HEALTHY.equals(healthStatus.getStatus())) {
-                return;
-            }
-            final StringBuilder dependenciesStatusBuilder = new StringBuilder();
-            for (final HealthStatusDependencies healthDependency : healthStatus.getDependencies()) {
-                dependenciesStatusBuilder.append(" ");
-                dependenciesStatusBuilder.append(healthDependency.getName());
-                dependenciesStatusBuilder.append(":");
-                dependenciesStatusBuilder.append(healthDependency.getStatus().toString());
-            }
-            healthMonitor.reportUnhealthy("Processing API communication is unhealthy. Service dependencies:"
-                + dependenciesStatusBuilder.toString());
-        } catch (final Exception e) {
-            LOG.error("Problem encountered when contacting Processing API to check health: ", e);
-            healthMonitor.reportUnhealthy("Processing API communication is unhealthy: " + e.getMessage());
-        }
-
-        try {
             workflowSettingsRetriever.checkHealth();
-        }
-        catch (final Exception e) {
+        } catch (final Exception e) {
             LOG.error("Problem encountered when contacting Settings Service to check health: ", e);
             healthMonitor.reportUnhealthy("Settings Service communication is unhealthy: " + e.getMessage());
         }
-    }
-
-    /**
-     * Retrieves a new AdminApi instance configured to talk to the currently set processing API for this worker.
-     *
-     * @return AdminApi pointing to configured processing API for the worker.
-     */
-    private AdminApi getWorkflowAdminApi()
-    {
-        final ApiClient apiClient = new ApiClient();
-        apiClient.setBasePath(this.processingApiUrl);
-        return new AdminApi(apiClient);
     }
 
     private static WorkflowWorkerConfiguration getWorkflowWorkerConfiguration(final Application application)
@@ -144,85 +133,62 @@ public final class WorkflowWorker implements DocumentWorker
     public void processDocument(final Document document) throws InterruptedException, DocumentWorkerTransientException
     {
         // Get the workflow specification passed in
-        final WorkflowSpec workflowSpec;
-        try {
-            workflowSpec = WorkflowSpecProvider.fromDocument(document);
-        } catch (final InvalidWorkflowSpecException ex) {
+        final String workflowName = document.getCustomData("workflowName");
+        final String workflowScript = availableWorkflows.get(workflowName);
+        if (workflowName == null || workflowScript == null) {
             LOG.warn("Custom data on document is not valid for this worker. Processing of this document will not "
                 + "proceed for this worker.");
             return;
         }
 
-        // Get the specified workflow and transform it to a JavaScript representation
-        final TransformWorkflowResult transformWorkflowResult = transformWorkflow(workflowSpec, document);
-        if (transformWorkflowResult == null) {
-            LOG.warn("Failure during workflow transformation. Processing of this document will not proceed "
-                + "for this worker.");
-            return;
-        }
-
         // Add the workflow scripts to the document task.
         try {
-            final Gson gson = new Gson();
-            System.out.println(gson.toJson(transformWorkflowResult.getWorkflowRepresentation().getWorkflowSettings()));
             // Retrieve required workflow settings
-            workflowSettingsRetriever.retrieveWorkflowSettings(transformWorkflowResult.getWorkflowRepresentation().getWorkflowSettings(),
-                                                       document);
-            try {
-                WorkflowProcessingScripts.setScripts(
-                    document,
-                    transformWorkflowResult.getWorkflowRepresentation().getWorkflowJavascript(),
-                    transformWorkflowResult.getWorkflowStorageRef());
-            } catch (final ScriptException e) {
-                LOG.error("A failure occurred trying to add the scripts to the task.", e);
-                document.addFailure(WorkflowWorkerConstants.ErrorCodes.ADD_WORKFLOW_SCRIPTS_FAILED, e.getMessage());
-            }
+            workflowSettingsRetriever.retrieveWorkflowSettings(workflowSettings.get(workflowName), document);
+            final String workflowStorageRef = availableStoredWorkflows.get(workflowName) != null
+                ? availableStoredWorkflows.get(workflowName)
+                : storeWorkflow(workflowName, availableWorkflows.get(workflowName), document);
+            WorkflowProcessingScripts.setScripts(
+                document,
+                availableWorkflows.get(workflowName),
+                workflowStorageRef);
         } catch (final com.microfocus.darwin.settings.client.ApiException ex) {
             document.addFailure("API_EXCEPTION", ex.getMessage());
+        } catch (final DataStoreException ex) {
+            LOG.error("A failure occurred trying to store workflow in data store.", ex);
+            document.addFailure(WorkflowWorkerConstants.ErrorCodes.STORE_WORKFLOW_FAILED, ex.getMessage());
+        } catch (final ScriptException ex) {
+            LOG.error("A failure occurred trying to add the scripts to the task.", ex);
+            document.addFailure(WorkflowWorkerConstants.ErrorCodes.ADD_WORKFLOW_SCRIPTS_FAILED, ex.getMessage());
         }
     }
 
-    /**
-     * Retrieves transformed workflow result based on extracted properties passed. If unable to retrieve a result then a failure will be
-     * added to the passed {@code document} and {@code null} returned.
-     *
-     * @param workflowSpec properties to use in workflow retrieval and transformation.
-     * @param document document to update with failure details in event of any issues.
-     * @return the transformed workflow result matching provided properties or null if there is a failure retrieving the transformed
-     * workflow result.
-     * @throws DocumentWorkerTransientException if there is a transient failure during workflow transformation.
-     */
-    private TransformWorkflowResult transformWorkflow(final WorkflowSpec workflowSpec, final Document document)
-        throws DocumentWorkerTransientException
+    private void deserializeSettings(final Map<String, String> workflowSettingsJson)
     {
-        try {
-            try {
-                return workflowCache.getTransformWorkflowResult(workflowSpec);
-            } catch (final ApiException firstException) {
-                // may have been a transient API issue, check if the API is healthy
-                final HealthStatus processingApiHealth = workflowAdminApi.healthCheck();
-                if (!HealthStatus.StatusEnum.HEALTHY.equals(processingApiHealth.getStatus())) {
-                    // processing API is unhealthy, throw a transient exception
-                    LOG.info("Unable to transform workflow as processing API is unhealthy.");
-                    throw new DocumentWorkerTransientException(
-                        "Unable to transform workflow. Processing API is unhealthy.");
-                }
-                // API is healthy so attempt to retrieve transform result one more time (in case it was temporarily
-                // unhealthy previously).
-                LOG.info("Attempting to get transformed workflow a second time after ApiException was thrown.");
-                return workflowCache.getTransformWorkflowResult(workflowSpec);
-            }
-        } catch (final DataStoreException e) {
-            document.addFailure(WorkflowWorkerConstants.ErrorCodes.STORE_WORKFLOW_FAILED, e.getMessage());
-        } catch (final ApiException | WorkflowTransformerException e) {
-            document.addFailure(WorkflowWorkerConstants.ErrorCodes.WORKFLOW_TRANSFORM_FAILED, e.getMessage());
-        } catch (final WorkflowRetrievalException e) {
-            throw new DocumentWorkerTransientException(
-                "Unable to transform workflow. Processing API communication is unhealthy.", e);
-        } catch (final InvalidWorkflowSpecificationException e) {
-            document.addFailure(WorkflowWorkerConstants.ErrorCodes.WORKFLOW_SPECIFICATION_INVALID,
-                                "Unable to generate workflow. Unable to resolve workflow name to workflow id.");
+        final Gson gson = new Gson();
+        for (final Map.Entry<String, String> entry : workflowSettingsJson.entrySet()) {
+            workflowSettings.put(entry.getKey(),
+                                 gson.fromJson(entry.getValue(), WorkflowSettings.class));
         }
-        return null;
+    }
+
+    private String storeWorkflow(final String workflowName, final String workflowjs, final Document document) throws DataStoreException
+    {
+        final String outputPartialReference = document.getCustomData("outputPartialReference") != null
+            ? document.getCustomData("outputPartialReference")
+            : "";
+        final String storageRef = dataStore.store(workflowjs.getBytes(StandardCharsets.UTF_8), outputPartialReference);
+        availableStoredWorkflows.put(workflowName, storageRef);
+        return storageRef;
+    }
+
+    private void verifyWorkflows() throws ConfigurationException
+    {
+        if(workflowSettings.size() != availableWorkflows.size()){
+            throw new ConfigurationException("Configuration mismatch, number of settings files does not match number of workflows.");
+        }
+        if(availableWorkflows.isEmpty()){
+            throw new ConfigurationException("No workflows available.");
+        }
     }
 }

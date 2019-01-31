@@ -15,9 +15,14 @@
  */
 package com.github.cafdataprocessing.workflow;
 
+import com.hpe.caf.api.ConfigurationException;
+import com.hpe.caf.worker.document.exceptions.DocumentWorkerTransientException;
 import com.hpe.caf.worker.document.extensibility.DocumentWorker;
 import com.hpe.caf.worker.document.extensibility.DocumentWorkerFactory;
 import com.hpe.caf.worker.document.model.Application;
+import com.hpe.caf.worker.document.model.Document;
+import com.hpe.caf.worker.document.model.HealthMonitor;
+import java.io.IOException;
 
 /**
  * A factory to create workflow workers, passing them a configuration instance.
@@ -27,6 +32,23 @@ public final class WorkflowWorkerFactory implements DocumentWorkerFactory
     @Override
     public DocumentWorker createDocumentWorker(final Application application)
     {
+        try{
         return new WorkflowWorker(application);
+        } catch(final IOException | ConfigurationException ex){
+            return new DocumentWorker()
+            {
+                @Override
+                public void checkHealth(HealthMonitor healthMonitor)
+                {
+                    healthMonitor.reportUnhealthy("Unable to load workflows");
+                }
+
+                @Override
+                public void processDocument(Document document) throws InterruptedException, DocumentWorkerTransientException
+                {
+                    throw new RuntimeException("Worker unhealthy and unable to process message.");
+                }
+            };
+        }
     }
 }
