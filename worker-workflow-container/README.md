@@ -16,17 +16,13 @@ Properties specific to this worker that can be provided on the custom data of th
 
 The data store partial reference to use when storing the generated workflow. This is optional.
 
-#### projectId
-
-The project ID that the workflow to transform is associated with. This is required.
-
 #### tenantId
 
 A tenant ID that can be used in the evaluation of the workflow. This is required.
 
-#### workflowId
+#### workflowName
 
-The ID of the workflow to transform. This is required.
+The name of the workflow to script to use. This is required.
 
 ### Output Task Scripts
 
@@ -58,5 +54,4 @@ Further Workflow Worker container configuration that can be controlled through e
 
 | Property | Description | Checked Environment Variables                        | Default               |
 |----------|--------|------------------------------------------------------|-----------------------|
-| processingApiUrl   | URL to a Processing Service that the worker will use to retrieve workflows e.g. http://processing-service:8080/data-processing-service/v1 |  `CAF_WORKFLOW_WORKER_PROCESSING_API_URL`  |                       |
-| workflowCachePeriod | The period of time that a transformed workflow script should remain cached after it is created. This should be in IS0-8601 time duration format e.g. PT5M. | `CAF_WORKFLOW_WORKER_CACHE_PERIOD`        | PT5M                  |
+| workflowsDirectory | The location within the container that the workflow scripts can be found. | CAF_WORKFLOW_WORKER_WORKFLOW_DIRECTORY | undefined |
