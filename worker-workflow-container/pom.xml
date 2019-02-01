@@ -30,9 +30,6 @@
 
     <!-- Properties for the worker. -->
     <properties>
-        <externalProcessingServiceUrl>http://${docker.host.address}:${processing.service.port}/data-processing-service/v1</externalProcessingServiceUrl>
-        <internalDbConnectionString>jdbc:postgresql://workflow-db:5432/&lt;dbname&gt;</internalDbConnectionString>
-        <internalProcessingServiceUrl>http://processing-service:8080/data-processing-service/v1</internalProcessingServiceUrl>
         <settingsServiceUrl>http://${docker.host.address}:${settings.service.port}</settingsServiceUrl>
         <settingsServiceAdminUrl>http://${docker.host.address}:${settings.service.admin.port}</settingsServiceAdminUrl>
         <maven.install.skip>true</maven.install.skip>
@@ -380,16 +377,6 @@
                                                 <outputDirectory>workflows</outputDirectory>
                                             </fileSet>
                                         </fileSets>
-                                        <!-- Including the dependencies into the docker tar -->
-                                        <dependencySets>
-                                            <dependencySet>
-                                                <useProjectArtifact>false</useProjectArtifact>
-                                                <scope>runtime</scope>
-                                                <excludes>
-                                                    <exclude>com.github.cafdataprocessing:corepolicy-database</exclude>
-                                                </excludes>
-                                            </dependencySet>
-                                        </dependencySets>
                                     </inline>
                                 </assembly>
                             </build>
@@ -466,10 +453,7 @@
         <profile>
             <id>use-default-fixed-ports</id>
             <properties>
-                <policyapi.service.port>9001</policyapi.service.port>
-                <postgres.db.port>5432</postgres.db.port>
                 <settings.postgres.db.port>5532</settings.postgres.db.port>
-                <processing.service.port>9051</processing.service.port>
                 <rabbitmq.ctrl.port>15672</rabbitmq.ctrl.port>
                 <rabbitmq.node.port>5672</rabbitmq.node.port>
                 <worker.adminport>8081</worker.adminport>
