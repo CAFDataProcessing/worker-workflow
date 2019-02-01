@@ -34,7 +34,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
 import javax.script.ScriptException;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
