@@ -17,9 +17,5 @@ This project is a Java library containing constant values associated with the wo
 ### worker-workflow-container
 This project builds a Docker image that packages the Workflow Worker for deployment. It can be found in [worker-workflow-container](worker-workflow-container).
 
-### workflow-to-js-transformer
-
-This project is a Java library to retrieve a workflow and transform it to a JavaScript representation of the action logic. It can be found in [workflow-to-js-transformer](workflow-to-js-transformer).
-
 ## Feature Testing
 The testing for the Workflow Worker is defined in [testcases](worker-workflow-container/testcases).

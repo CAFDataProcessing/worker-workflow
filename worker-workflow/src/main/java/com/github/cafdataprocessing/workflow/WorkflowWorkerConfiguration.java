@@ -25,7 +25,7 @@ import javax.validation.constraints.NotNull;
 public final class WorkflowWorkerConfiguration
 {
     /**
-     * URL to a processing API that workflows should be retrieved via.
+     * Directory to use when attempting to load workflow scripts.
      */
     @NotNull
     private String workflowsDirectory;
