@@ -377,6 +377,13 @@
                                                 <outputDirectory>workflows</outputDirectory>
                                             </fileSet>
                                         </fileSets>
+                                        <!-- Including the dependencies into the docker tar -->
+                                        <dependencySets>
+                                            <dependencySet>
+                                                <useProjectArtifact>false</useProjectArtifact>
+                                                <scope>runtime</scope>
+                                            </dependencySet>
+                                        </dependencySets>
                                     </inline>
                                 </assembly>
                             </build>
