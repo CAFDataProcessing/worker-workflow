@@ -40,8 +40,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Worker that will examine task received for a workflow ID, retrieve that workflow using a processing API and generate a JavaScript
- * representation of the workflow that the Document can be executed against to determine the action to perform on the document.
+ * Worker that will examine task received for a workflow name, it will then look for a javascript file with the same name on disk and add
+ * it to the task along with any settings required for the workflow.
  */
 public final class WorkflowWorker implements DocumentWorker
 {
@@ -57,6 +57,7 @@ public final class WorkflowWorker implements DocumentWorker
      *
      * @param application application context for this worker, used to derive configuration and data store for the worker.
      * @throws IOException when the worker is unable to load the workflow scripts
+     * @throws ConfigurationException when workflow directory is not set
      */
     public WorkflowWorker(final Application application) throws IOException, ConfigurationException
     {
@@ -65,7 +66,7 @@ public final class WorkflowWorker implements DocumentWorker
         final WorkflowWorkerConfiguration workflowWorkerConfiguration = getWorkflowWorkerConfiguration(application);
         final String workflowsDirectory = workflowWorkerConfiguration.getWorkflowsDirectory();
         if(workflowsDirectory == null){
-            throw new ConfigurationException("No workflow storage direction was set. Unable to load available workflows.");
+            throw new ConfigurationException("No workflow storage directory was set. Unable to load available workflows.");
         }
         createMapFromFiles(workflowsDirectory, "workflow.js", availableWorkflows);
         createMapFromFiles(workflowsDirectory, "workflowsettings.js", workflowSettingsJson);
@@ -120,9 +121,9 @@ public final class WorkflowWorker implements DocumentWorker
     }
 
     /**
-     * Processes a single document. Retrieving the workflow it refers to, transforming that workflow to a runnable script, evaluating the
-     * document against the workflow to determine where it should be sent to and storing the workflow on the document so the next worker
-     * may re-evaluate the document once it has finished its action.
+     * Processes a single document. Retrieving the workflow it refers to, evaluating the document against the workflow to determine where
+     * it should be sent to and storing the workflow on the document so the next worker may re-evaluate the document once it has finished
+     * its action.
      *
      * @param document the document to be processed.
      * @throws InterruptedException if any thread has interrupted the current thread
