@@ -373,7 +373,7 @@
                                                 <outputDirectory>config</outputDirectory>
                                             </fileSet>
                                             <fileSet>
-                                                <directory>${project.basedir}/src/main/workflow</directory>
+                                                <directory>${project.basedir}/src/main/docker/workflows</directory>
                                                 <outputDirectory>workflows</outputDirectory>
                                             </fileSet>
                                         </fileSets>

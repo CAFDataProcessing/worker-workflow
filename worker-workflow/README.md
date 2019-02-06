@@ -3,6 +3,7 @@
 ## Summary
 
 The Workflow Worker is used to load a script (from file) representing a workflow that can be executed against a document to send the document to another worker to have an action performed on it.
+The workflow scripts and their settings have to be save in the [src/main/docker/workflows](/src/main/docker/workflows) folder.
 
 ## Implementation
 
