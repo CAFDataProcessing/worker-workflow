@@ -3,7 +3,7 @@
 ## Summary
 
 The Workflow Worker is used to load a script (from file) representing a workflow that can be executed against a document to send the document to another worker to have an action performed on it.
-The workflow scripts and their settings have to be saved in the [src/main/docker/workflows](https://github.com/CAFDataProcessing/worker-workflow/tree/develop/worker-workflow-container/src/main/docker/workflows) folder.
+The workflow scripts and their settings have to be saved in the [src/main/docker/workflows](../worker-workflow-container/src/main/docker/workflows) folder.
 
 ## Implementation
 
