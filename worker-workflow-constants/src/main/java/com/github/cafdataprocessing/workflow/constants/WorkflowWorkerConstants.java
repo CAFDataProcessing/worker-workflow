@@ -42,10 +42,6 @@ public final class WorkflowWorkerConstants
          */
         public static final String TENANT_ID = "tenantId";
         /**
-         * Key for custom data property identifying the workflow to execute against a document.
-         */
-        public static final String WORKFLOW_ID = "workflowId";
-        /**
          * Key for custom data property identifying the name of the workflow to execute against a document.
          */
         public static final String WORKFLOW_NAME = "workflowName";
@@ -59,7 +55,5 @@ public final class WorkflowWorkerConstants
         public static final String INVALID_CUSTOM_DATA = "WORKFLOW-InvalidCustomData";
         public static final String STORE_WORKFLOW_FAILED = "WORKFLOW-StoreWorkflowFailed";
         public static final String ADD_WORKFLOW_SCRIPTS_FAILED = "WORKFLOW-FailedToAddScriptsToTask";
-        public static final String WORKFLOW_TRANSFORM_FAILED = "WORKFLOW-WorkflowTransformFailed";
-        public static final String WORKFLOW_SPECIFICATION_INVALID = "WORKFLOW-WorkflowSpecInvalid";
     }
 }
