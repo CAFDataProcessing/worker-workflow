@@ -122,7 +122,6 @@
     </dependencyManagement>
 
     <modules>
-        <module>worker-workflow-constants</module>
         <module>worker-workflow</module>
         <module>worker-workflow-container</module>
     </modules>

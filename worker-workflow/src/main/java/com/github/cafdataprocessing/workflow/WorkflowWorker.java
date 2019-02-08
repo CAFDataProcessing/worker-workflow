@@ -16,7 +16,7 @@
 package com.github.cafdataprocessing.workflow;
 
 import com.google.gson.Gson;
-import com.github.cafdataprocessing.workflow.constants.WorkflowWorkerConstants;
+import com.github.cafdataprocessing.workflow.model.WorkflowWorkerConstants;
 import com.github.cafdataprocessing.workflow.model.WorkflowSettings;
 import com.hpe.caf.api.ConfigurationException;
 import com.hpe.caf.api.ConfigurationSource;

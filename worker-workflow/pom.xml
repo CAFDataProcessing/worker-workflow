@@ -39,10 +39,6 @@
             <artifactId>worker-document-interface</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.github.cafdataprocessing</groupId>
-            <artifactId>worker-workflow-constants</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.microfocus.darwin</groupId>
             <artifactId>settings-service-client</artifactId>
         </dependency>

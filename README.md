@@ -10,10 +10,6 @@ A worker to generate a workflow of actions to execute in a chain for document wo
 
 This project contains the Java implementation of the Workflow Worker. It can be found in [worker-workflow](worker-workflow).
 
-### worker-workflow-constants
-
-This project is a Java library containing constant values associated with the workflow worker such as parameter keys and error code values. It can be found in [worker-workflow-constants](worker-workflow-constants).
-
 ### worker-workflow-container
 This project builds a Docker image that packages the Workflow Worker for deployment. It can be found in [worker-workflow-container](worker-workflow-container).
 
