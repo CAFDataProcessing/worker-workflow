@@ -42,6 +42,10 @@ public final class WorkflowWorkerConstants
          */
         public static final String TENANT_ID = "tenantId";
         /**
+         * Key for custom data property identifying the workflow to execute against a document.
+         */
+        public static final String WORKFLOW_ID = "workflowId";
+        /**
          * Key for custom data property identifying the name of the workflow to execute against a document.
          */
         public static final String WORKFLOW_NAME = "workflowName";
