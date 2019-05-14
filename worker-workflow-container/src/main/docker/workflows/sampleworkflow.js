@@ -182,7 +182,76 @@ function evaluateValuesAgainstCondition(document, fieldName, expectedValue, eval
     return false;
 }
 
+function existsCondition_(document, fieldName) {
+    return document.getField(fieldName).hasValues();
+}
 
+function stringCondition_is(document, fieldName, value) {
+    return evaluateValuesAgainstCondition(document, fieldName, value, function (expectedValue, actualValue) {
+        if (actualValue.equalsIgnoreCase(expectedValue)) {
+            return true;
+        }
+    });
+}
+
+function stringCondition_contains(document, fieldName, value) {
+    return evaluateValuesAgainstCondition(document, fieldName, value, function (expectedValue, actualValue) {
+        if (actualValue.toUpperCase(java.util.Locale.getDefault())
+                .contains(expectedValue.toUpperCase(java.util.Locale.getDefault()))) {
+            return true;
+        }
+    });
+}
+
+function stringCondition_starts_with(document, fieldName, value) {
+    return evaluateValuesAgainstCondition(document, fieldName, value, function (expectedValue, actualValue) {
+        if (actualValue.toUpperCase(java.util.Locale.getDefault())
+                .startsWith(expectedValue.toUpperCase(java.util.Locale.getDefault()))) {
+            return true;
+        }
+    });
+}
+
+function stringCondition_ends_with(document, fieldName, value) {
+    return evaluateValuesAgainstCondition(document, fieldName, value, function (expectedValue, actualValue) {
+        if (actualValue.toUpperCase(java.util.Locale.getDefault())
+                .endsWith(expectedValue.toUpperCase(java.util.Locale.getDefault()))) {
+            return true;
+        }
+    });
+}
+
+function regexCondition_(document, fieldName, value) {
+    throw new java.lang.UnsupportedOperationException("Regex is not supported");
+}
+
+function dateCondition_before(document, fieldName, value) {
+    throw new java.lang.UnsupportedOperationException("Date before is not supported");
+}
+
+function dateCondition_after(document, fieldName, value) {
+    throw new java.lang.UnsupportedOperationException("Date after is not supported");
+}
+
+function dateCondition_on(document, fieldName, value) {
+    throw new java.lang.UnsupportedOperationException("Date on is not supported");
+}
+
+function numberCondition_gt(document, fieldName, value) {
+    throw new java.lang.UnsupportedOperationException("Number greater than is not supported");
+}
+
+function numberCondition_lt(document, fieldName, value) {
+    throw new java.lang.UnsupportedOperationException("Number less than is not supported");
+}
+
+function numberCondition_eq(document, fieldName, value) {
+    throw new java.lang.UnsupportedOperationException("Number equal to is not supported");
+}
+
+function notCondition(aBoolean) {
+    return !aBoolean;
+}
 
 function isRuleCompleted(document, ruleId) {
     return document.getField('CAF_WORKFLOW_RULES_COMPLETED').getStringValues().contains(ruleId);

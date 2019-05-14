@@ -19,6 +19,8 @@ import com.github.cafdataprocessing.workflow.cache.WorkflowSettingsCacheKey;
 import com.github.cafdataprocessing.workflow.cache.WorkflowSettingsRepositoryCacheKey;
 import com.github.cafdataprocessing.workflow.cache.WorkflowSettingsTenantCacheKey;
 import com.github.cafdataprocessing.workflow.model.RepoConfigSource;
+import static com.github.cafdataprocessing.workflow.model.RepoConfigSource.RepositoryIdSource.CUSTOMDATA;
+import static com.github.cafdataprocessing.workflow.model.RepoConfigSource.RepositoryIdSource.FIELD;
 import com.github.cafdataprocessing.workflow.model.WorkflowSettings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
