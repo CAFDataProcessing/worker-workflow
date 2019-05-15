@@ -15,7 +15,6 @@
  */
 package com.github.cafdataprocessing.workflow;
 
-import com.google.gson.Gson;
 import com.github.cafdataprocessing.workflow.model.WorkflowWorkerConstants;
 import com.github.cafdataprocessing.workflow.model.WorkflowSettings;
 import com.hpe.caf.api.ConfigurationException;
@@ -38,6 +37,7 @@ import javax.script.ScriptException;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yaml.snakeyaml.Yaml;
 
 /**
  * Worker that will examine task received for a workflow name, it will then look for a javascript file with the same name on disk and add
@@ -68,8 +68,8 @@ public final class WorkflowWorker implements DocumentWorker
         if(workflowsDirectory == null){
             throw new ConfigurationException("No workflow storage directory was set. Unable to load available workflows.");
         }
-        createMapFromFiles(workflowsDirectory, "workflow.js", availableWorkflows);
-        createMapFromFiles(workflowsDirectory, "workflowsettings.js", workflowSettingsJson);
+        createMapFromFiles(workflowsDirectory, "-workflow.js", availableWorkflows);
+        createMapFromFiles(workflowsDirectory, "-workflow-settings.yaml", workflowSettingsJson);
         deserializeSettings(workflowSettingsJson);
         this.workflowSettingsRetriever = new WorkflowSettingsRetriever();
         verifyWorkflows();
@@ -83,9 +83,7 @@ public final class WorkflowWorker implements DocumentWorker
         final String[] workflows = dir.list(filter);
         for (final String filename : workflows) {
             try (FileInputStream fis = new FileInputStream(new File(workflowsDirectory + "/" + filename))) {
-                final String entryname = filename.endsWith("settings.js")
-                    ? filename.replace("settings.js", "")
-                    : filename.replace(".js", "");
+                final String entryname = filename.replaceAll("(?:-workflow.js$|-workflow-settings.yaml$)", "");
                 mapToPopulate.put(entryname, IOUtils.toString(fis, StandardCharsets.UTF_8));
             }
         }
@@ -165,10 +163,10 @@ public final class WorkflowWorker implements DocumentWorker
 
     private void deserializeSettings(final Map<String, String> workflowSettingsJson)
     {
-        final Gson gson = new Gson();
+        final Yaml yaml = new Yaml();
         for (final Map.Entry<String, String> entry : workflowSettingsJson.entrySet()) {
             workflowSettings.put(entry.getKey(),
-                                 gson.fromJson(entry.getValue(), WorkflowSettings.class));
+                    yaml.loadAs(entry.getValue(), WorkflowSettings.class));
         }
     }
 
