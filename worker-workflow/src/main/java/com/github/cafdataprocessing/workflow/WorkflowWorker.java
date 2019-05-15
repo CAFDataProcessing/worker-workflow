@@ -68,8 +68,8 @@ public final class WorkflowWorker implements DocumentWorker
         if(workflowsDirectory == null){
             throw new ConfigurationException("No workflow storage directory was set. Unable to load available workflows.");
         }
-        createMapFromFiles(workflowsDirectory, "-workflow.js", availableWorkflows);
-        createMapFromFiles(workflowsDirectory, "-workflow-settings.yaml", workflowSettingsJson);
+        createMapFromFiles(workflowsDirectory, ".js", availableWorkflows);
+        createMapFromFiles(workflowsDirectory, "-settings.yaml", workflowSettingsJson);
         deserializeSettings(workflowSettingsJson);
         this.workflowSettingsRetriever = new WorkflowSettingsRetriever();
         verifyWorkflows();
@@ -83,7 +83,7 @@ public final class WorkflowWorker implements DocumentWorker
         final String[] workflows = dir.list(filter);
         for (final String filename : workflows) {
             try (FileInputStream fis = new FileInputStream(new File(workflowsDirectory + "/" + filename))) {
-                final String entryname = filename.replaceAll("(?:-workflow.js$|-workflow-settings.yaml$)", "");
+                final String entryname = filename.replaceAll("(?:.js$|-settings.yaml$)", "");
                 mapToPopulate.put(entryname, IOUtils.toString(fis, StandardCharsets.UTF_8));
             }
         }
