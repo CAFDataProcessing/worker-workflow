@@ -1,0 +1,31 @@
+---
+settingsForCustomData:
+  taskSettings:
+    - taskSettingExample
+  tenantSettings:
+    - tenantSettingExample
+  repositorySettings:
+    repositorySettingFromField:
+      source: FIELD
+      key: REPOSITORY_ID
+    repositorySettingFromCustomData:
+      source: CUSTOMDATA
+      key: REPOSITORY_ID
+actions:
+  action_1:
+    queueName: action_1_queueName
+    customData:
+      valueFromTaskSetting: resolveValue(settings.task["taskSettingExample"], "")
+      valueFromTenantSetting: resolveValue(settings.tenant["tenantSettingExample"], "")
+      valueFromRepositorySettingInField: resolveValue(settings.repository["repositorySettingFromField"], "")
+      valueFromRepositorySettingInCustomData: resolveValue(settings.repository["repositorySettingFromCustomData"], "")
+      valueFromLiteral: "literalExample"
+    scripts:
+      - name: example.js
+        script: |
+          function onProcessTask(e) {
+          }
+          function onAfterProcessTask(e) {
+          }
+          function onError(e) {
+          }

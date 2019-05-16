@@ -15,29 +15,19 @@
  */
 package com.github.cafdataprocessing.workflow;
 
-import com.github.cafdataprocessing.workflow.model.WorkflowWorkerConstants;
-import com.github.cafdataprocessing.workflow.model.WorkflowSettings;
+import com.github.cafdataprocessing.workflow.model.Workflow;
+import com.google.common.base.Strings;
 import com.hpe.caf.api.ConfigurationException;
-import com.hpe.caf.api.ConfigurationSource;
-import com.hpe.caf.api.worker.DataStore;
-import com.hpe.caf.api.worker.DataStoreException;
 import com.hpe.caf.worker.document.exceptions.DocumentWorkerTransientException;
 import com.hpe.caf.worker.document.extensibility.DocumentWorker;
 import com.hpe.caf.worker.document.model.Application;
 import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.model.HealthMonitor;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-import javax.script.ScriptException;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yaml.snakeyaml.Yaml;
+
+import javax.script.ScriptException;
 
 /**
  * Worker that will examine task received for a workflow name, it will then look for a javascript file with the same name on disk and add
@@ -46,11 +36,9 @@ import org.yaml.snakeyaml.Yaml;
 public final class WorkflowWorker implements DocumentWorker
 {
     private static final Logger LOG = LoggerFactory.getLogger(WorkflowWorker.class);
-    private final WorkflowSettingsRetriever workflowSettingsRetriever;
-    private final Map<String, String> availableWorkflows = new HashMap<>();
-    private final Map<String, String> availableStoredWorkflows = new HashMap<>();
-    private final Map<String, WorkflowSettings> workflowSettings = new HashMap<>();
-    private final DataStore dataStore;
+    private final WorkflowManager workflowManager;
+    private final ScriptManager scriptManager;
+    private final SettingsManager settingsManager;
 
     /**
      * Instantiates a WorkflowWorker instance to process documents, evaluating them against the workflow referred to by the document.
@@ -59,34 +47,18 @@ public final class WorkflowWorker implements DocumentWorker
      * @throws IOException when the worker is unable to load the workflow scripts
      * @throws ConfigurationException when workflow directory is not set
      */
-    public WorkflowWorker(final Application application) throws IOException, ConfigurationException
+    public WorkflowWorker(final Application application,
+                          final WorkflowWorkerConfiguration workflowWorkerConfiguration)
+            throws ConfigurationException
     {
-        dataStore = application.getService(DataStore.class);
-        final Map<String, String> workflowSettingsJson = new HashMap<>();
-        final WorkflowWorkerConfiguration workflowWorkerConfiguration = getWorkflowWorkerConfiguration(application);
         final String workflowsDirectory = workflowWorkerConfiguration.getWorkflowsDirectory();
         if(workflowsDirectory == null){
             throw new ConfigurationException("No workflow storage directory was set. Unable to load available workflows.");
         }
-        createMapFromFiles(workflowsDirectory, ".js", availableWorkflows);
-        createMapFromFiles(workflowsDirectory, "-settings.yaml", workflowSettingsJson);
-        deserializeSettings(workflowSettingsJson);
-        this.workflowSettingsRetriever = new WorkflowSettingsRetriever();
-        verifyWorkflows();
-    }
 
-    private void createMapFromFiles(final String workflowsDirectory, final String fileNameSuffix, final Map<String, String> mapToPopulate)
-        throws IOException
-    {
-        final File dir = new File(workflowsDirectory);
-        final FilenameFilter filter = (final File dir1, final String name) -> name.endsWith(fileNameSuffix);
-        final String[] workflows = dir.list(filter);
-        for (final String filename : workflows) {
-            try (FileInputStream fis = new FileInputStream(new File(workflowsDirectory + "/" + filename))) {
-                final String entryname = filename.replaceAll("(?:.js$|-settings.yaml$)", "");
-                mapToPopulate.put(entryname, IOUtils.toString(fis, StandardCharsets.UTF_8));
-            }
-        }
+        this.workflowManager = new WorkflowManager(application, workflowsDirectory);
+        this.scriptManager = new ScriptManager();
+        this.settingsManager = new SettingsManager();
     }
 
     /**
@@ -99,22 +71,10 @@ public final class WorkflowWorker implements DocumentWorker
     public void checkHealth(final HealthMonitor healthMonitor)
     {
         try {
-            workflowSettingsRetriever.checkHealth();
+            settingsManager.checkHealth();
         } catch (final Exception e) {
             LOG.error("Problem encountered when contacting Settings Service to check health: ", e);
             healthMonitor.reportUnhealthy("Settings Service communication is unhealthy: " + e.getMessage());
-        }
-    }
-
-    private static WorkflowWorkerConfiguration getWorkflowWorkerConfiguration(final Application application)
-    {
-        try {
-            return application
-                .getService(ConfigurationSource.class)
-                .getConfiguration(WorkflowWorkerConfiguration.class);
-        } catch (final ConfigurationException e) {
-            LOG.warn("Unable to load WorkflowWorkerConfiguration.");
-            return new WorkflowWorkerConfiguration();
         }
     }
 
@@ -128,65 +88,34 @@ public final class WorkflowWorker implements DocumentWorker
      * @throws DocumentWorkerTransientException if the document could not be processed
      */
     @Override
-    public void processDocument(final Document document) throws InterruptedException, DocumentWorkerTransientException
+    public void processDocument(final Document document) throws DocumentWorkerTransientException
     {
         // Get the workflow specification passed in
         final String workflowName = document.getCustomData("workflowName");
-        final String workflowScript = availableWorkflows.get(workflowName);
-        if (workflowName == null || workflowScript == null) {
-            LOG.warn("Custom data on document is not valid for this worker. Processing of this document will not "
-                + "proceed for this worker.");
+
+        if (Strings.isNullOrEmpty(workflowName)) {
+            final String errorMessage = String.format("No 'workflowName' in customData of document [%s].",
+                    document.getReference());
+            LOG.error(errorMessage);
+            document.addFailure("NO_WORKFLOW", errorMessage);
             return;
         }
 
-        // Add the workflow scripts to the document task.
+        final Workflow workflow = workflowManager.get(workflowName);
+        if (workflow == null) {
+            final String errorMessage = String.format("Workflow [%s] is not available for document [%s].",
+                    workflowName, document.getReference());
+            LOG.error(errorMessage);
+            document.addFailure("WORKFLOW_NOT_FOUND", errorMessage);
+            return;
+        }
+
+        settingsManager.applySettingsCustomData(workflow.getSettingsForCustomData(), document);
+
         try {
-            // Retrieve required workflow settings
-            workflowSettingsRetriever.retrieveWorkflowSettings(workflowSettings.get(workflowName), document);
-            final String workflowStorageRef = availableStoredWorkflows.get(workflowName) != null
-                ? availableStoredWorkflows.get(workflowName)
-                : storeWorkflow(workflowName, availableWorkflows.get(workflowName), document);
-            WorkflowProcessingScripts.setScripts(
-                document,
-                availableWorkflows.get(workflowName),
-                workflowStorageRef);
-        } catch (final com.microfocus.darwin.settings.client.ApiException ex) {
-            document.addFailure("API_EXCEPTION", ex.getMessage());
-        } catch (final DataStoreException ex) {
-            LOG.error("A failure occurred trying to store workflow in data store.", ex);
-            document.addFailure(WorkflowWorkerConstants.ErrorCodes.STORE_WORKFLOW_FAILED, ex.getMessage());
-        } catch (final ScriptException ex) {
-            LOG.error("A failure occurred trying to add the scripts to the task.", ex);
-            document.addFailure(WorkflowWorkerConstants.ErrorCodes.ADD_WORKFLOW_SCRIPTS_FAILED, ex.getMessage());
-        }
-    }
-
-    private void deserializeSettings(final Map<String, String> workflowSettingsJson)
-    {
-        final Yaml yaml = new Yaml();
-        for (final Map.Entry<String, String> entry : workflowSettingsJson.entrySet()) {
-            workflowSettings.put(entry.getKey(),
-                    yaml.loadAs(entry.getValue(), WorkflowSettings.class));
-        }
-    }
-
-    private String storeWorkflow(final String workflowName, final String workflowjs, final Document document) throws DataStoreException
-    {
-        final String outputPartialReference = document.getCustomData("outputPartialReference") != null
-            ? document.getCustomData("outputPartialReference")
-            : "";
-        final String storageRef = dataStore.store(workflowjs.getBytes(StandardCharsets.UTF_8), outputPartialReference);
-        availableStoredWorkflows.put(workflowName, storageRef);
-        return storageRef;
-    }
-
-    private void verifyWorkflows() throws ConfigurationException
-    {
-        if(workflowSettings.size() != availableWorkflows.size()){
-            throw new ConfigurationException("Configuration mismatch, number of settings files does not match number of workflows.");
-        }
-        if(availableWorkflows.isEmpty()){
-            throw new ConfigurationException("No workflows available.");
+            scriptManager.applyScriptToDocument(workflow, document);
+        } catch (ScriptException e) {
+            document.addFailure("SCRIPT_EXCEPTION", e.getMessage());
         }
     }
 }

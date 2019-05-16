@@ -16,6 +16,7 @@
 package com.github.cafdataprocessing.workflow;
 
 import com.hpe.caf.api.ConfigurationException;
+import com.hpe.caf.api.ConfigurationSource;
 import com.hpe.caf.worker.document.exceptions.DocumentWorkerTransientException;
 import com.hpe.caf.worker.document.extensibility.DocumentWorker;
 import com.hpe.caf.worker.document.extensibility.DocumentWorkerFactory;
@@ -33,8 +34,12 @@ public final class WorkflowWorkerFactory implements DocumentWorkerFactory
     public DocumentWorker createDocumentWorker(final Application application)
     {
         try{
-        return new WorkflowWorker(application);
-        } catch(final IOException | ConfigurationException ex){
+            final WorkflowWorkerConfiguration workflowWorkerConfiguration = application
+                    .getService(ConfigurationSource.class)
+                    .getConfiguration(WorkflowWorkerConfiguration.class);
+
+            return new WorkflowWorker(application, workflowWorkerConfiguration);
+        } catch(ConfigurationException ex){
             return new DocumentWorker()
             {
                 @Override

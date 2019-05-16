@@ -1,0 +1,52 @@
+package com.github.cafdataprocessing.workflow;
+
+import com.github.cafdataprocessing.workflow.model.Workflow;
+import com.hpe.caf.worker.document.model.Document;
+import com.hpe.caf.worker.document.model.Script;
+import com.hpe.caf.worker.document.model.Scripts;
+import com.hpe.caf.worker.document.testing.DocumentBuilder;
+import com.hpe.caf.worker.document.testing.TestServices;
+import org.junit.Test;
+
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+
+import static org.junit.Assert.assertEquals;
+
+public class ScriptManagerTests {
+
+    @Test
+    public void applyScriptsTest() throws Exception {
+
+        final ScriptManager scriptManager = new ScriptManager();
+        final Workflow workflow = new Workflow();
+        final TestServices testServices = TestServices.createDefault();
+        final String testScript = "var a = 'example';";
+
+        workflow.setWorkflowScript(testScript);
+        final String storedScriptReference = testServices.getDataStore().store(
+                new ByteArrayInputStream(workflow.getWorkflowScript().getBytes(StandardCharsets.UTF_8)), "partial");
+
+        workflow.setStorageReference(storedScriptReference);
+
+        final Document document = DocumentBuilder.configure().withServices(testServices)
+                .withCustomData()
+                .documentBuilder()
+                .withFields()
+                .documentBuilder()
+                .build();
+
+        scriptManager.applyScriptToDocument(workflow, document);
+
+        final Scripts scripts = document.getTask().getScripts();
+        assertEquals(2, scripts.size());
+
+        final Script inlineScript = scripts.get(0);
+        assertEquals("temp-workflow.js", inlineScript.getName());
+        assertEquals(testScript, inlineScript.getScript());
+
+        final Script referencedScript = scripts.get(1);
+        assertEquals("workflow.js", referencedScript.getName());
+        assertEquals(testScript, referencedScript.getScript());
+    }
+}

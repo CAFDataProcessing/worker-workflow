@@ -1,0 +1,61 @@
+---
+settingsForCustomData:
+  taskSettings:
+    - tenantId
+    - ee.operationmode
+    - ee.grammarmap
+    - RECORD_USAGE
+    - INDEXING_MODE
+  tenantSettings:
+    - RECORD_USAGE
+    - RECORD_ENTITY_VERSIONS
+  repositorySettings:
+    ee.grammarmap:
+      source: FIELD
+      key: REPOSITORY_ID
+actions:
+  family_hashing:
+    queueName: dataprocessing-family-hashing-in
+    customData:
+      tenantId: resolveValue(settings.task["tenantId"], "")
+    scripts:
+      - name: recordProcessingTimes.js
+        script: |
+          function onProcessTask(e) {
+            var startTime = new Date();
+            e.rootDocument.getField("LONG_FAMILY_HASHING_START_TIME").set(startTime.getTime());
+            e.rootDocument.getField("ENRICHMENT_TIME").set(Math.round(startTime.getTime() / 1000));
+          }
+          function onAfterProcessTask(e) {
+            var endTime = new Date();
+            e.rootDocument.getField("LONG_FAMILY_HASHING_END_TIME").set(endTime.getTime());
+          }
+          function onError(e) {
+            var failedTime = new Date();
+            e.rootDocument.getField("LONG_FAMILY_HASHING_FAILED_TIME").set(failedTime.getTime());
+          }
+  lang_detect:
+    conditionFunction: |
+      function (document) {
+        return fieldExists(document, 'CONTENT_PRIMARY');
+      }
+    queueName: dataprocessing-family-hashing-in,
+    customData:
+      fieldSpecs: "CONTENT_PRIMARY"
+    scripts:
+      - name: recordProcessingTimes.js,
+        script: |
+          function onProcessTask(e) {
+            var startTime = new Date();
+            e.rootDocument.getField("LONG_LANGUAGE_DETECTION_START_TIME").set(startTime.getTime());
+          }
+          function onAfterProcessTask(e) {
+            var endTime = new Date();
+            e.rootDocument.getField("LONG_LANGUAGE_DETECTION_END_TIME").set(endTime.getTime());
+          }
+          function onError(e) {
+            var failedTime = new Date();
+            e.rootDocument.getField("LONG_LANGUAGE_DETECTION_FAILED_TIME").set(failedTime.getTime());
+          }
+  bulk_index:
+    queueName: bulk-index
