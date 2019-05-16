@@ -30,6 +30,9 @@ public final class WorkflowWorkerConfiguration
     @NotNull
     private String workflowsDirectory;
 
+    /**
+     * The URL for the settings service.
+     */
     @NotNull
     private String settingsServiceUrl;
 

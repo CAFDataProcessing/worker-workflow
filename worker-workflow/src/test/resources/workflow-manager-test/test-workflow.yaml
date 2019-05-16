@@ -1,23 +1,52 @@
+#
+# Copyright 2015-2018 Micro Focus or one of its affiliates.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 ---
-settingsForCustomData:
-  taskSettings:
-    - tenantId
-    - ee.operationmode
-    - ee.grammarmap
-    - RECORD_USAGE
-    - INDEXING_MODE
-  tenantSettings:
-    - RECORD_USAGE
-    - RECORD_ENTITY_VERSIONS
-  repositorySettings:
-    ee.grammarmap:
-      source: FIELD
-      key: REPOSITORY_ID
+settingDefinitions:
+  - name: tenantId
+    sources:
+      - name: TASK_SETTING_TENANTID
+        type: CUSTOM_DATA
+  - name: ee.operationmode
+    sources:
+      - name: TASK_SETTING_EE.OPERATIONMODE
+        type: CUSTOM_DATA
+  - name: ee.grammarmap
+    sources:
+      - name: TASK_SETTING_EE.GRAMMARMAP
+        type: CUSTOM_DATA
+      - name: ee.grammarmap
+        type: SETTINGS_SERVICE
+        options: repository-%f:REPOSITORY_ID%,tenantId-%cd:TASK_SETTING_TENANTID%
+  - name: RECORD_USAGE
+    sources:
+      - name: TASK_SETTING_RECORD_USAGE
+        type: CUSTOM_DATA
+      - name: RECORD_USAGE
+        type: SETTINGS_SERVICE
+        options: tenantId-%cd:TASK_SETTING_TENANTID%
+  - name: INDEXING_MODE
+    sources:
+      - name: TASK_SETTING_INDEXING_MODE
+        type: CUSTOM_DATA
 actions:
   family_hashing:
     queueName: dataprocessing-family-hashing-in
     customData:
-      tenantId: resolveValue(settings.task["tenantId"], "")
+      tenantId: settings.tenantId
     scripts:
       - name: recordProcessingTimes.js
         script: |
@@ -41,7 +70,7 @@ actions:
       }
     queueName: dataprocessing-family-hashing-in,
     customData:
-      fieldSpecs: "CONTENT_PRIMARY"
+      fieldSpecs: "'CONTENT_PRIMARY'"
     scripts:
       - name: recordProcessingTimes.js,
         script: |

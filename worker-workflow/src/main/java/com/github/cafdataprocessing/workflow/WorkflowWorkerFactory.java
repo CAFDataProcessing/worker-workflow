@@ -38,7 +38,11 @@ public final class WorkflowWorkerFactory implements DocumentWorkerFactory
                     .getService(ConfigurationSource.class)
                     .getConfiguration(WorkflowWorkerConfiguration.class);
 
-            return new WorkflowWorker(application, workflowWorkerConfiguration);
+            return new WorkflowWorker(workflowWorkerConfiguration,
+                    new WorkflowManager(application, workflowWorkerConfiguration.getWorkflowsDirectory()),
+                    new ScriptManager(),
+                    new SettingsManager(workflowWorkerConfiguration.getSettingsServiceUrl()));
+
         } catch(ConfigurationException ex){
             return new DocumentWorker()
             {

@@ -1,8 +1,23 @@
+/*
+ * Copyright 2015-2018 Micro Focus or one of its affiliates.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.github.cafdataprocessing.workflow;
 
 import com.github.cafdataprocessing.workflow.model.Action;
+import com.github.cafdataprocessing.workflow.model.SettingDefinition;
 import com.github.cafdataprocessing.workflow.model.Workflow;
-import com.github.cafdataprocessing.workflow.model.WorkflowSettings;
 import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.testing.DocumentBuilder;
 import com.hpe.caf.worker.document.testing.TestServices;
@@ -11,6 +26,7 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -35,6 +51,7 @@ public class WorkflowManagerTests {
 
         final String expectedScript = Resources.toString(Resources.getResource("workflow-manager-test/expected-script.js"),
                 StandardCharsets.UTF_8);
+
         //TODO Comparison is failing is it line endings or something?
 //        assertEquals(expectedScript, workflow.getWorkflowScript());
 
@@ -44,11 +61,9 @@ public class WorkflowManagerTests {
 
         assertEquals(workflow.getWorkflowScript(), storedScript);
 
-        final WorkflowSettings workflowSettings = workflow.getSettingsForCustomData();
-        assertNotNull(workflowSettings);
-        assertEquals(5, workflowSettings.getTaskSettings().size());
-        assertEquals(2, workflowSettings.getTenantSettings().size());
-        assertEquals(1, workflowSettings.getRepositorySettings().size());
+        final List<SettingDefinition> settingDefinitions = workflow.getSettingDefinitions();
+        assertNotNull(settingDefinitions);
+        assertEquals(5, settingDefinitions.size());
 
         final Map<String, Action> actions = workflow.getActions();
         assertEquals(3, actions.size());

@@ -20,18 +20,17 @@ import com.google.common.base.Strings;
 import com.hpe.caf.api.ConfigurationException;
 import com.hpe.caf.worker.document.exceptions.DocumentWorkerTransientException;
 import com.hpe.caf.worker.document.extensibility.DocumentWorker;
-import com.hpe.caf.worker.document.model.Application;
 import com.hpe.caf.worker.document.model.Document;
+import com.hpe.caf.worker.document.model.Field;
 import com.hpe.caf.worker.document.model.HealthMonitor;
-import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.script.ScriptException;
 
 /**
- * Worker that will examine task received for a workflow name, it will then look for a javascript file with the same name on disk and add
- * it to the task along with any settings required for the workflow.
+ * Worker that will examine task received for a workflow name, it will then look for a javascript file with the same
+ * name on disk and add it to the task along with any settings required for the workflow.
  */
 public final class WorkflowWorker implements DocumentWorker
 {
@@ -41,14 +40,20 @@ public final class WorkflowWorker implements DocumentWorker
     private final SettingsManager settingsManager;
 
     /**
-     * Instantiates a WorkflowWorker instance to process documents, evaluating them against the workflow referred to by the document.
-     *
-     * @param application application context for this worker, used to derive configuration and data store for the worker.
-     * @throws IOException when the worker is unable to load the workflow scripts
+     * Instantiates a WorkflowWorker instance to process documents, evaluating them against the workflow referred to by
+     * the document.
+     * @param workflowWorkerConfiguration The worker's configuration
+     * @param workflowManager Retrieves workflows from disk and stores them in the datastore
+     * @param scriptManager Applies the scripts to the documents task object
+     * @param settingsManager Processes settings definitions and retrieves values from custom data, document fields or
+     *                        the settings service
      * @throws ConfigurationException when workflow directory is not set
      */
-    public WorkflowWorker(final Application application,
-                          final WorkflowWorkerConfiguration workflowWorkerConfiguration)
+    public WorkflowWorker(final WorkflowWorkerConfiguration workflowWorkerConfiguration,
+                          final WorkflowManager workflowManager,
+                          final ScriptManager scriptManager,
+                          final SettingsManager settingsManager
+                          )
             throws ConfigurationException
     {
         final String workflowsDirectory = workflowWorkerConfiguration.getWorkflowsDirectory();
@@ -56,14 +61,15 @@ public final class WorkflowWorker implements DocumentWorker
             throw new ConfigurationException("No workflow storage directory was set. Unable to load available workflows.");
         }
 
-        this.workflowManager = new WorkflowManager(application, workflowsDirectory);
-        this.scriptManager = new ScriptManager();
-        this.settingsManager = new SettingsManager(workflowWorkerConfiguration.getSettingsServiceUrl());
+        this.workflowManager = workflowManager;
+        this.scriptManager = scriptManager;
+        this.settingsManager = settingsManager;
     }
 
     /**
-     * This method provides an opportunity for the worker to report if it has any problems which would prevent it processing documents
-     * correctly. If the worker is healthy then it should simply return without calling the health monitor.
+     * This method provides an opportunity for the worker to report if it has any problems which would prevent it
+     * processing documents correctly. If the worker is healthy then it should simply return without calling the
+     * health monitor.
      *
      * @param healthMonitor used to report the health of the application
      */
@@ -79,27 +85,32 @@ public final class WorkflowWorker implements DocumentWorker
     }
 
     /**
-     * Processes a single document. Retrieving the workflow it refers to, evaluating the document against the workflow to determine where
-     * it should be sent to and storing the workflow on the document so the next worker may re-evaluate the document once it has finished
-     * its action.
+     * Processes a single document. Retrieving the workflow it refers to, evaluating the document against the workflow
+     * to determine where it should be sent to and storing the workflow on the document so the next worker may
+     * re-evaluate the document once it has finished its action.
      *
      * @param document the document to be processed.
-     * @throws InterruptedException if any thread has interrupted the current thread
      * @throws DocumentWorkerTransientException if the document could not be processed
      */
     @Override
     public void processDocument(final Document document) throws DocumentWorkerTransientException
     {
         // Get the workflow specification passed in
-        final String workflowName = document.getCustomData("workflowName");
+        final String customDataWorkflowName = document.getCustomData("workflowName");
+        final Field fieldWorkflowName = document.getField("CAF_WORKFLOW_NAME");
 
-        if (Strings.isNullOrEmpty(workflowName)) {
-            final String errorMessage = String.format("No 'workflowName' in customData of document [%s].",
-                    document.getReference());
-            LOG.error(errorMessage);
-            document.addFailure("NO_WORKFLOW", errorMessage);
+        if(!Strings.isNullOrEmpty(customDataWorkflowName)){
+            fieldWorkflowName.set(customDataWorkflowName);
+        }
+
+        if(!fieldWorkflowName.hasValues()){
+            LOG.error(String.format("Workflow could not be retrieved from custom data for document [%s].",
+                    document.getReference()));
+            document.addFailure("WORKFLOW_NOT_SPECIFIED", "Workflow could not be retrieved from custom data.");
             return;
         }
+
+        final String workflowName = fieldWorkflowName.getStringValues().get(0);
 
         final Workflow workflow = workflowManager.get(workflowName);
         if (workflow == null) {
@@ -115,7 +126,8 @@ public final class WorkflowWorker implements DocumentWorker
         try {
             scriptManager.applyScriptToDocument(workflow, document);
         } catch (ScriptException e) {
-            document.addFailure("SCRIPT_EXCEPTION", e.getMessage());
+            LOG.error(String.format("ScriptException for document [%s].\n%s\n", document.getReference(), e.toString()));
+            document.addFailure("WORKFLOW_SCRIPT_EXCEPTION", e.getMessage());
         }
     }
 }

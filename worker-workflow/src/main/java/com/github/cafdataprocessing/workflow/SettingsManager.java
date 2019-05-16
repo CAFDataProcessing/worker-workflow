@@ -1,8 +1,24 @@
+/*
+ * Copyright 2015-2018 Micro Focus or one of its affiliates.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.github.cafdataprocessing.workflow;
 
 import com.github.cafdataprocessing.workflow.model.SettingDefinition;
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
+import com.hpe.caf.worker.document.exceptions.DocumentWorkerTransientException;
 import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.model.Field;
 import com.microfocus.darwin.settings.client.*;
@@ -19,6 +35,7 @@ import java.util.regex.Pattern;
 public class SettingsManager {
 
     private final static Logger LOG = LoggerFactory.getLogger(SettingsManager.class);
+
     private final Gson gson = new Gson();
     private final SettingsApi settingsApi;
 
@@ -50,7 +67,9 @@ public class SettingsManager {
         };
     }
 
-    public void applySettingsCustomData(final List<SettingDefinition> settingDefinitions, final Document document){
+    public void applySettingsCustomData(final List<SettingDefinition> settingDefinitions, final Document document)
+            throws DocumentWorkerTransientException {
+
         final Map<String, String> resolvedSettings = new HashMap<>();
 
         for(final SettingDefinition settingDefinition: settingDefinitions) {
@@ -92,9 +111,10 @@ public class SettingsManager {
 
     }
 
-    private String getFromSettingService(final String name, final String options, final Document document) {
+    private String getFromSettingService(final String name, final String options, final Document document)
+            throws DocumentWorkerTransientException {
 
-        final Pattern pattern = Pattern.compile("(?<prefix>[a-zA-Z-_]*)%(?<type>f|cd):(?<name>[a-zA-Z-_]*)%(?<suffix>[a-zA-Z-_]*)");
+        final Pattern pattern = Pattern.compile("(?<prefix>[a-zA-Z-_.]*)%(?<type>f|cd):(?<name>[a-zA-Z-_.]*)%(?<suffix>[a-zA-Z-_.]*)");
         final List<String> scopes = new ArrayList<>();
         final String[] scopesToProcess = options.split(",");
 
@@ -127,8 +147,11 @@ public class SettingsManager {
         try {
             resolvedSetting = settingsApi.getResolvedSetting(name, String.join(",", scopes));
         } catch (ApiException e) {
-            //TODO
-            throw new RuntimeException(e);
+            if(e.getCode()==404){
+                LOG.warn(String.format("Setting [%s] was not found in the settings service.", name));
+                return null;
+            }
+            throw new DocumentWorkerTransientException(e.getMessage());
         }
         if(resolvedSetting==null){
             return null;
