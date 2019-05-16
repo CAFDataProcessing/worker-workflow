@@ -60,6 +60,7 @@ public class SettingsManagerTest {
                 document.getTask().getResponse().getCustomData().get("CAF_WORKFLOW_SETTINGS"), type);
 
         assertEquals("value of example field", settingsPayload.get("example"));
+        assertEquals("A default value", settingsPayload.get("shouldDefault"));
     }
 
     @Test
@@ -217,6 +218,13 @@ public class SettingsManagerTest {
         }
 
         settingDefinitions.add(settingDefinition);
+
+        SettingDefinition settingDefinitionWithDefault = new SettingDefinition();
+        settingDefinitionWithDefault.setName("shouldDefault");
+        settingDefinitionWithDefault.setDefaultValue("A default value");
+
+        settingDefinitions.add(settingDefinitionWithDefault);
+
         return settingDefinitions;
     }
 }

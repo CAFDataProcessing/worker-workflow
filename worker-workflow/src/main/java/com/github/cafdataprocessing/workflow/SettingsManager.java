@@ -73,36 +73,43 @@ public class SettingsManager {
         final Map<String, String> resolvedSettings = new HashMap<>();
 
         for(final SettingDefinition settingDefinition: settingDefinitions) {
-
-            for(final SettingDefinition.Source source: settingDefinition.getSources()) {
-                String value = null;
-                switch (source.getType()){
-                    case CUSTOM_DATA: {
-                        value = document.getCustomData(source.getName());
-                        break;
-                    }
-                    case FIELD: {
-                        final Field field = document.getField(source.getName());
-                        if(field.hasValues()){
-                            value = field.getStringValues().get(0);
+            String value = null;
+            if(settingDefinition.getSources() != null){
+                for(final SettingDefinition.Source source: settingDefinition.getSources()) {
+                    switch (source.getType()){
+                        case CUSTOM_DATA: {
+                            value = document.getCustomData(source.getName());
+                            break;
                         }
+                        case FIELD: {
+                            final Field field = document.getField(source.getName());
+                            if(field.hasValues()){
+                                value = field.getStringValues().get(0);
+                            }
+                            break;
+                        }
+                        case SETTINGS_SERVICE: {
+                            value = getFromSettingService(source.getName(), source.getOptions(), document);
+                            break;
+                        }
+                        default: {
+                            throw new UnsupportedOperationException(String.format("Invalid source type [%s].",
+                                    source.getType()));
+                        }
+                    }
+                    if(!Strings.isNullOrEmpty(value)){
                         break;
                     }
-                    case SETTINGS_SERVICE: {
-                        value = getFromSettingService(source.getName(), source.getOptions(), document);
-                        break;
-                    }
-                    default: {
-                        throw new UnsupportedOperationException(String.format("Invalid source type [%s].",
-                                source.getType()));
-                    }
-                }
-                if(!Strings.isNullOrEmpty(value)){
-                    resolvedSettings.put(settingDefinition.getName(), value);
-                    break;
                 }
             }
 
+            if(Strings.isNullOrEmpty(value) && !Strings.isNullOrEmpty(settingDefinition.getDefaultValue())) {
+                value = settingDefinition.getDefaultValue();
+            }
+
+            if(!Strings.isNullOrEmpty(value)){
+                resolvedSettings.put(settingDefinition.getName(), value);
+            }
         }
 
         document.getField("CAF_WORKFLOW_SETTINGS").set(gson.toJson(resolvedSettings));

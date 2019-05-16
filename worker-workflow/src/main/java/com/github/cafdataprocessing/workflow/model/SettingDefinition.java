@@ -19,6 +19,7 @@ import java.util.List;
 
 public class SettingDefinition {
     private String name;
+    private String defaultValue;
     private List<Source> sources;
 
     public String getName() {
@@ -35,6 +36,14 @@ public class SettingDefinition {
 
     public void setSources(List<Source> sources) {
         this.sources = sources;
+    }
+
+    public String getDefaultValue() {
+        return defaultValue;
+    }
+
+    public void setDefaultValue(String defaultValue) {
+        this.defaultValue = defaultValue;
     }
 
     public static class Source {
