@@ -44,8 +44,8 @@ public class WorkflowManagerTest {
                 .documentBuilder()
                 .build();
 
-        final String workflowDirectory = Resources.getResource("workflow-manager-test").getPath();
-        final WorkflowManager workflowManager = new WorkflowManager(document.getApplication(), workflowDirectory);
+        final WorkflowManager workflowManager = new WorkflowManager(document.getApplication(),
+                WorkflowDirectoryProvider.getWorkflowDirectory("workflow-manager-test"));
 
         final Workflow workflow = workflowManager.get("test-workflow");
 

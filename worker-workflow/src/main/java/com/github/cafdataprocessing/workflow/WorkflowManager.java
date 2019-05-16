@@ -31,6 +31,7 @@ import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -59,9 +60,14 @@ public class WorkflowManager {
             throw new ConfigurationException(String.format("No workflows found in [%s].", workflowsDirectory));
         }
         final FilenameFilter filter = (final File dir1, final String name) -> name.endsWith(".yaml");
-        final String[] workflows = dir.list(filter);
-        for (final String filename : workflows) {
-            try (final FileInputStream fis = new FileInputStream(new File(workflowsDirectory + "/" + filename))) {
+        for (final File workflowFile : dir.listFiles(filter)) {
+
+            if(!workflowFile.exists()){
+                throw new RuntimeException(String.format("File [%s] does not exist.",
+                        workflowFile.toPath().toAbsolutePath()));
+            }
+
+            try (final FileInputStream fis = new FileInputStream(workflowFile)) {
                 final Workflow workflow = yaml.loadAs(fis, Workflow.class);
 
                 final StringBuilder stringBuilder = new StringBuilder();
@@ -78,14 +84,16 @@ public class WorkflowManager {
                         dataStore.store(workflow.getWorkflowScript().getBytes(StandardCharsets.UTF_8),
                                 "workflow-scripts"));
 
-                final String entryname = filename.replaceAll(".yaml$", "");
+                final String entryname = workflowFile.getName().replaceAll(".yaml$", "");
                 workflowMap.put(entryname, workflow);
             }
             catch(final IOException ex){
-                throw new ConfigurationException("Could not access workflow in configured directory", ex);
+                throw new ConfigurationException(
+                        String.format("Could not access workflow [%s] in configured directory.",
+                                workflowFile.toPath().toAbsolutePath(), ex));
             }
             catch (final DataStoreException ex){
-                throw new ConfigurationException("Could not store workflow in configured datastote", ex);
+                throw new ConfigurationException("Could not store workflow in configured datastore.", ex);
             }
         }
 

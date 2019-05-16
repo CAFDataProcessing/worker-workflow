@@ -51,10 +51,10 @@ public class WorkflowWorkerTest
     private SettingsManager settingsManager ;
 
     @Before
-    public void before() {
+    public void before() throws Exception {
         workflowWorkerConfiguration = new WorkflowWorkerConfiguration();
         workflowWorkerConfiguration.setWorkflowsDirectory(
-                Resources.getResource("workflow-worker-test").getPath());
+                WorkflowDirectoryProvider.getWorkflowDirectory("workflow-worker-test"));
         workflowWorkerConfiguration.setSettingsServiceUrl("");
 
         final TestServices testServices = TestServices.createDefault();
