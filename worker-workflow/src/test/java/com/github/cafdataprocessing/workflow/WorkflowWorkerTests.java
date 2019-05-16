@@ -74,7 +74,7 @@ public class WorkflowWorkerTests
                 .documentBuilder()
                 .build();
 
-        final WorkflowWorker workflowWorker = new WorkflowWorker(document.getApplication(),
+        final WorkflowWorker workflowWorker = new WorkflowWorker(
                 workflowWorkerConfiguration,
                 new WorkflowManager(document.getApplication(), workflowWorkerConfiguration.getWorkflowsDirectory()),
                 new ScriptManager(),
