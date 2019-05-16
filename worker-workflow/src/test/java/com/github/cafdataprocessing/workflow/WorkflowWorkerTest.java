@@ -22,6 +22,7 @@ import com.hpe.caf.worker.document.model.*;
 import com.hpe.caf.worker.document.testing.DocumentBuilder;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -29,6 +30,7 @@ import java.util.Map;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 
 import com.hpe.caf.worker.document.testing.TestServices;
 import com.microfocus.darwin.settings.client.SettingsApi;
@@ -102,20 +104,8 @@ public class WorkflowWorkerTest
 
         final Scripts scripts = document.getTask().getScripts();
         assertEquals(2, scripts.size());
-        final Script inlineScript = scripts.get(0);
-        assertEquals("temp-workflow.js", inlineScript.getName());
 
-        final ScriptEngine scriptEngine = new ScriptEngineManager().getEngineByName("nashorn");
-        final Invocable invocable = (Invocable) scriptEngine;
-
-        //Write the js to disk so you can set a breakpoint
-        //https://intellij-support.jetbrains.com/hc/en-us/community/posts/206834455-Break-Point-ignored-while-debugging-Nashorn-Javascript
-        FileUtils.write(new File(".\\target\\workflow.js"), inlineScript.getScript(), StandardCharsets.UTF_8);
-        scriptEngine.eval("load('.\\\\target\\\\workflow.js');");
-
-//        scriptEngine.eval(inlineScript.getScript());
-
-        invocable.invokeFunction("processDocument", document);
+        executeScript(document, scripts.get(0));
 
         assertEquals(failuresToString(document), 0, document.getFailures().size());
 
@@ -128,7 +118,6 @@ public class WorkflowWorkerTest
     }
 
     @Test
-    @Ignore("Fault marking action 2 for execution")
     public void action2ConditionPassTest() throws Exception {
 
         final Document document = documentBuilder
@@ -149,6 +138,12 @@ public class WorkflowWorkerTest
                 settingsManager);
 
         workflowWorker.processDocument(document);
+
+        assertEquals(failuresToString(document), 0, document.getFailures().size());
+
+        final Scripts scripts = document.getTask().getScripts();
+        assertEquals(2, scripts.size());
+        executeScript(document, scripts.get(0));
 
         final List<String> actions = document.getField("CAF_WORKFLOW_ACTION").getStringValues();
         assertEquals(1, actions.size());
@@ -178,8 +173,30 @@ public class WorkflowWorkerTest
 
         workflowWorker.processDocument(document);
 
+        assertEquals(failuresToString(document), 0, document.getFailures().size());
+
+        final Scripts scripts = document.getTask().getScripts();
+        assertEquals(2, scripts.size());
+        executeScript(document, scripts.get(0));
+
         final List<String> actions = document.getField("CAF_WORKFLOW_ACTION").getStringValues();
         assertEquals(0, actions.size());
+    }
+
+    private void executeScript(Document document, Script inlineScript) throws IOException, ScriptException, NoSuchMethodException {
+        assertEquals("temp-workflow.js", inlineScript.getName());
+
+        final ScriptEngine scriptEngine = new ScriptEngineManager().getEngineByName("nashorn");
+        final Invocable invocable = (Invocable) scriptEngine;
+
+        //Write the js to disk so you can set a breakpoint
+        //https://intellij-support.jetbrains.com/hc/en-us/community/posts/206834455-Break-Point-ignored-while-debugging-Nashorn-Javascript
+        FileUtils.write(new File(".\\target\\workflow.js"), inlineScript.getScript(), StandardCharsets.UTF_8);
+        scriptEngine.eval("load('.\\\\target\\\\workflow.js');");
+
+//        scriptEngine.eval(inlineScript.getScript());
+
+        invocable.invokeFunction("processDocument", document);
     }
 
     private String failuresToString(final Document document){

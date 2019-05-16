@@ -59,7 +59,7 @@ function processDocument(document) {
     for (var actionId in ACTIONS) {
         var action = ACTIONS[actionId];
         if (!isActionCompleted(document, actionId)) {
-            if(!action.conditionFunction || action.conditionFunction(document)) {
+            if(!action.conditionFunction || eval(action.conditionFunction)(document)) {
                 var actionDetails = {
                     queueName: action.queueName,
                     scripts: action.scripts,
@@ -76,6 +76,9 @@ function processDocument(document) {
 
 function evalCustomData(settings, customDataToEval){
     var customData = {};
+    if (!customDataToEval) {
+        return customData;
+    }
     for(var customDataField in customDataToEval){
         if(settings[customDataToEval[customDataField]]){
             customData[customDataField] = settings[customDataToEval[customDataField]];
