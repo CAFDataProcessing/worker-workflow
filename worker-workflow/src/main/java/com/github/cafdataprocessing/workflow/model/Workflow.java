@@ -28,7 +28,7 @@ public class Workflow {
         return storageReference;
     }
 
-    public void setStorageReference(String storageReference) {
+    public void setStorageReference(final String storageReference) {
         this.storageReference = storageReference;
     }
 
@@ -36,7 +36,7 @@ public class Workflow {
         return actions;
     }
 
-    public void setActions(Map<String, Action> actions) {
+    public void setActions(final Map<String, Action> actions) {
         this.actions = actions;
     }
 
@@ -44,7 +44,7 @@ public class Workflow {
         return workflowScript;
     }
 
-    public void setWorkflowScript(String workflowScript) {
+    public void setWorkflowScript(final String workflowScript) {
         this.workflowScript = workflowScript;
     }
 
@@ -52,7 +52,7 @@ public class Workflow {
         return settingDefinitions;
     }
 
-    public void setSettingDefinitions(List<SettingDefinition> settingDefinitions) {
+    public void setSettingDefinitions(final List<SettingDefinition> settingDefinitions) {
         this.settingDefinitions = settingDefinitions;
     }
 }

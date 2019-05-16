@@ -27,7 +27,7 @@ public class Action {
         return queueName;
     }
 
-    public void setQueueName(String queueName) {
+    public void setQueueName(final String queueName) {
         this.queueName = queueName;
     }
 
@@ -35,7 +35,7 @@ public class Action {
         return conditionFunction;
     }
 
-    public void setConditionFunction(String conditionFunction) {
+    public void setConditionFunction(final String conditionFunction) {
         this.conditionFunction = conditionFunction;
     }
 
@@ -43,7 +43,7 @@ public class Action {
         return customData;
     }
 
-    public void setCustomData(Map<String, String> customData) {
+    public void setCustomData(final Map<String, String> customData) {
         this.customData = customData;
     }
 
@@ -51,7 +51,7 @@ public class Action {
         return scripts;
     }
 
-    public void setScripts(Script[] scripts) {
+    public void setScripts(final Script[] scripts) {
         this.scripts = scripts;
     }
 }

@@ -26,7 +26,7 @@ public class SettingDefinition {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(final String name) {
         this.name = name;
     }
 
@@ -34,7 +34,7 @@ public class SettingDefinition {
         return sources;
     }
 
-    public void setSources(List<Source> sources) {
+    public void setSources(final List<Source> sources) {
         this.sources = sources;
     }
 
@@ -42,7 +42,7 @@ public class SettingDefinition {
         return defaultValue;
     }
 
-    public void setDefaultValue(String defaultValue) {
+    public void setDefaultValue(final String defaultValue) {
         this.defaultValue = defaultValue;
     }
 
@@ -55,7 +55,7 @@ public class SettingDefinition {
             return name;
         }
 
-        public void setName(String name) {
+        public void setName(final String name) {
             this.name = name;
         }
 
@@ -63,7 +63,7 @@ public class SettingDefinition {
             return type;
         }
 
-        public void setType(SourceType type) {
+        public void setType(final SourceType type) {
             this.type = type;
         }
 
@@ -71,7 +71,7 @@ public class SettingDefinition {
             return options;
         }
 
-        public void setOptions(String options) {
+        public void setOptions(final String options) {
             this.options = options;
         }
     }

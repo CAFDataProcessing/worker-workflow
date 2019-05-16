@@ -56,8 +56,8 @@ public class SettingsManager {
 
     private Interceptor getCacheControlInterceptor() {
         return chain -> {
-            Response response = chain.proceed(chain.request());
-            CacheControl cacheControl = new CacheControl.Builder()
+            final Response response = chain.proceed(chain.request());
+            final CacheControl cacheControl = new CacheControl.Builder()
                     .maxAge(5, TimeUnit.MINUTES)
                     .build();
 
@@ -153,7 +153,7 @@ public class SettingsManager {
         final ResolvedSetting resolvedSetting;
         try {
             resolvedSetting = settingsApi.getResolvedSetting(name, String.join(",", scopes));
-        } catch (ApiException e) {
+        } catch (final ApiException e) {
             if(e.getCode()==404){
                 LOG.warn(String.format("Setting [%s] was not found in the settings service.", name));
                 return null;
@@ -171,7 +171,7 @@ public class SettingsManager {
         try {
             final Setting setting = settingsApi.getSetting("healthcheck");
         }
-        catch (ApiException ex){
+        catch (final ApiException ex){
             if(ex.getCode()!=404){
                 throw new RuntimeException(ex.getMessage(), ex);
             }

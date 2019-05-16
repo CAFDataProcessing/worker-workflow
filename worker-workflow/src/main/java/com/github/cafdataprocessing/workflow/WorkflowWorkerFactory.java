@@ -23,7 +23,6 @@ import com.hpe.caf.worker.document.extensibility.DocumentWorkerFactory;
 import com.hpe.caf.worker.document.model.Application;
 import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.model.HealthMonitor;
-import java.io.IOException;
 
 /**
  * A factory to create workflow workers, passing them a configuration instance.
@@ -43,7 +42,7 @@ public final class WorkflowWorkerFactory implements DocumentWorkerFactory
                     new ScriptManager(),
                     new SettingsManager(workflowWorkerConfiguration.getSettingsServiceUrl()));
 
-        } catch(ConfigurationException ex){
+        } catch(final ConfigurationException ex){
             return new DocumentWorker()
             {
                 @Override

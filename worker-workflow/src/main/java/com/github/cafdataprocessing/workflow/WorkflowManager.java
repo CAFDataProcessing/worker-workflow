@@ -39,7 +39,7 @@ public class WorkflowManager {
     private final Map<String, Workflow> workflows;
     private final DataStore dataStore;
 
-    public WorkflowManager(final Application application, String workflowDirectory) throws ConfigurationException {
+    public WorkflowManager(final Application application, final String workflowDirectory) throws ConfigurationException {
         dataStore = application.getService(DataStore.class);
         workflows = getWorkflows(workflowDirectory);
     }
@@ -61,7 +61,7 @@ public class WorkflowManager {
         final FilenameFilter filter = (final File dir1, final String name) -> name.endsWith(".yaml");
         final String[] workflows = dir.list(filter);
         for (final String filename : workflows) {
-            try (FileInputStream fis = new FileInputStream(new File(workflowsDirectory + "/" + filename))) {
+            try (final FileInputStream fis = new FileInputStream(new File(workflowsDirectory + "/" + filename))) {
                 final Workflow workflow = yaml.loadAs(fis, Workflow.class);
 
                 final StringBuilder stringBuilder = new StringBuilder();
@@ -69,7 +69,7 @@ public class WorkflowManager {
                 try {
                     stringBuilder.append(Resources.toString(Resources.getResource("workflow-control.js"),
                             StandardCharsets.UTF_8));
-                } catch (IOException e) {
+                } catch (final IOException e) {
                     throw new RuntimeException("Could not obtain workflow-control.js");
                 }
                 workflow.setWorkflowScript(stringBuilder.toString());

@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 import javax.script.ScriptException;
 
 /**
- * Worker that will examine task received for a workflow name, it will then look for a javascript file with the same
+ * Worker that will examine task received for a workflow name, it will then look for a yaml file with the same
  * name on disk and add it to the task along with any settings required for the workflow.
  */
 public final class WorkflowWorker implements DocumentWorker
@@ -110,6 +110,14 @@ public final class WorkflowWorker implements DocumentWorker
             return;
         }
 
+        if(fieldWorkflowName.getValues().size()>1){
+            LOG.error(String.format("Multiple workflows [%s] supplied in CAF_WORKFLOW_NAME field for document [%s].",
+                    String.join(",", fieldWorkflowName.getStringValues()),
+                    document.getReference()));
+            document.addFailure("WORKFLOW_MULTIPLE_WORKFLOWS",
+                    "One that workflow name was found in CAF_WORKFLOW_NAME field.");
+        }
+
         final String workflowName = fieldWorkflowName.getStringValues().get(0);
 
         final Workflow workflow = workflowManager.get(workflowName);
@@ -125,7 +133,7 @@ public final class WorkflowWorker implements DocumentWorker
 
         try {
             scriptManager.applyScriptToDocument(workflow, document);
-        } catch (ScriptException e) {
+        } catch (final ScriptException e) {
             LOG.error(String.format("ScriptException for document [%s].\n%s\n", document.getReference(), e.toString()));
             document.addFailure("WORKFLOW_SCRIPT_EXCEPTION", e.getMessage());
         }

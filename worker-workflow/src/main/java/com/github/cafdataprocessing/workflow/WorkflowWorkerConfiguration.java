@@ -50,7 +50,7 @@ public final class WorkflowWorkerConfiguration
         return settingsServiceUrl;
     }
 
-    public void setSettingsServiceUrl(String settingsServiceUrl) {
+    public void setSettingsServiceUrl(final String settingsServiceUrl) {
         this.settingsServiceUrl = settingsServiceUrl;
     }
 }
