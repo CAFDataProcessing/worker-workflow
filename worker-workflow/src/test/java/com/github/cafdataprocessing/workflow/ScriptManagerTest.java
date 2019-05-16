@@ -28,7 +28,7 @@ import java.nio.charset.StandardCharsets;
 
 import static org.junit.Assert.assertEquals;
 
-public class ScriptManagerTests {
+public class ScriptManagerTest {
 
     @Test
     public void applyScriptsTest() throws Exception {
