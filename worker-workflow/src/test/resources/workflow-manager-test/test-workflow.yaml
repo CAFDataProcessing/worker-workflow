@@ -46,7 +46,7 @@ actions:
   family_hashing:
     queueName: dataprocessing-family-hashing-in
     customData:
-      tenantId: settings.tenantId
+      tenantId: tenantId
     scripts:
       - name: recordProcessingTimes.js
         script: |

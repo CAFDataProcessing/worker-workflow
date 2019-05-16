@@ -77,7 +77,12 @@ function processDocument(document) {
 function evalCustomData(settings, customDataToEval){
     var customData = {};
     for(var customDataField in customDataToEval){
-        customData[customDataField] = eval(customDataToEval[customDataField]);
+        if(settings[customDataToEval[customDataField]]){
+            customData[customDataField] = settings[customDataToEval[customDataField]];
+        }
+        else {
+            customData[customDataField] = eval(customDataToEval[customDataField]);
+        }
     }
     return customData;
 }

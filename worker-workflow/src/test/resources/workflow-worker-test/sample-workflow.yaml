@@ -31,7 +31,7 @@ actions:
   action_1:
     queueName: action_1_queueName
     customData:
-      example: settings.example
+      example: example
       valueFromLiteral: "'literalExample'"
     scripts:
       - name: example.js
