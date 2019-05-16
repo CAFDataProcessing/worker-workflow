@@ -1,20 +1,19 @@
 package com.github.cafdataprocessing.workflow;
 
-import com.github.cafdataprocessing.workflow.model.RepoConfigSource;
-import com.github.cafdataprocessing.workflow.model.WorkflowSettings;
+import com.github.cafdataprocessing.workflow.model.SettingDefinition;
+import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.hpe.caf.worker.document.model.Document;
-import com.hpe.caf.worker.document.model.FieldValue;
+import com.hpe.caf.worker.document.model.Field;
 import com.microfocus.darwin.settings.client.*;
 import com.squareup.okhttp.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class SettingsManager {
@@ -23,17 +22,16 @@ public class SettingsManager {
     private final Gson gson = new Gson();
     private final SettingsApi settingsApi;
 
-    public SettingsManager()
+    public SettingsManager(final String settingsServiceUrl)
     {
-        this(new SettingsApi());
+        this(new SettingsApi(), settingsServiceUrl);
     }
 
-    public SettingsManager(final SettingsApi settingsApi){
+    public SettingsManager(final SettingsApi settingsApi, final String settingsServiceUrl){
         this.settingsApi = settingsApi;
         final ApiClient apiClient = new ApiClient();
         final OkHttpClient client = new OkHttpClient();
         client.interceptors().add(getCacheControlInterceptor());
-        final String settingsServiceUrl = System.getenv("CAF_SETTINGS_SERVICE_URL");
         Objects.requireNonNull(settingsServiceUrl);
         apiClient.setBasePath(settingsServiceUrl);
         settingsApi.setApiClient(apiClient);
@@ -52,17 +50,90 @@ public class SettingsManager {
         };
     }
 
-    public void applySettingsCustomData(final WorkflowSettings workflowSettings, final Document document){
+    public void applySettingsCustomData(final List<SettingDefinition> settingDefinitions, final Document document){
         final Map<String, String> resolvedSettings = new HashMap<>();
 
-        addTaskSettings(resolvedSettings, document, workflowSettings);
-        addTenantSettings(resolvedSettings, document, workflowSettings);
-        addRepositorySettings(resolvedSettings, document, workflowSettings);
+        for(final SettingDefinition settingDefinition: settingDefinitions) {
+
+            for(final SettingDefinition.Source source: settingDefinition.getSources()) {
+                String value = null;
+                switch (source.getType()){
+                    case CUSTOM_DATA: {
+                        value = document.getCustomData(source.getName());
+                        break;
+                    }
+                    case FIELD: {
+                        final Field field = document.getField(source.getName());
+                        if(field.hasValues()){
+                            value = field.getStringValues().get(0);
+                        }
+                        break;
+                    }
+                    case SETTINGS_SERVICE: {
+                        value = getFromSettingService(source.getName(), source.getOptions(), document);
+                        break;
+                    }
+                    default: {
+                        throw new UnsupportedOperationException(String.format("Invalid source type [%s].",
+                                source.getType()));
+                    }
+                }
+                if(!Strings.isNullOrEmpty(value)){
+                    resolvedSettings.put(settingDefinition.getName(), value);
+                    break;
+                }
+            }
+
+        }
 
         document.getField("CAF_WORKFLOW_SETTINGS").set(gson.toJson(resolvedSettings));
         document.getTask().getResponse().getCustomData().put("CAF_WORKFLOW_SETTINGS",
                 gson.toJson(resolvedSettings));
 
+    }
+
+    private String getFromSettingService(final String name, final String options, final Document document) {
+
+        final Pattern pattern = Pattern.compile("(?<prefix>[a-zA-Z-_]*)%(?<type>f|cd):(?<name>[a-zA-Z-_]*)%(?<suffix>[a-zA-Z-_]*)");
+        final List<String> scopes = new ArrayList<>();
+        final String[] scopesToProcess = options.split(",");
+
+        for(final String scope:scopesToProcess) {
+            final Matcher matcher = pattern.matcher(scope);
+            if (matcher.matches()){
+                String value = null;
+                if (matcher.group("type").equals("f")){
+                    final Field field = document.getField(matcher.group("name"));
+                    if(field.hasValues()){
+                        value = field.getStringValues().get(0);
+                    }
+                }
+                else if (matcher.group("type").equals("cd")){
+                    value = document.getCustomData(matcher.group("name"));
+                }
+                if (!Strings.isNullOrEmpty(value)){
+                    scopes.add(String.format("%s%s%s",
+                            matcher.group("prefix"),
+                            value,
+                            matcher.group("suffix")));
+                }
+            }
+            else {
+                scopes.add(scope);
+            }
+        }
+
+        final ResolvedSetting resolvedSetting;
+        try {
+            resolvedSetting = settingsApi.getResolvedSetting(name, String.join(",", scopes));
+        } catch (ApiException e) {
+            //TODO
+            throw new RuntimeException(e);
+        }
+        if(resolvedSetting==null){
+            return null;
+        }
+        return resolvedSetting.getValue();
     }
 
     @SuppressWarnings("unused")
@@ -74,81 +145,6 @@ public class SettingsManager {
             if(ex.getCode()!=404){
                 throw new RuntimeException(ex.getMessage(), ex);
             }
-        }
-    }
-
-    private void addTaskSettings(final Map<String, String> resolvedSettings, final Document document,
-                                 final WorkflowSettings workflowSettings) {
-
-        for(final String taskSetting: workflowSettings.getTaskSettings()) {
-            final String taskSettingValue = document.getCustomData("TASK_SETTING_" +
-                    taskSetting.toUpperCase(Locale.US));
-            resolvedSettings.put(taskSetting, taskSettingValue);
-        }
-    }
-
-    private void addTenantSettings(final Map<String, String> resolvedSettings, final Document document,
-                                   final WorkflowSettings workflowSettings) {
-
-        final String tenantId = document.getCustomData("tenantId");
-        Objects.requireNonNull(tenantId);
-        final String tenantScope = String.format("tenant-%s", tenantId);
-
-        for(final String tenantSetting: workflowSettings.getTenantSettings()){
-            final ResolvedSetting tenantSettingValue;
-            try {
-                tenantSettingValue = settingsApi.getResolvedSetting(tenantSetting, tenantScope);
-            } catch (ApiException ex) {
-                //TODO
-                throw new RuntimeException(ex);
-            }
-            resolvedSettings.put(tenantSetting, tenantSettingValue.getValue());
-        }
-    }
-
-    private void addRepositorySettings(final Map<String, String> resolvedSettings, final Document document,
-                                       final WorkflowSettings workflowSettings) {
-
-        final String tenantId = document.getCustomData("tenantId");
-        Objects.requireNonNull(tenantId);
-        final String tenantScope = String.format("tenant-%s", tenantId);
-
-
-        for(final Map.Entry<String, RepoConfigSource> entry: workflowSettings.getRepositorySettings().entrySet()){
-            final RepoConfigSource repoConfigSource = entry.getValue();
-            final String repositoryId;
-            switch (repoConfigSource.getSource()){
-                case FIELD: {
-                    final FieldValue fieldValue = document.getField(repoConfigSource.getKey()).getValues().stream()
-                            .findFirst().orElseThrow(()
-                                    -> new RuntimeException("Unable to obtain repository id from document field for config "
-                                    + repoConfigSource.getKey()));
-                    repositoryId = fieldValue.getStringValue();
-                    break;
-                }
-                case CUSTOMDATA: {
-                    repositoryId = document.getCustomData(repoConfigSource.getKey());
-                    if (repositoryId == null) {
-                        throw new RuntimeException("Unable to obtain repository id from customdata for config "
-                                + repoConfigSource.getKey());
-                    }
-                    break;
-                }
-                default: {
-                    throw new RuntimeException(String.format("Unsupported source [%s].", repoConfigSource.getSource()));
-                }
-            }
-
-            final String repositoryScope = String.format("repository-%s", repositoryId);
-            final ResolvedSetting resolvedSetting;
-            try {
-                resolvedSetting = settingsApi.getResolvedSetting(entry.getKey(),
-                        String.join(",", new String[]{repositoryScope, tenantScope}));
-            } catch (ApiException ex) {
-                //TODO
-                throw new RuntimeException("Problem getting setting.");
-            }
-            resolvedSettings.put(entry.getKey(), resolvedSetting.getValue());
         }
     }
 

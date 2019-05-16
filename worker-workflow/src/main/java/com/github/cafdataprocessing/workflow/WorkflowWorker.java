@@ -58,7 +58,7 @@ public final class WorkflowWorker implements DocumentWorker
 
         this.workflowManager = new WorkflowManager(application, workflowsDirectory);
         this.scriptManager = new ScriptManager();
-        this.settingsManager = new SettingsManager();
+        this.settingsManager = new SettingsManager(workflowWorkerConfiguration.getSettingsServiceUrl());
     }
 
     /**
@@ -110,7 +110,7 @@ public final class WorkflowWorker implements DocumentWorker
             return;
         }
 
-        settingsManager.applySettingsCustomData(workflow.getSettingsForCustomData(), document);
+        settingsManager.applySettingsCustomData(workflow.getSettingDefinitions(), document);
 
         try {
             scriptManager.applyScriptToDocument(workflow, document);

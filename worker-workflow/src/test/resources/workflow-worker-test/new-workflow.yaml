@@ -2,15 +2,15 @@
 settingsPayload:
     - name: example
       sources:
-        - name: TASK_SETTING_EXAMPLE
-          type: CUSTOM_DATA
         - name: example
           type: FIELD
+        - name: TASK_SETTING_EXAMPLE
+          type: CUSTOM_DATA
         - name: example
           type: CUSTOM_DATA
         - name: example
           type: SETTINGS_SERVICE
-          options: repository-%f:repositoryId,repository-%cd:repositoryId,tenantId-%cd:tenantId
+          options: repository-%f:repositoryId%,repository-%cd:repositoryId%,tenantId-%cd:tenantId%-some-suffix
 actions:
   action_1:
     queueName: action_1_queueName

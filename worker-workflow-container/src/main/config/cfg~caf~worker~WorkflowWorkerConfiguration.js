@@ -14,5 +14,6 @@
  * limitations under the License.
  */
 ({
-    workflowsDirectory: getenv("CAF_WORKFLOW_WORKER_WORKFLOWS_DIRECTORY") || undefined
+    workflowsDirectory: getenv("CAF_WORKFLOW_WORKER_WORKFLOWS_DIRECTORY") || undefined,
+    settingsServiceUrl: getenv("CAF_SETTINGS_SERVICE_URL") || undefined
 });
