@@ -24,6 +24,7 @@ import com.hpe.caf.worker.document.testing.DocumentBuilder;
 import java.io.File;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
@@ -34,9 +35,11 @@ import com.microfocus.darwin.settings.client.SettingsApi;
 import org.apache.commons.io.FileUtils;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
 public class WorkflowWorkerTest
@@ -122,6 +125,61 @@ public class WorkflowWorkerTest
 
         assertEquals("value from field", response.getCustomData().get("example"));
         assertEquals("literalExample", response.getCustomData().get("valueFromLiteral"));
+    }
+
+    @Test
+    @Ignore("Fault marking action 2 for execution")
+    public void action2ConditionPassTest() throws Exception {
+
+        final Document document = documentBuilder
+                .withCustomData()
+                .add("workflowName", "sample-workflow")
+                .documentBuilder()
+                .withFields()
+                .addFieldValue("CAF_WORKFLOW_ACTIONS_COMPLETED", "action_1")
+                .addFieldValue("example", "value from field")
+                .addFieldValue("field-should-exist", "it does")
+                .documentBuilder()
+                .build();
+
+        final WorkflowWorker workflowWorker = new WorkflowWorker(
+                workflowWorkerConfiguration,
+                new WorkflowManager(document.getApplication(), workflowWorkerConfiguration.getWorkflowsDirectory()),
+                new ScriptManager(),
+                settingsManager);
+
+        workflowWorker.processDocument(document);
+
+        final List<String> actions = document.getField("CAF_WORKFLOW_ACTION").getStringValues();
+        assertEquals(1, actions.size());
+        assertEquals("action_2", actions.get(0));
+
+        assertEquals("action_2_queueName", document.getTask().getResponse().getSuccessQueue().getName());
+    }
+
+    @Test
+    public void action2ConditionNotPassTest() throws Exception {
+
+        final Document document = documentBuilder
+                .withCustomData()
+                .add("workflowName", "sample-workflow")
+                .documentBuilder()
+                .withFields()
+                .addFieldValue("CAF_WORKFLOW_ACTIONS_COMPLETED", "action_1")
+                .addFieldValue("example", "value from field")
+                .documentBuilder()
+                .build();
+
+        final WorkflowWorker workflowWorker = new WorkflowWorker(
+                workflowWorkerConfiguration,
+                new WorkflowManager(document.getApplication(), workflowWorkerConfiguration.getWorkflowsDirectory()),
+                new ScriptManager(),
+                settingsManager);
+
+        workflowWorker.processDocument(document);
+
+        final List<String> actions = document.getField("CAF_WORKFLOW_ACTION").getStringValues();
+        assertEquals(0, actions.size());
     }
 
     private String failuresToString(final Document document){

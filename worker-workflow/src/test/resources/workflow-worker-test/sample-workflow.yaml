@@ -42,3 +42,6 @@ actions:
           }
           function onError(e) {
           }
+  action_2:
+    queueName: action_2_queueName
+    conditionFunction: function (document) { return fieldExists(document, 'field-should-exist');}
