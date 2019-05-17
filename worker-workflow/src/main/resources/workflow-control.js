@@ -39,20 +39,20 @@ function onError(errorEventObj) {
 }
 
 function processDocument(document) {
-    var customDataSettings = document.getCustomData("CAF_WORKFLOW_SETTINGS");
-    var settingsField = document.getField("CAF_WORKFLOW_SETTINGS");
-    var cafWorkflowSettingsJson = customDataSettings
-        ? customDataSettings
-        : settingsField.getStringValues().stream().findFirst()
+    var argumentsCustomData = document.getCustomData("CAF_WORKFLOW_SETTINGS");
+    var argumentsField = document.getField("CAF_WORKFLOW_SETTINGS");
+    var argumentsJson = argumentsCustomData
+        ? argumentsCustomData
+        : argumentsField.getStringValues().stream().findFirst()
             .orElseThrow(function () {
                 throw new java.lang.UnsupportedOperationException
                 ("Document must contain field CAF_WORKFLOW_SETTINGS.");
             });
 
-    if (cafWorkflowSettingsJson === undefined) {
+    if (argumentsJson === undefined) {
         throw new java.lang.UnsupportedOperationException("Document must contain field CAF_WORKFLOW_SETTINGS.");
     }
-    var settings = JSON.parse(cafWorkflowSettingsJson);
+    var arguments = JSON.parse(argumentsJson);
 
     markPreviousActionAsCompleted(document);
 
@@ -63,7 +63,7 @@ function processDocument(document) {
                 var actionDetails = {
                     queueName: action.queueName,
                     scripts: action.scripts,
-                    customData: evalCustomData(settings, action.customData)
+                    customData: evalCustomData(arguments, action.customData)
                 };
 
                 document.getField('CAF_WORKFLOW_ACTION').add(actionId);
@@ -74,7 +74,7 @@ function processDocument(document) {
     }
 }
 
-function evalCustomData(settings, customDataToEval){
+function evalCustomData(arguments, customDataToEval){
     var regex = /d".*"|'.*'/g;
     var customData = {};
     if (!customDataToEval) {
@@ -87,7 +87,7 @@ function evalCustomData(settings, customDataToEval){
                 customData[customDataField] = eval(cd);
             }
             else {
-                customData[customDataField] = settings[cd];
+                customData[customDataField] = arguments[cd];
             }
         }
     }
