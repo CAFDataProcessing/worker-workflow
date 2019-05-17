@@ -75,16 +75,20 @@ function processDocument(document) {
 }
 
 function evalCustomData(settings, customDataToEval){
+    var regex = /d".*"|'.*'/g;
     var customData = {};
     if (!customDataToEval) {
         return customData;
     }
     for(var customDataField in customDataToEval){
-        if(settings[customDataToEval[customDataField]]){
-            customData[customDataField] = settings[customDataToEval[customDataField]];
-        }
-        else {
-            customData[customDataField] = eval(customDataToEval[customDataField]);
+        var cd = customDataToEval[customDataField];
+        if (typeof cd === 'string') {
+            if (cd.match(regex)) {
+                customData[customDataField] = eval(cd);
+            }
+            else {
+                customData[customDataField] = settings[cd];
+            }
         }
     }
     return customData;

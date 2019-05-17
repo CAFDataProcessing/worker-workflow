@@ -15,196 +15,67 @@
  */
 package com.github.cafdataprocessing.workflow;
 
-import com.google.common.io.Resources;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import com.hpe.caf.worker.document.model.*;
+import com.github.cafdataprocessing.workflow.utils.ActionExpectationsBuilder;
+import com.github.cafdataprocessing.workflow.utils.WorkflowTestExecutor;
 import com.hpe.caf.worker.document.testing.DocumentBuilder;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Type;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Map;
-import javax.script.Invocable;
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
-
-import com.hpe.caf.worker.document.testing.TestServices;
-import com.microfocus.darwin.settings.client.SettingsApi;
-import org.apache.commons.io.FileUtils;
-
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
 
 public class WorkflowWorkerTest
 {
-    private WorkflowWorkerConfiguration workflowWorkerConfiguration;
-    private DocumentBuilder documentBuilder;
-    private SettingsManager settingsManager ;
+    private WorkflowTestExecutor workflowTestExecutor;
 
     @Before
     public void before() throws Exception {
-        workflowWorkerConfiguration = new WorkflowWorkerConfiguration();
-        workflowWorkerConfiguration.setWorkflowsDirectory(
+        workflowTestExecutor = new WorkflowTestExecutor(
                 WorkflowDirectoryProvider.getWorkflowDirectory("workflow-worker-test"));
-        workflowWorkerConfiguration.setSettingsServiceUrl("");
-
-        final TestServices testServices = TestServices.createDefault();
-        documentBuilder = DocumentBuilder.configure().withServices(testServices);
-
-        final SettingsApi settingsApi = mock(SettingsApi.class);
-
-        settingsManager = new SettingsManager(settingsApi,
-                workflowWorkerConfiguration.getSettingsServiceUrl());
-    }
-
-
-    @Test
-    public void executeScriptTest() throws Exception {
-
-        final Document document = documentBuilder
-                .withCustomData()
-                .add("workflowName", "sample-workflow")
-                .documentBuilder()
-                .withFields()
-                .addFieldValue("example", "value from field")
-                .documentBuilder()
-                .build();
-
-        final WorkflowWorker workflowWorker = new WorkflowWorker(
-                workflowWorkerConfiguration,
-                new WorkflowManager(document.getApplication(), workflowWorkerConfiguration.getWorkflowsDirectory()),
-                new ScriptManager(),
-                settingsManager);
-
-        workflowWorker.processDocument(document);
-
-        final Field settingsField = document.getField("CAF_WORKFLOW_SETTINGS");
-        assertEquals(1, settingsField.getValues().size());
-
-        final Gson gson = new Gson();
-        final Type type = new TypeToken<Map<String, String>>() {}.getType();
-        final Map<String, String> settings = gson.fromJson(
-                settingsField.getStringValues().get(0), type);
-
-        assertEquals(1, settings.size());
-        assertEquals("value from field", settings.get("example"));
-
-        final Field workflowNameField = document.getField("CAF_WORKFLOW_NAME");
-        assertEquals(1, workflowNameField.getValues().size());
-        assertEquals("sample-workflow", workflowNameField.getStringValues().get(0));
-
-        final Scripts scripts = document.getTask().getScripts();
-        assertEquals(2, scripts.size());
-
-        executeScript(document, scripts.get(0));
-
-        assertEquals(failuresToString(document), 0, document.getFailures().size());
-
-        final Response response = document.getTask().getResponse();
-        assertEquals("action_1_queueName", response.getSuccessQueue().getName());
-        assertEquals("action_1_queueName", response.getFailureQueue().getName());
-
-        assertEquals("value from field", response.getCustomData().get("example"));
-        assertEquals("literalExample", response.getCustomData().get("valueFromLiteral"));
     }
 
     @Test
-    public void action2ConditionPassTest() throws Exception {
+    public void validateAllActionsTest() throws Exception {
 
-        final Document document = documentBuilder
-                .withCustomData()
-                .add("workflowName", "sample-workflow")
-                .documentBuilder()
-                .withFields()
-                .addFieldValue("CAF_WORKFLOW_ACTIONS_COMPLETED", "action_1")
+        final DocumentBuilder documentBuilder = DocumentBuilder.configure();
+        documentBuilder.withFields()
                 .addFieldValue("example", "value from field")
-                .addFieldValue("field-should-exist", "it does")
-                .documentBuilder()
-                .build();
+                .addFieldValue("field-should-exist", "action 2 requires this field to be present");
 
-        final WorkflowWorker workflowWorker = new WorkflowWorker(
-                workflowWorkerConfiguration,
-                new WorkflowManager(document.getApplication(), workflowWorkerConfiguration.getWorkflowsDirectory()),
-                new ScriptManager(),
-                settingsManager);
+        final ActionExpectationsBuilder actionExpectationsBuilder = new ActionExpectationsBuilder();
+        actionExpectationsBuilder
+                .withAction("action_1")
+                    .successQueue("action_1_queueName")
+                    .failureQueue("action_1_queueName")
+                    .withCustomData()
+                    .addCustomData("example", "value from field")
+                    .addCustomData("valueFromLiteral", "literalExample")
+                .actionExpectationsBuilder()
+                .withAction("action_2")
+                    .successQueue("action_2_queueName")
+                    .failureQueue("action_2_queueName");
 
-        workflowWorker.processDocument(document);
-
-        assertEquals(failuresToString(document), 0, document.getFailures().size());
-
-        final Scripts scripts = document.getTask().getScripts();
-        assertEquals(2, scripts.size());
-        executeScript(document, scripts.get(0));
-
-        final List<String> actions = document.getField("CAF_WORKFLOW_ACTION").getStringValues();
-        assertEquals(1, actions.size());
-        assertEquals("action_2", actions.get(0));
-
-        assertEquals("action_2_queueName", document.getTask().getResponse().getSuccessQueue().getName());
+        workflowTestExecutor.assertWorkflowActionsExecuted("sample-workflow", documentBuilder,
+                actionExpectationsBuilder.build());
     }
+
 
     @Test
     public void action2ConditionNotPassTest() throws Exception {
 
-        final Document document = documentBuilder
+        final DocumentBuilder documentBuilder = DocumentBuilder.configure();
+        documentBuilder.withFields()
+                .addFieldValue("example", "value from field");
+
+        final ActionExpectationsBuilder actionExpectationsBuilder = new ActionExpectationsBuilder();
+        actionExpectationsBuilder
+                .withAction("action_1")
+                .successQueue("action_1_queueName")
+                .failureQueue("action_1_queueName")
                 .withCustomData()
-                .add("workflowName", "sample-workflow")
-                .documentBuilder()
-                .withFields()
-                .addFieldValue("CAF_WORKFLOW_ACTIONS_COMPLETED", "action_1")
-                .addFieldValue("example", "value from field")
-                .documentBuilder()
-                .build();
+                .addCustomData("example", "value from field")
+                .addCustomData("valueFromLiteral", "literalExample");
 
-        final WorkflowWorker workflowWorker = new WorkflowWorker(
-                workflowWorkerConfiguration,
-                new WorkflowManager(document.getApplication(), workflowWorkerConfiguration.getWorkflowsDirectory()),
-                new ScriptManager(),
-                settingsManager);
-
-        workflowWorker.processDocument(document);
-
-        assertEquals(failuresToString(document), 0, document.getFailures().size());
-
-        final Scripts scripts = document.getTask().getScripts();
-        assertEquals(2, scripts.size());
-        executeScript(document, scripts.get(0));
-
-        final List<String> actions = document.getField("CAF_WORKFLOW_ACTION").getStringValues();
-        assertEquals(0, actions.size());
+        workflowTestExecutor.assertWorkflowActionsExecuted("sample-workflow", documentBuilder,
+                actionExpectationsBuilder.build());
     }
 
-    private void executeScript(Document document, Script inlineScript) throws IOException, ScriptException, NoSuchMethodException {
-        assertEquals("temp-workflow.js", inlineScript.getName());
-
-        final ScriptEngine scriptEngine = new ScriptEngineManager().getEngineByName("nashorn");
-        final Invocable invocable = (Invocable) scriptEngine;
-
-        //Write the js to disk so you can set a breakpoint
-        //https://intellij-support.jetbrains.com/hc/en-us/community/posts/206834455-Break-Point-ignored-while-debugging-Nashorn-Javascript
-        FileUtils.write(new File(".\\target\\workflow.js"), inlineScript.getScript(), StandardCharsets.UTF_8);
-        scriptEngine.eval("load('.\\\\target\\\\workflow.js');");
-
-//        scriptEngine.eval(inlineScript.getScript());
-
-        invocable.invokeFunction("processDocument", document);
-    }
-
-    private String failuresToString(final Document document){
-        final StringBuilder stringBuilder = new StringBuilder();
-        for(final Failure failure: document.getFailures()){
-            stringBuilder.append(failure.getFailureMessage());
-            stringBuilder.append("\n");
-        }
-        return stringBuilder.toString();
-    }
 }
