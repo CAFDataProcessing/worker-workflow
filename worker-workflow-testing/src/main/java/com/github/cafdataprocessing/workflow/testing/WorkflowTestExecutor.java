@@ -127,7 +127,9 @@ public class WorkflowTestExecutor {
         if(actionExpectation.getCustomData() != null) {
 
             for(final Map.Entry<String, String> entry : actionExpectation.getCustomData().entrySet()){
-                assertEquals(String.format("Setting [%s] not as expected.", entry.getKey()),
+                assertEquals(String.format("Action [%s] setting [%s] not as expected.",
+                        actionExpectation.getAction(),
+                        entry.getKey()),
                         entry.getValue(), response.getCustomData().get(entry.getKey()));
             }
         }
