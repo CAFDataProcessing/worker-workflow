@@ -115,7 +115,7 @@ public final class WorkflowWorker implements DocumentWorker
                     String.join(",", fieldWorkflowName.getStringValues()),
                     document.getReference()));
             document.addFailure("WORKFLOW_MULTIPLE_WORKFLOWS",
-                    "One that workflow name was found in CAF_WORKFLOW_NAME field.");
+                    "More than one workflow name was found in CAF_WORKFLOW_NAME field.");
         }
 
         final String workflowName = fieldWorkflowName.getStringValues().get(0);
