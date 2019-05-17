@@ -37,7 +37,7 @@ public final class WorkflowWorker implements DocumentWorker
     private static final Logger LOG = LoggerFactory.getLogger(WorkflowWorker.class);
     private final WorkflowManager workflowManager;
     private final ScriptManager scriptManager;
-    private final SettingsManager settingsManager;
+    private final ArgumentsManager argumentsManager;
 
     /**
      * Instantiates a WorkflowWorker instance to process documents, evaluating them against the workflow referred to by
@@ -45,14 +45,14 @@ public final class WorkflowWorker implements DocumentWorker
      * @param workflowWorkerConfiguration The worker's configuration
      * @param workflowManager Retrieves workflows from disk and stores them in the datastore
      * @param scriptManager Applies the scripts to the documents task object
-     * @param settingsManager Processes settings definitions and retrieves values from custom data, document fields or
+     * @param argumentsManager Processes settings definitions and retrieves values from custom data, document fields or
      *                        the settings service
      * @throws ConfigurationException when workflow directory is not set
      */
     public WorkflowWorker(final WorkflowWorkerConfiguration workflowWorkerConfiguration,
                           final WorkflowManager workflowManager,
                           final ScriptManager scriptManager,
-                          final SettingsManager settingsManager
+                          final ArgumentsManager argumentsManager
                           )
             throws ConfigurationException
     {
@@ -63,7 +63,7 @@ public final class WorkflowWorker implements DocumentWorker
 
         this.workflowManager = workflowManager;
         this.scriptManager = scriptManager;
-        this.settingsManager = settingsManager;
+        this.argumentsManager = argumentsManager;
     }
 
     /**
@@ -77,7 +77,7 @@ public final class WorkflowWorker implements DocumentWorker
     public void checkHealth(final HealthMonitor healthMonitor)
     {
         try {
-            settingsManager.checkHealth();
+            argumentsManager.checkHealth();
         } catch (final Exception e) {
             LOG.error("Problem encountered when contacting Settings Service to check health: ", e);
             healthMonitor.reportUnhealthy("Settings Service communication is unhealthy: " + e.getMessage());
@@ -129,7 +129,7 @@ public final class WorkflowWorker implements DocumentWorker
             return;
         }
 
-        settingsManager.applySettingsCustomData(workflow.getSettingDefinitions(), document);
+        argumentsManager.addArgumentsToDocument(workflow.getArguments(), document);
 
         try {
             scriptManager.applyScriptToDocument(workflow, document);

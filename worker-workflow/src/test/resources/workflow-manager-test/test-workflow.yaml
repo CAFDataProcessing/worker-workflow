@@ -15,7 +15,7 @@
 #
 
 ---
-settingDefinitions:
+arguments:
   - name: tenantId
     sources:
       - name: TASK_SETTING_TENANTID

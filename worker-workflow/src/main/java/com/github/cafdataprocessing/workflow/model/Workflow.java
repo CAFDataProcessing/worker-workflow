@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 public class Workflow {
-    private List<SettingDefinition> settingDefinitions;
+    private List<ArgumentDefinition> arguments;
     private Map<String, Action> actions;
     private String workflowScript;
     private String storageReference;
@@ -48,11 +48,11 @@ public class Workflow {
         this.workflowScript = workflowScript;
     }
 
-    public List<SettingDefinition> getSettingDefinitions() {
-        return settingDefinitions;
+    public List<ArgumentDefinition> getArguments() {
+        return arguments;
     }
 
-    public void setSettingDefinitions(final List<SettingDefinition> settingDefinitions) {
-        this.settingDefinitions = settingDefinitions;
+    public void setArguments(final List<ArgumentDefinition> arguments) {
+        this.arguments = arguments;
     }
 }

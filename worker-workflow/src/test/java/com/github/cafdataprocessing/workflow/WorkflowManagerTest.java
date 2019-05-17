@@ -16,7 +16,7 @@
 package com.github.cafdataprocessing.workflow;
 
 import com.github.cafdataprocessing.workflow.model.Action;
-import com.github.cafdataprocessing.workflow.model.SettingDefinition;
+import com.github.cafdataprocessing.workflow.model.ArgumentDefinition;
 import com.github.cafdataprocessing.workflow.model.Workflow;
 import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.testing.DocumentBuilder;
@@ -61,9 +61,9 @@ public class WorkflowManagerTest {
 
         assertEquals(workflow.getWorkflowScript(), storedScript);
 
-        final List<SettingDefinition> settingDefinitions = workflow.getSettingDefinitions();
-        assertNotNull(settingDefinitions);
-        assertEquals(5, settingDefinitions.size());
+        final List<ArgumentDefinition> argumentDefinitions = workflow.getArguments();
+        assertNotNull(argumentDefinitions);
+        assertEquals(5, argumentDefinitions.size());
 
         final Map<String, Action> actions = workflow.getActions();
         assertEquals(3, actions.size());

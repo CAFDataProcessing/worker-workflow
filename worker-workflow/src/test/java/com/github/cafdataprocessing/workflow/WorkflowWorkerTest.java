@@ -40,7 +40,7 @@ public class WorkflowWorkerTest
         workflowWorkerConfiguration.setWorkflowsDirectory(WorkflowDirectoryProvider.getWorkflowDirectory("workflow-worker-test"));
         workflowWorkerConfiguration.setSettingsServiceUrl("mocked service");
 
-        final SettingsManager settingsManager = new SettingsManager(mock(SettingsApi.class),
+        final ArgumentsManager argumentsManager = new ArgumentsManager(mock(SettingsApi.class),
                 workflowWorkerConfiguration.getSettingsServiceUrl());
 
         try {
@@ -49,7 +49,7 @@ public class WorkflowWorkerTest
                     workflowWorkerConfiguration,
                     new WorkflowManager(document.getApplication(), workflowWorkerConfiguration.getWorkflowsDirectory()),
                     new ScriptManager(),
-                    settingsManager);
+                    argumentsManager);
         } catch (ConfigurationException | WorkerException e) {
             throw new RuntimeException(e);
         }

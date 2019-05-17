@@ -17,7 +17,7 @@ package com.github.cafdataprocessing.workflow.model;
 
 import java.util.List;
 
-public class SettingDefinition {
+public class ArgumentDefinition {
     private String name;
     private String defaultValue;
     private List<Source> sources;

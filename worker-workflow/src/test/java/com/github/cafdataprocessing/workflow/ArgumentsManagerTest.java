@@ -15,7 +15,7 @@
  */
 package com.github.cafdataprocessing.workflow;
 
-import com.github.cafdataprocessing.workflow.model.SettingDefinition;
+import com.github.cafdataprocessing.workflow.model.ArgumentDefinition;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.hpe.caf.worker.document.model.Document;
@@ -34,12 +34,12 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class SettingsManagerTest {
+public class ArgumentsManagerTest {
 
     @Test
-    public void settingFromFieldTest() throws Exception {
+    public void argumentFromFieldTest() throws Exception {
 
-        final List<SettingDefinition> settingDefinitions = getSettingsDefinitions();
+        final List<ArgumentDefinition> argumentDefinitions = getArgumentDefinitions();
 
         final SettingsApi settingsApi = mock(SettingsApi.class);
 
@@ -51,22 +51,22 @@ public class SettingsManagerTest {
                 .documentBuilder()
                 .build();
 
-        final SettingsManager settingsManager = new SettingsManager(settingsApi, "");
-        settingsManager.applySettingsCustomData(settingDefinitions, document);
+        final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, "");
+        argumentsManager.addArgumentsToDocument(argumentDefinitions, document);
 
         final Gson gson = new Gson();
         final Type type = new TypeToken<Map<String, String>>() {}.getType();
-        final Map<String, String> settingsPayload = gson.fromJson(
+        final Map<String, String> arguments = gson.fromJson(
                 document.getTask().getResponse().getCustomData().get("CAF_WORKFLOW_SETTINGS"), type);
 
-        assertEquals("value of example field", settingsPayload.get("example"));
-        assertEquals("A default value", settingsPayload.get("shouldDefault"));
+        assertEquals("value of example field", arguments.get("example"));
+        assertEquals("A default value", arguments.get("shouldDefault"));
     }
 
     @Test
-    public void settingFromTaskSettingTest() throws Exception {
+    public void argumentFromTaskSettingTest() throws Exception {
 
-        final List<SettingDefinition> settingDefinitions = getSettingsDefinitions();
+        final List<ArgumentDefinition> argumentDefinitions = getArgumentDefinitions();
 
         final SettingsApi settingsApi = mock(SettingsApi.class);
 
@@ -78,21 +78,21 @@ public class SettingsManagerTest {
                 .documentBuilder()
                 .build();
 
-        final SettingsManager settingsManager = new SettingsManager(settingsApi, "");
-        settingsManager.applySettingsCustomData(settingDefinitions, document);
+        final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, "");
+        argumentsManager.addArgumentsToDocument(argumentDefinitions, document);
 
         final Gson gson = new Gson();
         final Type type = new TypeToken<Map<String, String>>() {}.getType();
-        final Map<String, String> settingsPayload = gson.fromJson(
+        final Map<String, String> arguments = gson.fromJson(
                 document.getTask().getResponse().getCustomData().get("CAF_WORKFLOW_SETTINGS"), type);
 
-        assertEquals("value of task setting example field", settingsPayload.get("example"));
+        assertEquals("value of task setting example field", arguments.get("example"));
     }
 
     @Test
-    public void settingFromCustomDataTest() throws Exception {
+    public void argumentFromCustomDataTest() throws Exception {
 
-        final List<SettingDefinition> settingDefinitions = getSettingsDefinitions();
+        final List<ArgumentDefinition> argumentDefinitions = getArgumentDefinitions();
 
         final SettingsApi settingsApi = mock(SettingsApi.class);
 
@@ -104,21 +104,21 @@ public class SettingsManagerTest {
                 .documentBuilder()
                 .build();
 
-        final SettingsManager settingsManager = new SettingsManager(settingsApi, "");
-        settingsManager.applySettingsCustomData(settingDefinitions, document);
+        final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, "");
+        argumentsManager.addArgumentsToDocument(argumentDefinitions, document);
 
         final Gson gson = new Gson();
         final Type type = new TypeToken<Map<String, String>>() {}.getType();
-        final Map<String, String> settingsPayload = gson.fromJson(
+        final Map<String, String> arguments = gson.fromJson(
                 document.getTask().getResponse().getCustomData().get("CAF_WORKFLOW_SETTINGS"), type);
 
-        assertEquals("value of from custom data", settingsPayload.get("example"));
+        assertEquals("value of from custom data", arguments.get("example"));
     }
 
     @Test
-    public void settingFromSettingsServiceUsingCustomDataTest() throws Exception {
+    public void argumentFromSettingsServiceUsingCustomDataTest() throws Exception {
 
-        final List<SettingDefinition> settingDefinitions = getSettingsDefinitions();
+        final List<ArgumentDefinition> argumentDefinitions = getArgumentDefinitions();
 
         final SettingsApi settingsApi = mock(SettingsApi.class);
 
@@ -136,21 +136,21 @@ public class SettingsManagerTest {
                 .documentBuilder()
                 .build();
 
-        final SettingsManager settingsManager = new SettingsManager(settingsApi, "");
-        settingsManager.applySettingsCustomData(settingDefinitions, document);
+        final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, "");
+        argumentsManager.addArgumentsToDocument(argumentDefinitions, document);
 
         final Gson gson = new Gson();
         final Type type = new TypeToken<Map<String, String>>() {}.getType();
-        final Map<String, String> settingsPayload = gson.fromJson(
+        final Map<String, String> arguments = gson.fromJson(
                 document.getTask().getResponse().getCustomData().get("CAF_WORKFLOW_SETTINGS"), type);
 
-        assertEquals("valueFromSettingsService", settingsPayload.get("example"));
+        assertEquals("valueFromSettingsService", arguments.get("example"));
     }
 
     @Test
-    public void settingFromSettingsServiceUsingFieldTest() throws Exception {
+    public void argumentFromSettingsServiceUsingFieldTest() throws Exception {
 
-        final List<SettingDefinition> settingDefinitions = getSettingsDefinitions();
+        final List<ArgumentDefinition> argumentDefinitions = getArgumentDefinitions();
 
         final SettingsApi settingsApi = mock(SettingsApi.class);
 
@@ -168,63 +168,63 @@ public class SettingsManagerTest {
                 .documentBuilder()
                 .build();
 
-        final SettingsManager settingsManager = new SettingsManager(settingsApi, "");
-        settingsManager.applySettingsCustomData(settingDefinitions, document);
+        final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, "");
+        argumentsManager.addArgumentsToDocument(argumentDefinitions, document);
 
         final Gson gson = new Gson();
         final Type type = new TypeToken<Map<String, String>>() {}.getType();
-        final Map<String, String> settingsPayload = gson.fromJson(
+        final Map<String, String> arguments = gson.fromJson(
                 document.getTask().getResponse().getCustomData().get("CAF_WORKFLOW_SETTINGS"), type);
 
-        assertEquals("valueFromSettingsService", settingsPayload.get("example"));
+        assertEquals("valueFromSettingsService", arguments.get("example"));
     }
 
-    private List<SettingDefinition> getSettingsDefinitions() {
-        final List<SettingDefinition> settingDefinitions = new ArrayList<>();
-        SettingDefinition settingDefinition = new SettingDefinition();
-        settingDefinition.setName("example");
-        settingDefinition.setSources(new ArrayList<>());
+    private List<ArgumentDefinition> getArgumentDefinitions() {
+        final List<ArgumentDefinition> argumentDefinitions = new ArrayList<>();
+        ArgumentDefinition argumentDefinition = new ArgumentDefinition();
+        argumentDefinition.setName("example");
+        argumentDefinition.setSources(new ArrayList<>());
 
         {
-            final SettingDefinition.Source fieldSource = new SettingDefinition.Source();
+            final ArgumentDefinition.Source fieldSource = new ArgumentDefinition.Source();
             fieldSource.setName("exampleField");
-            fieldSource.setType(SettingDefinition.SourceType.FIELD);
-            settingDefinition.getSources().add(fieldSource);
+            fieldSource.setType(ArgumentDefinition.SourceType.FIELD);
+            argumentDefinition.getSources().add(fieldSource);
         }
 
         {
             //Apollo product example where custom data gets prefixed with TASK_SETTING_
-            final SettingDefinition.Source taskCustomDataSource = new SettingDefinition.Source();
+            final ArgumentDefinition.Source taskCustomDataSource = new ArgumentDefinition.Source();
             taskCustomDataSource.setName("TASK_SETTING_EXAMPLE");
-            taskCustomDataSource.setType(SettingDefinition.SourceType.CUSTOM_DATA);
-            settingDefinition.getSources().add(taskCustomDataSource);
+            taskCustomDataSource.setType(ArgumentDefinition.SourceType.CUSTOM_DATA);
+            argumentDefinition.getSources().add(taskCustomDataSource);
         }
 
         {
-            final SettingDefinition.Source customDataSource = new SettingDefinition.Source();
+            final ArgumentDefinition.Source customDataSource = new ArgumentDefinition.Source();
             customDataSource.setName("exampleCustomData");
-            customDataSource.setType(SettingDefinition.SourceType.CUSTOM_DATA);
-            settingDefinition.getSources().add(customDataSource);
+            customDataSource.setType(ArgumentDefinition.SourceType.CUSTOM_DATA);
+            argumentDefinition.getSources().add(customDataSource);
         }
 
         {
-            final SettingDefinition.Source settingsServiceSource = new SettingDefinition.Source();
+            final ArgumentDefinition.Source settingsServiceSource = new ArgumentDefinition.Source();
             settingsServiceSource.setName("exampleSetting");
-            settingsServiceSource.setType(SettingDefinition.SourceType.SETTINGS_SERVICE);
+            settingsServiceSource.setType(ArgumentDefinition.SourceType.SETTINGS_SERVICE);
             settingsServiceSource
                     .setOptions("repository-%f:repositoryId%,repository-%cd:repositoryId%," +
                             "tenantId-%cd:tenantId%-some-suffix");
-            settingDefinition.getSources().add(settingsServiceSource);
+            argumentDefinition.getSources().add(settingsServiceSource);
         }
 
-        settingDefinitions.add(settingDefinition);
+        argumentDefinitions.add(argumentDefinition);
 
-        SettingDefinition settingDefinitionWithDefault = new SettingDefinition();
-        settingDefinitionWithDefault.setName("shouldDefault");
-        settingDefinitionWithDefault.setDefaultValue("A default value");
+        ArgumentDefinition argumentDefinitionWithDefault = new ArgumentDefinition();
+        argumentDefinitionWithDefault.setName("shouldDefault");
+        argumentDefinitionWithDefault.setDefaultValue("A default value");
 
-        settingDefinitions.add(settingDefinitionWithDefault);
+        argumentDefinitions.add(argumentDefinitionWithDefault);
 
-        return settingDefinitions;
+        return argumentDefinitions;
     }
 }

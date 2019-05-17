@@ -15,7 +15,7 @@
  */
 package com.github.cafdataprocessing.workflow;
 
-import com.github.cafdataprocessing.workflow.model.SettingDefinition;
+import com.github.cafdataprocessing.workflow.model.ArgumentDefinition;
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.hpe.caf.worker.document.exceptions.DocumentWorkerTransientException;
@@ -32,19 +32,19 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
-public class SettingsManager {
+public class ArgumentsManager {
 
-    private final static Logger LOG = LoggerFactory.getLogger(SettingsManager.class);
+    private final static Logger LOG = LoggerFactory.getLogger(ArgumentsManager.class);
 
     private final Gson gson = new Gson();
     private final SettingsApi settingsApi;
 
-    public SettingsManager(final String settingsServiceUrl)
+    public ArgumentsManager(final String settingsServiceUrl)
     {
         this(new SettingsApi(), settingsServiceUrl);
     }
 
-    public SettingsManager(final SettingsApi settingsApi, final String settingsServiceUrl){
+    public ArgumentsManager(final SettingsApi settingsApi, final String settingsServiceUrl){
         this.settingsApi = settingsApi;
         final ApiClient apiClient = new ApiClient();
         final OkHttpClient client = new OkHttpClient();
@@ -67,15 +67,15 @@ public class SettingsManager {
         };
     }
 
-    public void applySettingsCustomData(final List<SettingDefinition> settingDefinitions, final Document document)
+    public void addArgumentsToDocument(final List<ArgumentDefinition> argumentDefinitions, final Document document)
             throws DocumentWorkerTransientException {
 
-        final Map<String, String> resolvedSettings = new HashMap<>();
+        final Map<String, String> arguments = new HashMap<>();
 
-        for(final SettingDefinition settingDefinition: settingDefinitions) {
+        for(final ArgumentDefinition argumentDefinition : argumentDefinitions) {
             String value = null;
-            if(settingDefinition.getSources() != null){
-                for(final SettingDefinition.Source source: settingDefinition.getSources()) {
+            if(argumentDefinition.getSources() != null){
+                for(final ArgumentDefinition.Source source: argumentDefinition.getSources()) {
                     switch (source.getType()){
                         case CUSTOM_DATA: {
                             value = document.getCustomData(source.getName());
@@ -103,18 +103,18 @@ public class SettingsManager {
                 }
             }
 
-            if(Strings.isNullOrEmpty(value) && !Strings.isNullOrEmpty(settingDefinition.getDefaultValue())) {
-                value = settingDefinition.getDefaultValue();
+            if(Strings.isNullOrEmpty(value) && !Strings.isNullOrEmpty(argumentDefinition.getDefaultValue())) {
+                value = argumentDefinition.getDefaultValue();
             }
 
             if(!Strings.isNullOrEmpty(value)){
-                resolvedSettings.put(settingDefinition.getName(), value);
+                arguments.put(argumentDefinition.getName(), value);
             }
         }
 
-        document.getField("CAF_WORKFLOW_SETTINGS").set(gson.toJson(resolvedSettings));
+        document.getField("CAF_WORKFLOW_SETTINGS").set(gson.toJson(arguments));
         document.getTask().getResponse().getCustomData().put("CAF_WORKFLOW_SETTINGS",
-                gson.toJson(resolvedSettings));
+                gson.toJson(arguments));
 
     }
 
