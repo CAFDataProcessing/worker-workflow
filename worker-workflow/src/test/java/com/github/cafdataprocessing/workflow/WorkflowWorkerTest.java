@@ -15,22 +15,46 @@
  */
 package com.github.cafdataprocessing.workflow;
 
-import com.github.cafdataprocessing.workflow.utils.ActionExpectationsBuilder;
-import com.github.cafdataprocessing.workflow.utils.WorkflowTestExecutor;
+import com.github.cafdataprocessing.workflow.testing.ActionExpectationsBuilder;
+import com.github.cafdataprocessing.workflow.testing.WorkflowTestExecutor;
+import com.hpe.caf.api.ConfigurationException;
+import com.hpe.caf.api.worker.WorkerException;
+import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.testing.DocumentBuilder;
-
+import com.microfocus.darwin.settings.client.SettingsApi;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.mockito.Mockito.mock;
 
 public class WorkflowWorkerTest
 {
     private WorkflowTestExecutor workflowTestExecutor;
+    private WorkflowWorker workflowWorker;
 
     @Before
-    public void before() throws Exception {
-        workflowTestExecutor = new WorkflowTestExecutor(
-                WorkflowDirectoryProvider.getWorkflowDirectory("workflow-worker-test"));
+    public void before() {
+        workflowTestExecutor = new WorkflowTestExecutor();
+
+        final WorkflowWorkerConfiguration workflowWorkerConfiguration = new WorkflowWorkerConfiguration();
+        workflowWorkerConfiguration.setWorkflowsDirectory(WorkflowDirectoryProvider.getWorkflowDirectory("workflow-worker-test"));
+        workflowWorkerConfiguration.setSettingsServiceUrl("mocked service");
+
+        final SettingsManager settingsManager = new SettingsManager(mock(SettingsApi.class),
+                workflowWorkerConfiguration.getSettingsServiceUrl());
+
+        try {
+            final Document document = DocumentBuilder.configure().build();
+            workflowWorker = new WorkflowWorker(
+                    workflowWorkerConfiguration,
+                    new WorkflowManager(document.getApplication(), workflowWorkerConfiguration.getWorkflowsDirectory()),
+                    new ScriptManager(),
+                    settingsManager);
+        } catch (ConfigurationException | WorkerException e) {
+            throw new RuntimeException(e);
+        }
     }
+
 
     @Test
     public void validateAllActionsTest() throws Exception {
@@ -53,7 +77,9 @@ public class WorkflowWorkerTest
                     .successQueue("action_2_queueName")
                     .failureQueue("action_2_queueName");
 
-        workflowTestExecutor.assertWorkflowActionsExecuted("sample-workflow", documentBuilder,
+        workflowTestExecutor.assertWorkflowActionsExecuted("sample-workflow",
+                workflowWorker,
+                documentBuilder,
                 actionExpectationsBuilder.build());
     }
 
@@ -74,7 +100,9 @@ public class WorkflowWorkerTest
                 .addCustomData("example", "value from field")
                 .addCustomData("valueFromLiteral", "literalExample");
 
-        workflowTestExecutor.assertWorkflowActionsExecuted("sample-workflow", documentBuilder,
+        workflowTestExecutor.assertWorkflowActionsExecuted("sample-workflow",
+                workflowWorker,
+                documentBuilder,
                 actionExpectationsBuilder.build());
     }
 

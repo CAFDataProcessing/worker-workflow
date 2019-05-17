@@ -20,8 +20,12 @@ import java.net.URL;
 import java.nio.file.Paths;
 
 public class WorkflowDirectoryProvider {
-    public static String getWorkflowDirectory(final String resourceDirectoryName) throws URISyntaxException {
+    public static String getWorkflowDirectory(final String resourceDirectoryName)  {
         final URL resource = WorkflowDirectoryProvider.class.getClassLoader().getResource(resourceDirectoryName);
-        return Paths.get(resource.toURI()).toString();
+        try {
+            return Paths.get(resource.toURI()).toString();
+        } catch (final URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

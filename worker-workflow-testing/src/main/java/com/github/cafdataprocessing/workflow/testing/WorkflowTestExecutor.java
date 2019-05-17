@@ -13,17 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.cafdataprocessing.workflow.utils;
+package com.github.cafdataprocessing.workflow.testing;
 
-import com.github.cafdataprocessing.workflow.*;
 import com.google.common.base.Strings;
-import com.hpe.caf.api.ConfigurationException;
 import com.hpe.caf.api.worker.WorkerException;
 import com.hpe.caf.worker.document.exceptions.DocumentWorkerTransientException;
+import com.hpe.caf.worker.document.extensibility.DocumentWorker;
 import com.hpe.caf.worker.document.model.*;
 import com.hpe.caf.worker.document.testing.DocumentBuilder;
 import com.hpe.caf.worker.document.testing.FieldsBuilder;
-import com.microfocus.darwin.settings.client.SettingsApi;
 import org.apache.commons.io.FileUtils;
 
 import javax.script.Invocable;
@@ -37,33 +35,18 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
 
 public class WorkflowTestExecutor {
 
-    private final WorkflowWorkerConfiguration workflowWorkerConfiguration;
-    private final SettingsManager settingsManager;
-
-    public WorkflowTestExecutor(final String workflowsDirectory) {
-        this(mock(SettingsApi.class), workflowsDirectory);
-    }
-
-    public WorkflowTestExecutor(final SettingsApi settingsApi, final String workflowsDirectory) {
-        workflowWorkerConfiguration = new WorkflowWorkerConfiguration();
-
-        workflowWorkerConfiguration.setWorkflowsDirectory(workflowsDirectory);
-        workflowWorkerConfiguration.setSettingsServiceUrl("mocked service");
-
-        settingsManager = new SettingsManager(settingsApi, workflowWorkerConfiguration.getSettingsServiceUrl());
-    }
-
     public void assertWorkflowActionsExecuted(final String workflowName,
+                                              final DocumentWorker documentWorker,
                                               final DocumentBuilder documentBuilder,
                                               final List<ActionExpectation> actionExpectations) {
-        assertWorkflowActionsExecuted(workflowName, documentBuilder, null, actionExpectations);
+        assertWorkflowActionsExecuted(workflowName, documentWorker, documentBuilder, null, actionExpectations);
     }
 
     public void assertWorkflowActionsExecuted(final String workflowName,
+                                              final DocumentWorker documentWorker,
                                               final DocumentBuilder documentBuilder,
                                               final String[] completedActions,
                                               final List<ActionExpectation> actionExpectations) {
@@ -88,22 +71,11 @@ public class WorkflowTestExecutor {
             throw new RuntimeException(e);
         }
 
-        final WorkflowWorker workflowWorker;
         try {
-            workflowWorker = new WorkflowWorker(
-                    workflowWorkerConfiguration,
-                    new WorkflowManager(document.getApplication(), workflowWorkerConfiguration.getWorkflowsDirectory()),
-                    new ScriptManager(),
-                    settingsManager);
-        } catch (ConfigurationException e) {
-            throw new RuntimeException(e);
-        }
-
-        try {
-            workflowWorker.processDocument(document);
+            documentWorker.processDocument(document);
             assertEquals(failuresToString(document), 0, document.getFailures().size());
             executeScript(document);
-        } catch (DocumentWorkerTransientException e) {
+        } catch (DocumentWorkerTransientException | InterruptedException e) {
             throw new RuntimeException(e);
         }
 
@@ -118,10 +90,10 @@ public class WorkflowTestExecutor {
                 for(int index = 1; index < actionExpectations.size(); index ++){
 
                     try {
-                        workflowWorker.processDocument(document);
+                        documentWorker.processDocument(document);
                         assertEquals(failuresToString(document), 0, document.getFailures().size());
                         executeScript(document);
-                    } catch (DocumentWorkerTransientException e) {
+                    } catch (DocumentWorkerTransientException | InterruptedException e) {
                         throw new RuntimeException(e);
                     }
 
@@ -131,9 +103,9 @@ public class WorkflowTestExecutor {
         }
 
         try {
-            workflowWorker.processDocument(document);
+            documentWorker.processDocument(document);
             executeScript(document);
-        } catch (DocumentWorkerTransientException e) {
+        } catch (DocumentWorkerTransientException | InterruptedException e) {
             throw new RuntimeException(e);
         }
 

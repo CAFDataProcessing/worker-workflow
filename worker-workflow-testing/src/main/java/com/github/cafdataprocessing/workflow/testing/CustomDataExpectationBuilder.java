@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.cafdataprocessing.workflow.utils;
+package com.github.cafdataprocessing.workflow.testing;
 
 public class CustomDataExpectationBuilder {
     private final ActionExpectation actionExpectation;
