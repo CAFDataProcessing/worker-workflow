@@ -18,6 +18,8 @@ package com.github.cafdataprocessing.workflow;
 import com.github.cafdataprocessing.workflow.model.Action;
 import com.github.cafdataprocessing.workflow.model.ArgumentDefinition;
 import com.github.cafdataprocessing.workflow.model.Workflow;
+import com.hpe.caf.api.ConfigurationException;
+import com.hpe.caf.api.worker.WorkerException;
 import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.testing.DocumentBuilder;
 import com.hpe.caf.worker.document.testing.TestServices;
@@ -69,6 +71,48 @@ public class WorkflowManagerTest {
         assertEquals("family_hashing", actions.get(0).getName());
         assertEquals("lang_detect", actions.get(1).getName());
         assertEquals("bulk_index", actions.get(2).getName());
+    }
+
+    @Test
+    public void duplicateActionNameTest() throws WorkerException {
+
+        final Document document = DocumentBuilder.configure().build();
+
+        try {
+            final WorkflowManager workflowManager = new WorkflowManager(document.getApplication(),
+                    WorkflowDirectoryProvider.getWorkflowDirectory("workflow-manager-duplicate-action-test"));
+        } catch (ConfigurationException ex) {
+            assertEquals("Duplicated action name [action_1].", ex.getMessage());
+        }
+
+    }
+
+    @Test
+    public void noActionNameTest() throws WorkerException {
+
+        final Document document = DocumentBuilder.configure().build();
+
+        try {
+            final WorkflowManager workflowManager = new WorkflowManager(document.getApplication(),
+                    WorkflowDirectoryProvider.getWorkflowDirectory("workflow-manager-no-action-name-test"));
+        } catch (ConfigurationException ex) {
+            assertEquals("Action name is not defined for action [0].", ex.getMessage());
+        }
+
+    }
+
+    @Test
+    public void noQueueNameTest() throws WorkerException {
+
+        final Document document = DocumentBuilder.configure().build();
+
+        try {
+            final WorkflowManager workflowManager = new WorkflowManager(document.getApplication(),
+                    WorkflowDirectoryProvider.getWorkflowDirectory("workflow-manager-no-queue-name-test"));
+        } catch (ConfigurationException ex) {
+            assertEquals("QueueName is not defined for action [action_1].", ex.getMessage());
+        }
+
     }
 
 }

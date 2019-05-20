@@ -112,15 +112,15 @@ public class WorkflowManager {
     private static void validateWorkflow(final Workflow workflow) throws ConfigurationException {
 
         final List<String> actionNames = new ArrayList<>();
-        for(int index = 0; index < actionNames.size(); index ++) {
+        for(int index = 0; index < workflow.getActions().size(); index ++) {
             final Action action = workflow.getActions().get(index);
             if(Strings.isNullOrEmpty(action.getName())){
                 throw new ConfigurationException(String.format("Action name is not defined for action [%s].", index));
             }
-            actionNames.add(action.getName());
             if(actionNames.contains(action.getName())){
                 throw new ConfigurationException(String.format("Duplicated action name [%s].", action.getName()));
             }
+            actionNames.add(action.getName());
             if(Strings.isNullOrEmpty(action.getQueueName())){
                 throw new ConfigurationException(String.format("QueueName is not defined for action [%s].",
                         action.getName()));
