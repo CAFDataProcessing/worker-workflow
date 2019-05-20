@@ -56,9 +56,9 @@ function processDocument(document) {
 
     markPreviousActionAsCompleted(document);
 
-    for (var actionId in ACTIONS) {
-        var action = ACTIONS[actionId];
-        if (!isActionCompleted(document, actionId)) {
+    for (var index = 0; index < ACTIONS.length; index ++ ) {
+        var action = ACTIONS[index];
+        if (!isActionCompleted(document, action.name)) {
             if(!action.conditionFunction || eval(action.conditionFunction)(document)) {
                 var actionDetails = {
                     queueName: action.queueName,
@@ -66,7 +66,7 @@ function processDocument(document) {
                     customData: evalCustomData(arguments, action.customData)
                 };
 
-                document.getField('CAF_WORKFLOW_ACTION').add(actionId);
+                document.getField('CAF_WORKFLOW_ACTION').add(action.name);
                 applyActionDetails(document, actionDetails);
                 break;
             }

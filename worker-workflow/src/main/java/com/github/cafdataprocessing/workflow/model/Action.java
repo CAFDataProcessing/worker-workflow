@@ -15,13 +15,24 @@
  */
 package com.github.cafdataprocessing.workflow.model;
 
+import javax.validation.constraints.NotNull;
 import java.util.Map;
 
 public class Action {
+    @NotNull
+    private String name;
     private String queueName;
     private String conditionFunction;
     private Map<String, String> customData;
     private Script[] scripts;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public String getQueueName() {
         return queueName;
@@ -54,4 +65,5 @@ public class Action {
     public void setScripts(final Script[] scripts) {
         this.scripts = scripts;
     }
+
 }

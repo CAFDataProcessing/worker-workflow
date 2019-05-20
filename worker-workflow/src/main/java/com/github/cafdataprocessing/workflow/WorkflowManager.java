@@ -15,6 +15,7 @@
  */
 package com.github.cafdataprocessing.workflow;
 
+import com.github.cafdataprocessing.workflow.model.Action;
 import com.github.cafdataprocessing.workflow.model.Workflow;
 import com.google.common.base.Strings;
 import com.google.common.io.Resources;
@@ -32,7 +33,9 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class WorkflowManager {
@@ -70,6 +73,8 @@ public class WorkflowManager {
             try (final FileInputStream fis = new FileInputStream(workflowFile)) {
                 final Workflow workflow = yaml.loadAs(fis, Workflow.class);
 
+                validateWorkflow(workflow);
+
                 final StringBuilder stringBuilder = new StringBuilder();
                 stringBuilder.append(String.format("var ACTIONS = %s;\n", gson.toJson(workflow.getActions())));
                 try {
@@ -104,4 +109,22 @@ public class WorkflowManager {
         return workflowMap;
     }
 
+    private static void validateWorkflow(final Workflow workflow) throws ConfigurationException {
+
+        final List<String> actionNames = new ArrayList<>();
+        for(int index = 0; index < actionNames.size(); index ++) {
+            final Action action = workflow.getActions().get(index);
+            if(Strings.isNullOrEmpty(action.getName())){
+                throw new ConfigurationException(String.format("Action name is not defined for action [%s].", index));
+            }
+            actionNames.add(action.getName());
+            if(actionNames.contains(action.getName())){
+                throw new ConfigurationException(String.format("Duplicated action name [%s].", action.getName()));
+            }
+            if(Strings.isNullOrEmpty(action.getQueueName())){
+                throw new ConfigurationException(String.format("QueueName is not defined for action [%s].",
+                        action.getName()));
+            }
+        }
+    }
 }

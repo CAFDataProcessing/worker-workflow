@@ -28,7 +28,7 @@ arguments:
         type: SETTINGS_SERVICE
         options: repository-%f:repositoryId%,repository-%cd:repositoryId%,tenantId-%cd:tenantId%-some-suffix
 actions:
-  action_1:
+  - name: action_1
     queueName: action_1_queueName
     customData:
       example: example
@@ -42,6 +42,6 @@ actions:
           }
           function onError(e) {
           }
-  action_2:
+  - name: action_2
     queueName: action_2_queueName
     conditionFunction: function (document) { return fieldExists(document, 'field-should-exist');}

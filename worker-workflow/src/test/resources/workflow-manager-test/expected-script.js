@@ -1,33 +1,36 @@
-var ACTIONS = {
-  "family_hashing": {
-    "queueName": "dataprocessing-family-hashing-in",
-    "customData": {
-      "tenantId": "settings.tenantId"
+var ACTIONS = [
+    {
+        "name": "family_hashing",
+        "queueName": "dataprocessing-family-hashing-in",
+        "customData": {
+            "tenantId": "tenantId"
+        },
+        "scripts": [
+            {
+                "name": "recordProcessingTimes.js",
+                "script": "function onProcessTask(e) {\n  var startTime \u003d new Date();\n  e.rootDocument.getField(\"LONG_FAMILY_HASHING_START_TIME\").set(startTime.getTime());\n  e.rootDocument.getField(\"ENRICHMENT_TIME\").set(Math.round(startTime.getTime() / 1000));\n}\nfunction onAfterProcessTask(e) {\n  var endTime \u003d new Date();\n  e.rootDocument.getField(\"LONG_FAMILY_HASHING_END_TIME\").set(endTime.getTime());\n}\nfunction onError(e) {\n  var failedTime \u003d new Date();\n  e.rootDocument.getField(\"LONG_FAMILY_HASHING_FAILED_TIME\").set(failedTime.getTime());\n}\n"
+            }
+        ]
     },
-    "scripts": [
-      {
-        "name": "recordProcessingTimes.js",
-        "script": "function onProcessTask(e) {\n  var startTime \u003d new Date();\n  e.rootDocument.getField(\"LONG_FAMILY_HASHING_START_TIME\").set(startTime.getTime());\n  e.rootDocument.getField(\"ENRICHMENT_TIME\").set(Math.round(startTime.getTime() / 1000));\n}\nfunction onAfterProcessTask(e) {\n  var endTime \u003d new Date();\n  e.rootDocument.getField(\"LONG_FAMILY_HASHING_END_TIME\").set(endTime.getTime());\n}\nfunction onError(e) {\n  var failedTime \u003d new Date();\n  e.rootDocument.getField(\"LONG_FAMILY_HASHING_FAILED_TIME\").set(failedTime.getTime());\n}\n"
-      }
-    ]
-  },
-  "lang_detect": {
-    "queueName": "dataprocessing-family-hashing-in,",
-    "conditionFunction": "function (document) {\n  return fieldExists(document, \u0027CONTENT_PRIMARY\u0027);\n}\n",
-    "customData": {
-      "fieldSpecs": "\u0027CONTENT_PRIMARY\u0027"
+    {
+        "name": "lang_detect",
+        "queueName": "dataprocessing-family-hashing-in,",
+        "conditionFunction": "function (document) {\n  return fieldExists(document, \u0027CONTENT_PRIMARY\u0027);\n}\n",
+        "customData": {
+            "fieldSpecs": "\u0027CONTENT_PRIMARY\u0027"
+        },
+        "scripts": [
+            {
+                "name": "recordProcessingTimes.js,",
+                "script": "function onProcessTask(e) {\n  var startTime \u003d new Date();\n  e.rootDocument.getField(\"LONG_LANGUAGE_DETECTION_START_TIME\").set(startTime.getTime());\n}\nfunction onAfterProcessTask(e) {\n  var endTime \u003d new Date();\n  e.rootDocument.getField(\"LONG_LANGUAGE_DETECTION_END_TIME\").set(endTime.getTime());\n}\nfunction onError(e) {\n  var failedTime \u003d new Date();\n  e.rootDocument.getField(\"LONG_LANGUAGE_DETECTION_FAILED_TIME\").set(failedTime.getTime());\n}\n"
+            }
+        ]
     },
-    "scripts": [
-      {
-        "name": "recordProcessingTimes.js,",
-        "script": "function onProcessTask(e) {\n  var startTime \u003d new Date();\n  e.rootDocument.getField(\"LONG_LANGUAGE_DETECTION_START_TIME\").set(startTime.getTime());\n}\nfunction onAfterProcessTask(e) {\n  var endTime \u003d new Date();\n  e.rootDocument.getField(\"LONG_LANGUAGE_DETECTION_END_TIME\").set(endTime.getTime());\n}\nfunction onError(e) {\n  var failedTime \u003d new Date();\n  e.rootDocument.getField(\"LONG_LANGUAGE_DETECTION_FAILED_TIME\").set(failedTime.getTime());\n}\n"
-      }
-    ]
-  },
-  "bulk_index": {
-    "queueName": "bulk-index"
-  }
-};
+    {
+        "name": "bulk_index",
+        "queueName": "bulk-index"
+    }
+];
 /*
  * Copyright 2015-2018 Micro Focus or one of its affiliates.
  *
@@ -69,34 +72,34 @@ function onError(errorEventObj) {
 }
 
 function processDocument(document) {
-    var customDataSettings = document.getCustomData("CAF_WORKFLOW_SETTINGS");
-    var settingsField = document.getField("CAF_WORKFLOW_SETTINGS");
-    var cafWorkflowSettingsJson = customDataSettings
-        ? customDataSettings
-        : settingsField.getStringValues().stream().findFirst()
+    var argumentsCustomData = document.getCustomData("CAF_WORKFLOW_SETTINGS");
+    var argumentsField = document.getField("CAF_WORKFLOW_SETTINGS");
+    var argumentsJson = argumentsCustomData
+        ? argumentsCustomData
+        : argumentsField.getStringValues().stream().findFirst()
             .orElseThrow(function () {
                 throw new java.lang.UnsupportedOperationException
                 ("Document must contain field CAF_WORKFLOW_SETTINGS.");
             });
 
-    if (cafWorkflowSettingsJson === undefined) {
+    if (argumentsJson === undefined) {
         throw new java.lang.UnsupportedOperationException("Document must contain field CAF_WORKFLOW_SETTINGS.");
     }
-    var settings = JSON.parse(cafWorkflowSettingsJson);
+    var arguments = JSON.parse(argumentsJson);
 
     markPreviousActionAsCompleted(document);
 
-    for (var actionId in ACTIONS) {
-        var action = ACTIONS[actionId];
-        if (!isActionCompleted(document, actionId)) {
-            if(!action.conditionFunction || action.conditionFunction(document)) {
+    for (var index = 0; index < ACTIONS.length; index ++ ) {
+        var action = ACTIONS[index];
+        if (!isActionCompleted(document, action.name)) {
+            if(!action.conditionFunction || eval(action.conditionFunction)(document)) {
                 var actionDetails = {
                     queueName: action.queueName,
                     scripts: action.scripts,
-                    customData: evalCustomData(settings, action.customData)
+                    customData: evalCustomData(arguments, action.customData)
                 };
 
-                document.getField('CAF_WORKFLOW_ACTION').add(actionId);
+                document.getField('CAF_WORKFLOW_ACTION').add(action.name);
                 applyActionDetails(document, actionDetails);
                 break;
             }
@@ -104,10 +107,22 @@ function processDocument(document) {
     }
 }
 
-function evalCustomData(settings, customDataToEval){
+function evalCustomData(arguments, customDataToEval){
+    var regex = /d".*"|'.*'/g;
     var customData = {};
+    if (!customDataToEval) {
+        return customData;
+    }
     for(var customDataField in customDataToEval){
-        customData[customDataField] = eval(customDataToEval[customDataField]);
+        var cd = customDataToEval[customDataField];
+        if (typeof cd === 'string') {
+            if (cd.match(regex)) {
+                customData[customDataField] = eval(cd);
+            }
+            else {
+                customData[customDataField] = arguments[cd];
+            }
+        }
     }
     return customData;
 }

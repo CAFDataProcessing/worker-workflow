@@ -16,11 +16,10 @@
 package com.github.cafdataprocessing.workflow.model;
 
 import java.util.List;
-import java.util.Map;
 
 public class Workflow {
     private List<ArgumentDefinition> arguments;
-    private Map<String, Action> actions;
+    private List<Action> actions;
     private String workflowScript;
     private String storageReference;
 
@@ -32,11 +31,11 @@ public class Workflow {
         this.storageReference = storageReference;
     }
 
-    public Map<String, Action> getActions() {
+    public List<Action> getActions() {
         return actions;
     }
 
-    public void setActions(final Map<String, Action> actions) {
+    public void setActions(final List<Action> actions) {
         this.actions = actions;
     }
 

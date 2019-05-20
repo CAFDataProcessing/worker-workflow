@@ -27,7 +27,6 @@ import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -65,8 +64,11 @@ public class WorkflowManagerTest {
         assertNotNull(argumentDefinitions);
         assertEquals(5, argumentDefinitions.size());
 
-        final Map<String, Action> actions = workflow.getActions();
+        final List<Action> actions = workflow.getActions();
         assertEquals(3, actions.size());
+        assertEquals("family_hashing", actions.get(0).getName());
+        assertEquals("lang_detect", actions.get(1).getName());
+        assertEquals("bulk_index", actions.get(2).getName());
     }
 
 }

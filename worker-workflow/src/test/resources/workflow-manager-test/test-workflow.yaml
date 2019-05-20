@@ -43,7 +43,7 @@ arguments:
       - name: TASK_SETTING_INDEXING_MODE
         type: CUSTOM_DATA
 actions:
-  family_hashing:
+  - name: family_hashing
     queueName: dataprocessing-family-hashing-in
     customData:
       tenantId: tenantId
@@ -63,7 +63,7 @@ actions:
             var failedTime = new Date();
             e.rootDocument.getField("LONG_FAMILY_HASHING_FAILED_TIME").set(failedTime.getTime());
           }
-  lang_detect:
+  - name: lang_detect
     conditionFunction: |
       function (document) {
         return fieldExists(document, 'CONTENT_PRIMARY');
@@ -86,5 +86,5 @@ actions:
             var failedTime = new Date();
             e.rootDocument.getField("LONG_LANGUAGE_DETECTION_FAILED_TIME").set(failedTime.getTime());
           }
-  bulk_index:
+  - name: bulk_index
     queueName: bulk-index
