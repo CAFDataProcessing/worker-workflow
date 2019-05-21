@@ -25,6 +25,9 @@ import com.microfocus.darwin.settings.client.SettingsApi;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static org.mockito.Mockito.mock;
 
 public class WorkflowWorkerTest
@@ -59,10 +62,10 @@ public class WorkflowWorkerTest
     @Test
     public void validateAllActionsTest() throws Exception {
 
-        final DocumentBuilder documentBuilder = DocumentBuilder.configure();
-        documentBuilder.withFields()
-                .addFieldValue("example", "value from field")
-                .addFieldValue("field-should-exist", "action 2 requires this field to be present");
+        final Map<String, String[]> fields = new HashMap<>();
+
+        fields.put("example", new String[]{"value from field"});
+        fields.put("field-should-exist", new String[]{"action 2 requires this field to be present"});
 
         final ActionExpectationsBuilder actionExpectationsBuilder = new ActionExpectationsBuilder();
         actionExpectationsBuilder
@@ -75,11 +78,13 @@ public class WorkflowWorkerTest
                 .actionExpectationsBuilder()
                 .withAction("action_2")
                     .successQueue("action_2_queueName")
-                    .failureQueue("action_2_queueName");
+                    .failureQueue("action_2_queueName")
+                    .withCustomData();
 
         workflowTestExecutor.assertWorkflowActionsExecuted("sample-workflow",
                 workflowWorker,
-                documentBuilder,
+                fields,
+                null,
                 actionExpectationsBuilder.build());
     }
 
@@ -87,9 +92,9 @@ public class WorkflowWorkerTest
     @Test
     public void action2ConditionNotPassTest() throws Exception {
 
-        final DocumentBuilder documentBuilder = DocumentBuilder.configure();
-        documentBuilder.withFields()
-                .addFieldValue("example", "value from field");
+        final Map<String, String[]> fields = new HashMap<>();
+
+        fields.put("example", new String[]{"value from field"});
 
         final ActionExpectationsBuilder actionExpectationsBuilder = new ActionExpectationsBuilder();
         actionExpectationsBuilder
@@ -102,7 +107,8 @@ public class WorkflowWorkerTest
 
         workflowTestExecutor.assertWorkflowActionsExecuted("sample-workflow",
                 workflowWorker,
-                documentBuilder,
+                fields,
+                null,
                 actionExpectationsBuilder.build());
     }
 

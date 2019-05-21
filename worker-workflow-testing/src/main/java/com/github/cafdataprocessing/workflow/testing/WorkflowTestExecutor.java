@@ -19,17 +19,21 @@ import com.google.common.base.Strings;
 import com.hpe.caf.api.worker.WorkerException;
 import com.hpe.caf.worker.document.exceptions.DocumentWorkerTransientException;
 import com.hpe.caf.worker.document.extensibility.DocumentWorker;
+import com.hpe.caf.worker.document.impl.ResponseCustomDataImpl;
 import com.hpe.caf.worker.document.model.*;
+import com.hpe.caf.worker.document.testing.CustomDataBuilder;
 import com.hpe.caf.worker.document.testing.DocumentBuilder;
 import com.hpe.caf.worker.document.testing.FieldsBuilder;
 import org.apache.commons.io.FileUtils;
 
+import javax.print.Doc;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -40,78 +44,63 @@ public class WorkflowTestExecutor {
 
     public void assertWorkflowActionsExecuted(final String workflowName,
                                               final DocumentWorker documentWorker,
-                                              final DocumentBuilder documentBuilder,
+                                              final Map<String, String[]> fields,
+                                              final Map<String, String> customData,
                                               final List<ActionExpectation> actionExpectations) {
-        assertWorkflowActionsExecuted(workflowName, documentWorker, documentBuilder, null, actionExpectations);
+        assertWorkflowActionsExecuted(workflowName, documentWorker, fields, customData, null, actionExpectations);
     }
 
     public void assertWorkflowActionsExecuted(final String workflowName,
                                               final DocumentWorker documentWorker,
-                                              final DocumentBuilder documentBuilder,
+                                              final Map<String, String[]> fields,
+                                              final Map<String, String> customData,
                                               final String[] completedActions,
                                               final List<ActionExpectation> actionExpectations) {
 
-        final FieldsBuilder fieldsBuilder = documentBuilder.withFields();
-
-        if (!Strings.isNullOrEmpty(workflowName)) {
-            documentBuilder.withCustomData()
-                    .add("workflowName", workflowName);
-        }
-
-        if (completedActions != null) {
-            for (final String completedAction : completedActions) {
-                fieldsBuilder.addFieldValue("CAF_WORKFLOW_ACTIONS_COMPLETED", completedAction);
-            }
-        }
-
-        final Document document;
-        try {
-            document = documentBuilder.build();
-        } catch (WorkerException e) {
-            throw new RuntimeException(e);
-        }
+        Document documentForExecution = getDocument(workflowName, completedActions, fields, customData);
 
         try {
-            documentWorker.processDocument(document);
-            assertEquals(failuresToString(document), 0, document.getFailures().size());
-            executeScript(document);
+            documentWorker.processDocument(documentForExecution);
+            assertEquals(failuresToString(documentForExecution), 0, documentForExecution.getFailures().size());
+            executeScript(documentForExecution);
         } catch (DocumentWorkerTransientException | InterruptedException e) {
             throw new RuntimeException(e);
         }
 
         if(actionExpectations == null || actionExpectations.size() == 0){
             assertEquals("No actions to execute was expected.", 0,
-                    document.getField("CAF_WORKFLOW_ACTION").getValues().size());
+                    documentForExecution.getField("CAF_WORKFLOW_ACTION").getValues().size());
         }
         else {
-            validateAction(actionExpectations.get(0), document);
+            validateAction(actionExpectations.get(0), documentForExecution);
 
             if(actionExpectations.size() > 1) {
                 for(int index = 1; index < actionExpectations.size(); index ++){
 
                     try {
-                        documentWorker.processDocument(document);
-                        assertEquals(failuresToString(document), 0, document.getFailures().size());
-                        executeScript(document);
+                        documentForExecution = getDocument(workflowName, customData, documentForExecution);
+                        documentWorker.processDocument(documentForExecution);
+                        assertEquals(failuresToString(documentForExecution), 0, documentForExecution.getFailures().size());
+                        executeScript(documentForExecution);
                     } catch (DocumentWorkerTransientException | InterruptedException e) {
                         throw new RuntimeException(e);
                     }
 
-                    validateAction(actionExpectations.get(index), document);
+                    validateAction(actionExpectations.get(index), documentForExecution);
                 }
             }
         }
 
         try {
-            documentWorker.processDocument(document);
-            executeScript(document);
+            documentWorker.processDocument(documentForExecution);
+            executeScript(documentForExecution);
         } catch (DocumentWorkerTransientException | InterruptedException e) {
             throw new RuntimeException(e);
         }
 
-        if (document.getField("CAF_WORKFLOW_ACTION").getValues().size() > 0){
+        if (documentForExecution.getField("CAF_WORKFLOW_ACTION").getValues().size() > 0){
             fail(String.format("Action [%s] was not defined in the action expectations.",
-                    document.getField("CAF_WORKFLOW_ACTION").getStringValues().get(0)));
+                    documentForExecution.getField("CAF_WORKFLOW_ACTION").getStringValues().get(0)));
         }
 
     }
@@ -169,7 +158,7 @@ public class WorkflowTestExecutor {
         }
     }
 
-    public String failuresToString(final Document document){
+    private String failuresToString(final Document document){
         final StringBuilder stringBuilder = new StringBuilder();
         for(final Failure failure: document.getFailures()){
             stringBuilder.append(failure.getFailureMessage());
@@ -177,4 +166,61 @@ public class WorkflowTestExecutor {
         }
         return stringBuilder.toString();
     }
+
+    private Document getDocument(final String workflowName,
+                                 final Map<String, String> customData,
+                                 final Document previousDocument){
+
+        final Map<String, String[]> fields = new HashMap<>();
+
+        for(final Field field: previousDocument.getFields()){
+            fields.put(field.getName(), field.getStringValues().toArray(new String[0]));
+        }
+
+        return getDocument(workflowName, null, fields, customData);
+    }
+
+    private Document getDocument(final String workflowName,
+                                 final String[] completedActions,
+                                 final Map<String, String[]> fields,
+                                 final Map<String, String> customData) {
+
+        final DocumentBuilder documentBuilder = DocumentBuilder.configure();
+
+        final FieldsBuilder fieldsBuilder = documentBuilder.withFields();
+
+        if (!Strings.isNullOrEmpty(workflowName)) {
+            documentBuilder.withCustomData()
+                    .add("workflowName", workflowName);
+        }
+
+        if (completedActions != null) {
+            for (final String completedAction : completedActions) {
+                fieldsBuilder.addFieldValue("CAF_WORKFLOW_ACTIONS_COMPLETED", completedAction);
+            }
+        }
+
+        if(fields!=null){
+            for(final Map.Entry<String, String[]> entry: fields.entrySet()){
+                for(final String value:entry.getValue()){
+                    fieldsBuilder.addFieldValue(entry.getKey(), value);
+                }
+            }
+        }
+
+        final CustomDataBuilder customDataBuilder = documentBuilder.withCustomData();
+        if(customData!=null){
+            for(final Map.Entry<String, String> entry: customData.entrySet()){
+                customDataBuilder.add(entry.getKey(), entry.getValue());
+            }
+
+        }
+
+        try {
+            return documentBuilder.build();
+        } catch (WorkerException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }
