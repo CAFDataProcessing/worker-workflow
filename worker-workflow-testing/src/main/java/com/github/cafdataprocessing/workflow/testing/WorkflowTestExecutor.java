@@ -19,14 +19,12 @@ import com.google.common.base.Strings;
 import com.hpe.caf.api.worker.WorkerException;
 import com.hpe.caf.worker.document.exceptions.DocumentWorkerTransientException;
 import com.hpe.caf.worker.document.extensibility.DocumentWorker;
-import com.hpe.caf.worker.document.impl.ResponseCustomDataImpl;
 import com.hpe.caf.worker.document.model.*;
 import com.hpe.caf.worker.document.testing.CustomDataBuilder;
 import com.hpe.caf.worker.document.testing.DocumentBuilder;
 import com.hpe.caf.worker.document.testing.FieldsBuilder;
 import org.apache.commons.io.FileUtils;
 
-import javax.print.Doc;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
