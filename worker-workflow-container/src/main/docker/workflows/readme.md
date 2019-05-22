@@ -1,21 +1,3 @@
-====
-    Copyright 2015-2018 Micro Focus or one of its affiliates.
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-         http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
-====
-
-
-
 The workflows are in a yaml format and would contain the actions (workers) that needs to be called in that workflow.
  
  
@@ -24,22 +6,38 @@ The workflows are in a yaml format and would contain the actions (workers) that 
 |     arguments |   List of CAF_Settings that are passed to the workflow|
 |     actions |   List of workers that gets called in the workflow |
 
+*Arguments*
 
-
-
-#### arguments:
+Arguments are the settings or data needed for the worker to effeciently process the document.
+Aruments has 3 fields 
+1. Name
+2. Source (`FIELD` or `CUSTOM_DATA` or `SETTINGS_SERVICE`)
+3. DefaultValue
 
 ```yaml
 arguments:
   - name: tenantId  				# arg name
     sources:	     				# argument source, can be custom_data, field or settings_service
       - name: TASK_SETTING_TENANTID		# arg name passed in the source
-        type: CUSTOM_DATA			# source name i.e custom_data, field or settings_service
+        type: SETTING_SERVICE			# source name i.e custom_data, field or settings_service
     defaultValue: DETECT			# if no value, then default is taken
-        options: repository-%f:REPOSITORY_ID%   # if type is settings_service then option is used for getting value from other source (i.e field (%f) or custom_data (%cd))
+        options: repository-%f:TENANT_ID%   # if type is settings_service then option is used for getting value from other source (i.e field (%f) or custom_data (%cd))
 ```
 
-#### actions:	
+Note:  if the Source is `SETTINGS_SERVICE` then we need to mention the `options` i.e to specify where the data needs to be taken from.
+It can be either from another field in the document (%f) or from custom_data(%cd)
+
+
+*Actions*
+
+Actions are the worker that needs to be called for processing the document.en indicates the field name to check.
+Actions 5 fields
+1. Name
+2. QueueName
+3. ConditionFunction
+4. CustomData
+5. Scripts
+
 ```yaml
 - name: lang_detect					# action name					
     conditionFunction: |                           	# condition (if any) for the worker to be actioned
