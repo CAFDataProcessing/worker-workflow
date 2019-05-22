@@ -155,3 +155,25 @@ function fieldExists(document, fieldName) {
     } else
         return false;
 }
+
+function fieldHasStringValue(document, fieldName, value, includeSubDocuments) {
+
+    var fieldValues = document.getField(fieldName).getValues();
+    if (fieldValues)
+    {
+        for each(var fieldValue in fieldValues) {
+            if (fieldValue.isStringValue() && fieldValue.getStringValue() === value) {
+                return true;
+            }
+        }
+    }
+
+    if (includeSubDocuments){
+        return document.getSubdocuments().stream().anyMatch(
+            function (x) {
+                return fieldHasStringValue(x, fieldName, value, includeSubDocuments);
+            });
+    } else {
+        return false;
+    }
+}

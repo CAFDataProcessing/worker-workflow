@@ -66,6 +66,7 @@ public class WorkflowWorkerTest
 
         fields.put("example", new String[]{"value from field"});
         fields.put("field-should-exist", new String[]{"action 2 requires this field to be present"});
+        fields.put("fieldHasValue", new String[]{"This value"});
 
         final ActionExpectationsBuilder actionExpectationsBuilder = new ActionExpectationsBuilder();
         actionExpectationsBuilder
@@ -79,7 +80,12 @@ public class WorkflowWorkerTest
                 .withAction("action_2")
                     .successQueue("action_2_queueName")
                     .failureQueue("action_2_queueName")
-                    .withCustomData();
+                    .withCustomData()
+                .actionExpectationsBuilder()
+                .withAction("action_3")
+                .successQueue("action_3_queueName")
+                .failureQueue("action_3_queueName")
+                .withCustomData();
 
         workflowTestExecutor.assertWorkflowActionsExecuted("sample-workflow",
                 workflowWorker,
