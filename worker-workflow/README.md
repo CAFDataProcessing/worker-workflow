@@ -4,7 +4,7 @@
 
 The Workflow Worker is used to load a script (from file) representing a workflow that can be executed against a document to send the document to another worker to have an action performed on it.
 The workflow scripts and their settings have to be saved in the [src/main/docker/workflows](../worker-workflow-container/src/main/docker/workflows) folder.
-In the same location, you can find a sample workflow and a sample settings file.
+You can find a sample workflow which is in the yaml format in [here](../worker-workflow/src/test/resources/workflow-worker-test/sample-workflow.yaml).
 
 ## Implementation
 
@@ -29,36 +29,9 @@ The main places where the worker can fail are;
 
 - Configuration errors: these will manifest on startup. Check the logs for clues, and double check your configuration settings.
 
-## Settings
+## Workflow
 
-The settings js file may contain information about taskSettings, repositorySettings and tenantSettings.
+The workflow file would have 2 parts called Arguments and Actions. 
+Further information on the fields on workflow can be found here (../worker-workflow-container/src/main/docker/workflows/readme.md)
 
-*taskSettings*
 
-A source of taskSettings may be specified to indicate that a value for a property should come from the input message's customdata.
-
-```
-"taskSettings": ["tenantId", "ee.operationmode"]
-```
-
-*repositorySettings*
-
-A source of repositorySettings can be used to indicate that the worker should call out to get the effective repository configuration values for the key provided. 
-Repository settings also specify where the repository id can be obtained on the document to make the request. The possible supported source values for the repository id are `CUSTOMDATA` or `FIELD`, the key then indicates the field name to check.
-
-```
-"repositorySettings": {
-        "ee.grammarmap": {
-            "source": "FIELD",
-            "key": "REPOSITORY_ID"
-            }
-    }
-```
-
-*tenantSettings*
-
-They have a structure similar to the taskSettings.
-
-```
-"tenantSettings": ["tenantId", "ee.operationmode"]
-```
