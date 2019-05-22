@@ -168,10 +168,10 @@ function fieldHasStringValue(document, fieldName, value, includeSubDocuments) {
         }
     }
 
-    if (includeSubDocuments && document.hasSubdocuments()){
+    if (includeSubDocuments){
         return document.getSubdocuments().stream().anyMatch(
             function (x) {
-                return fieldHasValue(x, fieldName, value, includeSubDocuments);
+                return fieldHasStringValue(x, fieldName, value, includeSubDocuments);
             });
     } else {
         return false;
