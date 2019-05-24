@@ -55,7 +55,46 @@ public class WorkflowTestExecutor {
                                               final String[] completedActions,
                                               final List<ActionExpectation> actionExpectations) {
 
-        Document documentForExecution = getDocument(workflowName, completedActions, fields, customData);
+        final DocumentBuilder documentBuilder = DocumentBuilder.configure();
+        final FieldsBuilder fieldsBuilder = documentBuilder.withFields();
+
+        for(final Map.Entry<String, String[]> entry : fields.entrySet()){
+            for(final String value: entry.getValue()){
+                fieldsBuilder.addFieldValue(entry.getKey(), value);
+            }
+        }
+
+        if (completedActions != null) {
+            for (final String completedAction : completedActions) {
+                fieldsBuilder.addFieldValue("CAF_WORKFLOW_ACTIONS_COMPLETED", completedAction);
+            }
+        }
+
+        assertWorkflowActionsExecuted(workflowName, documentWorker, documentBuilder, customData, actionExpectations);
+    }
+
+    public void assertWorkflowActionsExecuted(final String workflowName,
+                                              final DocumentWorker documentWorker,
+                                              final DocumentBuilder documentBuilder,
+                                              final Map<String, String> customData,
+                                              final List<ActionExpectation> actionExpectations) {
+
+        if (!Strings.isNullOrEmpty(workflowName)) {
+            documentBuilder.withCustomData().add("workflowName", workflowName);
+        }
+
+        if(customData!=null){
+            for(final Map.Entry<String, String> entry: customData.entrySet()){
+                documentBuilder.withCustomData().add(entry.getKey(), entry.getValue());
+            }
+        }
+
+        Document documentForExecution;
+        try {
+            documentForExecution = documentBuilder.build();
+        } catch (WorkerException e) {
+            throw new RuntimeException(e);
+        }
 
         try {
             documentWorker.processDocument(documentForExecution);
@@ -76,7 +115,7 @@ public class WorkflowTestExecutor {
                 for(int index = 1; index < actionExpectations.size(); index ++){
 
                     try {
-                        documentForExecution = getDocument(workflowName, customData, documentForExecution);
+                        documentForExecution = cloneDocument(workflowName, customData, documentForExecution);
                         documentWorker.processDocument(documentForExecution);
                         assertEquals(failuresToString(documentForExecution), 0, documentForExecution.getFailures().size());
                         executeScript(documentForExecution);
@@ -165,60 +204,24 @@ public class WorkflowTestExecutor {
         return stringBuilder.toString();
     }
 
-    private Document getDocument(final String workflowName,
-                                 final Map<String, String> customData,
-                                 final Document previousDocument){
+    private void cloneDocument(final Document document, final DocumentBuilder documentBuilder) {
 
-        final Map<String, String[]> fields = new HashMap<>();
+        cloneFields(document, documentBuilder.withFields());
 
-        for(final Field field: previousDocument.getFields()){
-            fields.put(field.getName(), field.getStringValues().toArray(new String[0]));
+        for(final Document subdocument: document.getSubdocuments()){
+            final DocumentBuilder subdocumentBuilder = DocumentBuilder.configure();
+            documentBuilder.withSubDocuments(subdocumentBuilder);
+            cloneDocument(subdocument, subdocumentBuilder);
         }
-
-        return getDocument(workflowName, null, fields, customData);
     }
 
-    private Document getDocument(final String workflowName,
-                                 final String[] completedActions,
-                                 final Map<String, String[]> fields,
-                                 final Map<String, String> customData) {
-
-        final DocumentBuilder documentBuilder = DocumentBuilder.configure();
-
-        final FieldsBuilder fieldsBuilder = documentBuilder.withFields();
-
-        if (!Strings.isNullOrEmpty(workflowName)) {
-            documentBuilder.withCustomData()
-                    .add("workflowName", workflowName);
-        }
-
-        if (completedActions != null) {
-            for (final String completedAction : completedActions) {
-                fieldsBuilder.addFieldValue("CAF_WORKFLOW_ACTIONS_COMPLETED", completedAction);
+    private void cloneFields(final Document document, final FieldsBuilder fieldsBuilder){
+        for(final Field field: document.getFields()){
+            for(final String fieldValue: field.getStringValues()) {
+                fieldsBuilder.addFieldValue(field.getName(), fieldValue);
             }
         }
 
-        if(fields!=null){
-            for(final Map.Entry<String, String[]> entry: fields.entrySet()){
-                for(final String value:entry.getValue()){
-                    fieldsBuilder.addFieldValue(entry.getKey(), value);
-                }
-            }
-        }
-
-        final CustomDataBuilder customDataBuilder = documentBuilder.withCustomData();
-        if(customData!=null){
-            for(final Map.Entry<String, String> entry: customData.entrySet()){
-                customDataBuilder.add(entry.getKey(), entry.getValue());
-            }
-
-        }
-
-        try {
-            return documentBuilder.build();
-        } catch (WorkerException e) {
-            throw new RuntimeException(e);
-        }
     }
 
 }
