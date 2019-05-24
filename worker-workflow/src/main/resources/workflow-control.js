@@ -59,7 +59,7 @@ function processDocument(document) {
     for (var index = 0; index < ACTIONS.length; index ++ ) {
         var action = ACTIONS[index];
         if (!isActionCompleted(document, action.name)) {
-            if(!action.conditionFunction || eval(action.conditionFunction)(document)) {
+            if(!action.conditionFunction || eval(action.conditionFunction)(document, arguments)) {
                 var actionDetails = {
                     queueName: action.queueName,
                     scripts: action.scripts,
