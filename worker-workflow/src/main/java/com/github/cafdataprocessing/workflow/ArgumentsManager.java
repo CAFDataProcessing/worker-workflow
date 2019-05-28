@@ -152,15 +152,12 @@ public class ArgumentsManager {
 
         final ResolvedSetting resolvedSetting;
         try {
-            LOG.warn("Name: {}", name);
-            LOG.warn("Scopes: {}", String.join(",", scopes));
             resolvedSetting = settingsApi.getResolvedSetting(name, String.join(",", scopes));
         } catch (final ApiException e) {
             if(e.getCode()==404){
                 LOG.warn(String.format("Setting [%s] was not found in the settings service.", name));
                 return null;
             }
-            LOG.error("Message: {}", e.getMessage());
             throw new DocumentWorkerTransientException(e.getMessage());
         }
         if(resolvedSetting==null){
