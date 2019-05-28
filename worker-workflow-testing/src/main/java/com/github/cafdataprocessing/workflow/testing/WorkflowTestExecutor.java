@@ -21,19 +21,16 @@ import com.hpe.caf.worker.document.exceptions.DocumentWorkerTransientException;
 import com.hpe.caf.worker.document.extensibility.DocumentWorker;
 import com.hpe.caf.worker.document.model.*;
 import com.hpe.caf.worker.document.scripting.events.TaskEventObject;
-import com.hpe.caf.worker.document.testing.CustomDataBuilder;
 import com.hpe.caf.worker.document.testing.DocumentBuilder;
 import com.hpe.caf.worker.document.testing.FieldsBuilder;
 import org.apache.commons.io.FileUtils;
 
-import javax.print.Doc;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
