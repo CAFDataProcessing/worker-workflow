@@ -29,6 +29,17 @@ function onAfterProcessTask(eventObj) {
     processDocument(eventObj.rootDocument);
 }
 
+function onBeforeProcessDocument(e) {
+
+    //TODO Get the action from ACTIONS, use the value of CAF_WORKFLOW_ACTION to know the name of the action
+    var action = ACTIONS[0];
+
+    if (!action.conditionFunction) {
+        return;
+    }
+    e.cancel = ! eval(action.conditionFunction)(e.document);
+}
+
 function onError(errorEventObj) {
     // We will not mark the error as handled here. This will allow the document-worker framework to add the failure
     // itself rather than us duplicating the format of the failure value it constructs for non-script failure responses
@@ -59,7 +70,7 @@ function processDocument(document) {
     for (var index = 0; index < ACTIONS.length; index ++ ) {
         var action = ACTIONS[index];
         if (!isActionCompleted(document, action.name)) {
-            if(!action.conditionFunction || eval(action.conditionFunction)(document)) {
+            if(!action.conditionFunction || anyDocumentMatches(action.conditionFunction, document)) {
                 var actionDetails = {
                     queueName: action.queueName,
                     scripts: action.scripts,
@@ -72,6 +83,18 @@ function processDocument(document) {
             }
         }
     }
+}
+
+function anyDocumentMatches(conditionFunction, document) {
+
+    if (eval(conditionFunction)(document)){
+        return true;
+    }
+
+    return document.getSubdocuments().stream().anyMatch(
+        function (d) {
+            return anyDocumentMatches(conditionFunction, d);
+        });
 }
 
 function evalCustomData(arguments, customDataToEval){
@@ -143,20 +166,10 @@ function applyActionDetails(document, actionDetails) {
 //Field Conditions
 
 function fieldExists(document, fieldName) {
-    if (document.getField(fieldName).hasValues()) {
-        return true;
-    }
-    if (document.hasSubdocuments())
-    {
-        return document.getSubdocuments().stream().filter(
-            function (x) {
-                return fieldExists(x, fieldName)
-            }).findFirst().isPresent();
-    } else
-        return false;
+    return document.getField(fieldName).hasValues();
 }
 
-function fieldHasStringValue(document, fieldName, value, includeSubDocuments) {
+function fieldHasStringValue(document, fieldName, value) {
 
     var fieldValues = document.getField(fieldName).getValues();
     if (fieldValues)
@@ -168,12 +181,5 @@ function fieldHasStringValue(document, fieldName, value, includeSubDocuments) {
         }
     }
 
-    if (includeSubDocuments){
-        return document.getSubdocuments().stream().anyMatch(
-            function (x) {
-                return fieldHasStringValue(x, fieldName, value, includeSubDocuments);
-            });
-    } else {
-        return false;
-    }
+    return false;
 }
