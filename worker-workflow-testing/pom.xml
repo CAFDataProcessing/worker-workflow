@@ -35,6 +35,10 @@
         </dependency>
         <dependency>
             <groupId>com.github.cafdataprocessing</groupId>
+            <artifactId>worker-document</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.cafdataprocessing</groupId>
             <artifactId>worker-document-testing-unit</artifactId>
         </dependency>
         <dependency>

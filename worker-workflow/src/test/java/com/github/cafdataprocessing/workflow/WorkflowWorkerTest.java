@@ -118,4 +118,43 @@ public class WorkflowWorkerTest
                 actionExpectationsBuilder.build());
     }
 
+    @Test
+    public void subDocumentPassConditionTest() throws Exception {
+
+        final Document document = DocumentBuilder.configure().withFields()
+                .addFieldValue("example", "value from field")
+                .addFieldValue("fieldHasValue", "This value")
+                .documentBuilder()
+                .withSubDocuments(DocumentBuilder.configure().withFields()
+                        .addFieldValue("field-should-exist", "action 2 requires this field to be present")
+                        .documentBuilder())
+                .build();
+
+        final ActionExpectationsBuilder actionExpectationsBuilder = new ActionExpectationsBuilder();
+        actionExpectationsBuilder
+                .withAction("action_1")
+                .successQueue("action_1_queueName")
+                .failureQueue("action_1_queueName")
+                .withCustomData()
+                .addCustomData("example", "value from field")
+                .addCustomData("valueFromLiteral", "literalExample")
+                .actionExpectationsBuilder()
+                .withAction("action_2")
+                .successQueue("action_2_queueName")
+                .failureQueue("action_2_queueName")
+                .withCustomData()
+                .actionExpectationsBuilder()
+                .withAction("action_3")
+                .successQueue("action_3_queueName")
+                .failureQueue("action_3_queueName")
+                .withCustomData();
+
+        workflowTestExecutor.assertWorkflowActionsExecuted("sample-workflow",
+                workflowWorker,
+                document,
+                null,
+                actionExpectationsBuilder.build());
+
+    }
+
 }

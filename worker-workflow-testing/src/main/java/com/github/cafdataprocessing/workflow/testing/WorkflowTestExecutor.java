@@ -20,7 +20,7 @@ import com.hpe.caf.api.worker.WorkerException;
 import com.hpe.caf.worker.document.exceptions.DocumentWorkerTransientException;
 import com.hpe.caf.worker.document.extensibility.DocumentWorker;
 import com.hpe.caf.worker.document.model.*;
-import com.hpe.caf.worker.document.testing.CustomDataBuilder;
+import com.hpe.caf.worker.document.scripting.events.TaskEventObject;
 import com.hpe.caf.worker.document.testing.DocumentBuilder;
 import com.hpe.caf.worker.document.testing.FieldsBuilder;
 import org.apache.commons.io.FileUtils;
@@ -31,7 +31,6 @@ import javax.script.ScriptEngineManager;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -55,12 +54,42 @@ public class WorkflowTestExecutor {
                                               final String[] completedActions,
                                               final List<ActionExpectation> actionExpectations) {
 
-        Document documentForExecution = getDocument(workflowName, completedActions, fields, customData);
+        final DocumentBuilder documentBuilder = DocumentBuilder.configure();
+        final FieldsBuilder fieldsBuilder = documentBuilder.withFields();
+
+        for(final Map.Entry<String, String[]> entry : fields.entrySet()){
+            for(final String value: entry.getValue()){
+                fieldsBuilder.addFieldValue(entry.getKey(), value);
+            }
+        }
+
+        if (completedActions != null) {
+            for (final String completedAction : completedActions) {
+                fieldsBuilder.addFieldValue("CAF_WORKFLOW_ACTIONS_COMPLETED", completedAction);
+            }
+        }
 
         try {
+            assertWorkflowActionsExecuted(workflowName, documentWorker, documentBuilder.build(), customData, actionExpectations);
+        } catch (final WorkerException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void assertWorkflowActionsExecuted(final String workflowName,
+                                              final DocumentWorker documentWorker,
+                                              final Document originalDocument,
+                                              final Map<String, String> customData,
+                                              final List<ActionExpectation> actionExpectations) {
+
+        Document documentForExecution = cloneDocument(originalDocument, workflowName, customData);
+
+        try {
+            //Process the document with the workflow worker to generate the arguments, attach scripts and set the first
+            //target action.
             documentWorker.processDocument(documentForExecution);
             assertEquals(failuresToString(documentForExecution), 0, documentForExecution.getFailures().size());
-            executeScript(documentForExecution);
+            executeOnAfterProcessTaskScript(documentForExecution);
         } catch (DocumentWorkerTransientException | InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -69,33 +98,42 @@ public class WorkflowTestExecutor {
             assertEquals("No actions to execute was expected.", 0,
                     documentForExecution.getField("CAF_WORKFLOW_ACTION").getValues().size());
         }
-        else {
-            validateAction(actionExpectations.get(0), documentForExecution);
 
-            if(actionExpectations.size() > 1) {
-                for(int index = 1; index < actionExpectations.size(); index ++){
+        validateAction(actionExpectations.get(0), documentForExecution);
 
-                    try {
-                        documentForExecution = getDocument(workflowName, customData, documentForExecution);
-                        documentWorker.processDocument(documentForExecution);
-                        assertEquals(failuresToString(documentForExecution), 0, documentForExecution.getFailures().size());
-                        executeScript(documentForExecution);
-                    } catch (DocumentWorkerTransientException | InterruptedException e) {
-                        throw new RuntimeException(e);
+        if(actionExpectations.size() > 1) {
+            for(int index = 1; index < actionExpectations.size(); index ++){
+
+                try {
+                    final String action = documentForExecution
+                            .getField("CAF_WORKFLOW_ACTION").getStringValues().get(0);
+                    final List<String> completedActions = documentForExecution
+                            .getField("CAF_WORKFLOW_ACTIONS_COMPLETED").getStringValues();
+
+                    documentForExecution = cloneDocument(originalDocument, workflowName, customData);
+                    documentForExecution.getField("CAF_WORKFLOW_ACTION").add(action);
+                    for(final String completedAction: completedActions){
+                        documentForExecution.getField("CAF_WORKFLOW_ACTIONS_COMPLETED").add(completedAction);
                     }
 
-                    validateAction(actionExpectations.get(index), documentForExecution);
+                    documentWorker.processDocument(documentForExecution);
+                    assertEquals(failuresToString(documentForExecution), 0, documentForExecution.getFailures().size());
+                    executeOnAfterProcessTaskScript(documentForExecution);
+                } catch (DocumentWorkerTransientException | InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
+
+                validateAction(actionExpectations.get(index), documentForExecution);
             }
         }
 
+        //Verify there are no unexpected actions, in other words actions that weren't supplied in the expectations
         try {
             documentWorker.processDocument(documentForExecution);
-            executeScript(documentForExecution);
+            executeOnAfterProcessTaskScript(documentForExecution);
         } catch (DocumentWorkerTransientException | InterruptedException e) {
             throw new RuntimeException(e);
         }
-
         if (documentForExecution.getField("CAF_WORKFLOW_ACTION").getValues().size() > 0){
             fail(String.format("Action [%s] was not defined in the action expectations.",
                     documentForExecution.getField("CAF_WORKFLOW_ACTION").getStringValues().get(0)));
@@ -129,7 +167,7 @@ public class WorkflowTestExecutor {
 
     }
 
-    private static void executeScript(final Document document) {
+    private static void executeOnAfterProcessTaskScript(final Document document) {
 
         final Scripts scripts = document.getTask().getScripts();
         final Script inlineScript = scripts.get(0);
@@ -149,7 +187,8 @@ public class WorkflowTestExecutor {
 
 //        scriptEngine.eval(inlineScript.getScript());
 
-            invocable.invokeFunction("processDocument", document);
+            final TaskEventObject taskEventObject = new TaskEventObject(document.getTask());
+            invocable.invokeFunction("onAfterProcessTask", taskEventObject);
         }
         catch (final Exception ex){
             throw new RuntimeException(ex);
@@ -165,60 +204,46 @@ public class WorkflowTestExecutor {
         return stringBuilder.toString();
     }
 
-    private Document getDocument(final String workflowName,
-                                 final Map<String, String> customData,
-                                 final Document previousDocument){
-
-        final Map<String, String[]> fields = new HashMap<>();
-
-        for(final Field field: previousDocument.getFields()){
-            fields.put(field.getName(), field.getStringValues().toArray(new String[0]));
-        }
-
-        return getDocument(workflowName, null, fields, customData);
-    }
-
-    private Document getDocument(final String workflowName,
-                                 final String[] completedActions,
-                                 final Map<String, String[]> fields,
-                                 final Map<String, String> customData) {
+    private Document cloneDocument(final Document document, final String workflowName, final Map<String, String> customData) {
 
         final DocumentBuilder documentBuilder = DocumentBuilder.configure();
 
-        final FieldsBuilder fieldsBuilder = documentBuilder.withFields();
-
         if (!Strings.isNullOrEmpty(workflowName)) {
-            documentBuilder.withCustomData()
-                    .add("workflowName", workflowName);
+            documentBuilder.withCustomData().add("workflowName", workflowName);
         }
 
-        if (completedActions != null) {
-            for (final String completedAction : completedActions) {
-                fieldsBuilder.addFieldValue("CAF_WORKFLOW_ACTIONS_COMPLETED", completedAction);
-            }
-        }
-
-        if(fields!=null){
-            for(final Map.Entry<String, String[]> entry: fields.entrySet()){
-                for(final String value:entry.getValue()){
-                    fieldsBuilder.addFieldValue(entry.getKey(), value);
-                }
-            }
-        }
-
-        final CustomDataBuilder customDataBuilder = documentBuilder.withCustomData();
         if(customData!=null){
             for(final Map.Entry<String, String> entry: customData.entrySet()){
-                customDataBuilder.add(entry.getKey(), entry.getValue());
+                documentBuilder.withCustomData().add(entry.getKey(), entry.getValue());
             }
-
         }
+
+        cloneDocument(document, documentBuilder);
 
         try {
             return documentBuilder.build();
         } catch (WorkerException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void cloneDocument(final Document document, final DocumentBuilder documentBuilder) {
+        cloneFields(document, documentBuilder.withFields());
+
+        for(final Document subdocument: document.getSubdocuments()){
+            final DocumentBuilder subdocumentBuilder = DocumentBuilder.configure();
+            documentBuilder.withSubDocuments(subdocumentBuilder);
+            cloneDocument(subdocument, subdocumentBuilder);
+        }
+    }
+
+    private void cloneFields(final Document document, final FieldsBuilder fieldsBuilder){
+        for(final Field field: document.getFields()){
+            for(final String fieldValue: field.getStringValues()) {
+                fieldsBuilder.addFieldValue(field.getName(), fieldValue);
+            }
+        }
+
     }
 
 }
