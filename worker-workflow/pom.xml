@@ -127,7 +127,7 @@
                         </goals>
                         <configuration>
                             <environmentVariables>
-                                <CAF_SETTING>QUEUE_NAME_SOURCE</CAF_SETTING>
+                                <QUEUE_NAME_SOURCE>ENV_VAR</QUEUE_NAME_SOURCE>
                                 <CAF_WORKFLOW_ACTION_ACTION_1_INPUT_QUEUE>
                                     dataprocessing-action-1-in
                                 </CAF_WORKFLOW_ACTION_ACTION_1_INPUT_QUEUE>
@@ -141,6 +141,7 @@
                             <includes>
                                 <include>**/*WorkflowWorkerTest.java</include>
                             </includes>
+                            <reportsDirectory>target/surefire-reports/env</reportsDirectory>
                         </configuration>                        
                     </execution>
                 </executions>
