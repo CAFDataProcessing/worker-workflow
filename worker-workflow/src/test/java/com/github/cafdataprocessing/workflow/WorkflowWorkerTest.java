@@ -71,20 +71,20 @@ public class WorkflowWorkerTest
         final ActionExpectationsBuilder actionExpectationsBuilder = new ActionExpectationsBuilder();
         actionExpectationsBuilder
                 .withAction("action_1")
-                    .successQueue("action_1_queueName")
-                    .failureQueue("action_1_queueName")
+                    .successQueue("action1-in")
+                    .failureQueue("action1-in")
                     .withCustomData()
                     .addCustomData("example", "value from field")
                     .addCustomData("valueFromLiteral", "literalExample")
                 .actionExpectationsBuilder()
                 .withAction("action_2")
-                    .successQueue("action_2_queueName")
-                    .failureQueue("action_2_queueName")
+                    .successQueue("action2-in")
+                    .failureQueue("action2-in")
                     .withCustomData()
                 .actionExpectationsBuilder()
                 .withAction("action_3")
-                .successQueue("action_3_queueName")
-                .failureQueue("action_3_queueName")
+                .successQueue("action3-in")
+                .failureQueue("action3-in")
                 .withCustomData();
 
         workflowTestExecutor.assertWorkflowActionsExecuted("sample-workflow",
@@ -105,8 +105,8 @@ public class WorkflowWorkerTest
         final ActionExpectationsBuilder actionExpectationsBuilder = new ActionExpectationsBuilder();
         actionExpectationsBuilder
                 .withAction("action_1")
-                .successQueue("action_1_queueName")
-                .failureQueue("action_1_queueName")
+                .successQueue("action1-in")
+                .failureQueue("action1-in")
                 .withCustomData()
                 .addCustomData("example", "value from field")
                 .addCustomData("valueFromLiteral", "literalExample");
@@ -133,20 +133,20 @@ public class WorkflowWorkerTest
         final ActionExpectationsBuilder actionExpectationsBuilder = new ActionExpectationsBuilder();
         actionExpectationsBuilder
                 .withAction("action_1")
-                .successQueue("action_1_queueName")
-                .failureQueue("action_1_queueName")
+                .successQueue("action1-in")
+                .failureQueue("action1-in")
                 .withCustomData()
                 .addCustomData("example", "value from field")
                 .addCustomData("valueFromLiteral", "literalExample")
                 .actionExpectationsBuilder()
                 .withAction("action_2")
-                .successQueue("action_2_queueName")
-                .failureQueue("action_2_queueName")
+                .successQueue("action2-in")
+                .failureQueue("action2-in")
                 .withCustomData()
                 .actionExpectationsBuilder()
                 .withAction("action_3")
-                .successQueue("action_3_queueName")
-                .failureQueue("action_3_queueName")
+                .successQueue("action3-in")
+                .failureQueue("action3-in")
                 .withCustomData();
 
         workflowTestExecutor.assertWorkflowActionsExecuted("sample-workflow",
