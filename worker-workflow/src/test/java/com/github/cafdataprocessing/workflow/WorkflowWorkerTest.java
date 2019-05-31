@@ -59,7 +59,7 @@ public class WorkflowWorkerTest
         } catch (ConfigurationException | WorkerException e) {
             throw new RuntimeException(e);
         }
-        if(System.getenv("CAF_SETTING")!=null && System.getenv("CAF_SETTING").equalsIgnoreCase("ENV_VAR")){
+        if(System.getenv("CAF_SETTING")!=null && System.getenv("CAF_SETTING").equalsIgnoreCase("QUEUE_NAME_SOURCE")){
             action_1_queueName="dataprocessing-action-1-in";
             action_2_queueName="dataprocessing-action-2-in";
             action_3_queueName="dataprocessing-action-3-in";
