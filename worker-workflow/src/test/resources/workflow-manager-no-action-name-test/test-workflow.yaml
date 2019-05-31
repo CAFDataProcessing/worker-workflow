@@ -16,4 +16,5 @@
 
 ---
 actions:
-  - queueName: action_1_queue
+  - customData:
+      tenantId: tenantId

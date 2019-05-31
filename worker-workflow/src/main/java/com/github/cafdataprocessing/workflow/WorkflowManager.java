@@ -56,7 +56,8 @@ public class WorkflowManager {
 
         final Map<String, Workflow> workflowMap = new HashMap<>();
         final Yaml yaml = new Yaml();
-        final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        final Gson gson = new GsonBuilder().registerTypeAdapter(Action.class, new ActionTypeAdapter())
+            .setPrettyPrinting().create();
 
         final File dir = new File(workflowsDirectory);
         if(Strings.isNullOrEmpty(dir.toString())){
@@ -121,10 +122,6 @@ public class WorkflowManager {
                 throw new ConfigurationException(String.format("Duplicated action name [%s].", action.getName()));
             }
             actionNames.add(action.getName());
-            if(Strings.isNullOrEmpty(action.getQueueName())){
-                throw new ConfigurationException(String.format("QueueName is not defined for action [%s].",
-                        action.getName()));
-            }
         }
     }
 }

@@ -101,18 +101,4 @@ public class WorkflowManagerTest {
 
     }
 
-    @Test
-    public void noQueueNameTest() throws WorkerException {
-
-        final Document document = DocumentBuilder.configure().build();
-
-        try {
-            final WorkflowManager workflowManager = new WorkflowManager(document.getApplication(),
-                    WorkflowDirectoryProvider.getWorkflowDirectory("workflow-manager-no-queue-name-test"));
-        } catch (ConfigurationException ex) {
-            assertEquals("QueueName is not defined for action [action_1].", ex.getMessage());
-        }
-
-    }
-
 }

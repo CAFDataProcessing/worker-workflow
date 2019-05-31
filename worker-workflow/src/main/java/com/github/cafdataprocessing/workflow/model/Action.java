@@ -21,7 +21,6 @@ import java.util.Map;
 public class Action {
     @NotNull
     private String name;
-    private String queueName;
     private String conditionFunction;
     private Map<String, String> customData;
     private Script[] scripts;
@@ -32,14 +31,6 @@ public class Action {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getQueueName() {
-        return queueName;
-    }
-
-    public void setQueueName(final String queueName) {
-        this.queueName = queueName;
     }
 
     public String getConditionFunction() {
