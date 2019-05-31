@@ -116,6 +116,35 @@
                     </excludes>
                 </configuration>
             </plugin>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>test</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <environmentVariables>
+                                <CAF_SETTING>ENV_VAR</CAF_SETTING>
+                                <CAF_WORKFLOW_ACTION_ACTION_1_INPUT_QUEUE>
+                                    dataprocessing-action-1-in
+                                </CAF_WORKFLOW_ACTION_ACTION_1_INPUT_QUEUE>
+                                <CAF_WORKFLOW_ACTION_ACTION_2_INPUT_QUEUE>
+                                    dataprocessing-action-2-in
+                                </CAF_WORKFLOW_ACTION_ACTION_2_INPUT_QUEUE>
+                                <CAF_WORKFLOW_ACTION_ACTION_3_INPUT_QUEUE>
+                                    dataprocessing-action-3-in
+                                </CAF_WORKFLOW_ACTION_ACTION_3_INPUT_QUEUE>
+                            </environmentVariables>
+                            <includes>
+                                <include>**/*WorkflowWorkerTest.java</include>
+                            </includes>
+                        </configuration>                        
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 </project>
