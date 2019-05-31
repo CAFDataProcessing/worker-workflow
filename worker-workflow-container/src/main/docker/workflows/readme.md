@@ -52,7 +52,8 @@ Note: The target queue for an action will be retrieved from an environment varia
 If the environment variable is null or an empty string then the target queue name will be constructed from the action name and suffixed with -in
  
 `eg for environment variable: CAF_WORKFLOW_ACTION_LANG_DETECT_INPUT_QUEUE=dataprocessing-langdetect-in`
-`eg for default value if no environment variable: action name :lang_detect so queueName: langdetect-in`
+
+`eg for default value: action name :lang_detect so queueName: lang_detect-in`
 
 ### customData
 
