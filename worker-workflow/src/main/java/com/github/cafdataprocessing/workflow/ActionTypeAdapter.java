@@ -18,7 +18,7 @@ public class ActionTypeAdapter extends TypeAdapter<Action>
     {
         final String queueName = StringUtils.isEmpty(System.getenv("CAF_WORKFLOW_ACTION_"
                     + action.getName().toUpperCase() + "_INPUT_QUEUE"))
-                    ? action.getName().replaceAll("-", "") + "-in"
+                    ? action.getName().replaceAll("_", "") + "-in"
                     : System.getenv("CAF_WORKFLOW_ACTION_" + action.getName().toUpperCase() + "_INPUT_QUEUE");
         out.beginObject();
         out.name("name").value(action.getName());
