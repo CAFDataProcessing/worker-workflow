@@ -41,13 +41,18 @@ arguments:
 
 ## actions
 
-An action has 5 fields.
+An action has 4 fields.
 
 1. name (The name of the action)
-2. queueName (The queue where the document will be sent to have the action performed)
-3. conditionFunction (A function that accepts a document and a map of arguments as parameters and returns true if the document meets the conditions of the action)
-4. customData (Custom data required by the worker executing the action) 
-5. scripts (Additional scripts that will be executed by the worker executing the action)
+2. conditionFunction (A function that accepts a document and a map of arguments as parameters and returns true if the document meets the conditions of the action)
+3. customData (Custom data required by the worker executing the action) 
+4. scripts (Additional scripts that will be executed by the worker executing the action)
+
+Note: queueName for the action will be taken from the environment variable being set `"CAF_WORKFLOW_ACTION_{WORKER_NAME}_INPUT_QUEUE"`
+else the action name excluding underscore '_'  and appened with `"-in"` at the end
+ 
+`eg for environment variable: CAF_WORKFLOW_ACTION_LANG_DETECT_INPUT_QUEUE=dataprocessing-langdetect-in`
+`eg for default value if no environment variable: action name :lang_detect so queueName: langdetect-in`
 
 ### customData
 
