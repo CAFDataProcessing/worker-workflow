@@ -48,11 +48,12 @@ An action has 4 fields.
 3. customData (Custom data required by the worker executing the action) 
 4. scripts (Additional scripts that will be executed by the worker executing the action)
 
-Note: queueName for the action will be taken from the environment variable being set `"CAF_WORKFLOW_ACTION_{WORKER_NAME}_INPUT_QUEUE"`
-else the action name excluding underscore '_'  and appened with `"-in"` at the end
+Note: The target queue for an action will be retrieved from an environment variable named `CAF_WORKFLOW_ACTION_{actionName}_INPUT_QUEUE`. The `actionName` defined in the workflow will be upper cased. 
+If the environment variable is null or an empty string then the target queue name will be constructed from the action name and suffixed with -in
  
 `eg for environment variable: CAF_WORKFLOW_ACTION_LANG_DETECT_INPUT_QUEUE=dataprocessing-langdetect-in`
-`eg for default value if no environment variable: action name :lang_detect so queueName: langdetect-in`
+
+`eg for default value: action name :lang_detect so queueName: lang_detect-in`
 
 ### customData
 
