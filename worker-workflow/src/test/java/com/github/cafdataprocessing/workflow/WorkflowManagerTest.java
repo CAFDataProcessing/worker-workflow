@@ -24,11 +24,16 @@ import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.testing.DocumentBuilder;
 import com.hpe.caf.worker.document.testing.TestServices;
 import com.google.common.io.Resources;
+import com.hpe.caf.worker.document.scripting.events.CancelableDocumentEventObject;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import javax.script.Invocable;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -100,5 +105,108 @@ public class WorkflowManagerTest {
         }
 
     }
+    
+    @Test
+    public void onBeforeProcessDocumentTest() throws Exception
+    {
+        final Document document = getDocumentWithSubDocument();
+        document.getField("CAF_WORKFLOW_ACTION").add("lang_detect");
 
+        final WorkflowManager workflowManager = new WorkflowManager(document.getApplication(),
+                                     WorkflowDirectoryProvider.getWorkflowDirectory("workflow-manager-test"));
+
+        final Workflow workflow = workflowManager.get("test-workflow");
+        final String workflowScript = workflow.getWorkflowScript();
+        executeOnBeforeProcessDocumentScript(workflowScript, document);
+    }
+
+    private static void executeOnBeforeProcessDocumentScript(String workflowScript, Document document)
+    {
+        final ScriptEngine scriptEngine = new ScriptEngineManager().getEngineByName("nashorn");
+        final Invocable invocable = (Invocable) scriptEngine;
+        try {
+            scriptEngine.eval(workflowScript);
+            invokeOnBeforeFunction(invocable, document);
+        } catch (NoSuchMethodException | ScriptException ex) {
+            throw new RuntimeException(ex);
+        }
+
+    }
+
+    private static void invokeOnBeforeFunction(Invocable invocable, Document document) throws NoSuchMethodException, ScriptException
+    {
+        final CancelableDocumentEventObject cancelTaskEventObject = new CancelableDocumentEventObject(document);
+        boolean valueCheck = document.getField("CONTENT_PRIMARY").hasValues();
+        invocable.invokeFunction("onBeforeProcessDocument", cancelTaskEventObject);
+        System.out.println("e.cancel: " + cancelTaskEventObject.cancel);
+        assertEquals(!valueCheck, cancelTaskEventObject.cancel);
+        if (document.hasSubdocuments()) {
+            for (Document subDoc : document.getSubdocuments()) {
+                invokeOnBeforeFunction(invocable, subDoc);
+            }
+        }
+    }
+
+    private Document getDocumentWithSubDocument() throws WorkerException
+    {
+        /**
+         * *********
+         * doc1, doc7, doc6 pass main document has sub-documents as below
+         *
+         * doc1-->doc5--->doc4 --->doc8
+         *
+         * doc7
+         *
+         * doc6-->doc2 -->doc3-->docA(content_primary)
+         *
+         */
+        final DocumentBuilder subDocumentA = DocumentBuilder.configure()
+            .withFields()
+            .addFieldValue("someField", "Some data to test A")
+            .addFieldValue("CONTENT_PRIMARY", "Some data to test 8")
+            .documentBuilder();
+        final DocumentBuilder subDocument2 = DocumentBuilder.configure()
+            .withFields()
+            .addFieldValue("someField", "Some data to test-2")
+            .documentBuilder();
+        final DocumentBuilder subDocument3 = DocumentBuilder.configure()
+            .withFields()
+            .addFieldValue("someField", "Some data to test-3")
+            .documentBuilder().withSubDocuments(subDocumentA);
+        final DocumentBuilder subDocument6 = DocumentBuilder.configure()
+            .withFields()
+            .addFieldValue("someField", "Some data to test-6")
+            .documentBuilder()
+            .withSubDocuments(subDocument2, subDocument3);
+
+        final DocumentBuilder subDocument7 = DocumentBuilder.configure()
+            .withFields()
+            .addFieldValue("someField", "Some data to test-7")
+            .documentBuilder();
+        final DocumentBuilder subDocument8 = DocumentBuilder.configure()
+            .withFields()
+            .addFieldValue("someField", "Some data to test -8")
+            .documentBuilder();
+
+        final DocumentBuilder subDocument4 = DocumentBuilder.configure()
+            .withFields()
+            .addFieldValue("someField", "Some data to test -4")
+            .documentBuilder();
+        final DocumentBuilder subDocument5 = DocumentBuilder.configure()
+            .withFields()
+            .addFieldValue("someField", "Some data to test -5")
+            .documentBuilder()
+            .withSubDocuments(subDocument4, subDocument8);
+
+        final DocumentBuilder subDocument1 = DocumentBuilder.configure()
+            .withFields()
+            .addFieldValue("someField", "Some data to test -1")
+            .documentBuilder().withSubDocuments(subDocument5);
+
+        //create the document without CONTENT_PRIMARY in root but in subDocument
+        final Document document = DocumentBuilder.configure()
+            .withSubDocuments(subDocument1, subDocument7, subDocument6).build();
+
+        return document;
+    }
 }

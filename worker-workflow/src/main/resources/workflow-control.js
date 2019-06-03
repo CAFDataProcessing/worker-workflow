@@ -30,10 +30,14 @@ function onAfterProcessTask(eventObj) {
 }
 
 function onBeforeProcessDocument(e) {
+    //Get the action from ACTIONS, use the value of CAF_WORKFLOW_ACTION to know the name of the action
+    var index = (e.rootDocument.getField("CAF_WORKFLOW_ACTION").getValues().size() <= 0)
+            ? 0 :
+            ACTIONS.map(function (x) {
+                return x.name;
+            }).indexOf(e.rootDocument.getField("CAF_WORKFLOW_ACTION").getStringValues().get(0));
 
-    //TODO Get the action from ACTIONS, use the value of CAF_WORKFLOW_ACTION to know the name of the action
-    var action = ACTIONS[0];
-
+    var action = ACTIONS[index];
     if (!action.conditionFunction) {
         return;
     }
