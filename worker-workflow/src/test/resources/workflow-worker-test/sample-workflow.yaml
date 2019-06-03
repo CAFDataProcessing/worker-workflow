@@ -29,7 +29,6 @@ arguments:
         options: repository-%f:repositoryId%,repository-%cd:repositoryId%,tenantId-%cd:tenantId%-some-suffix
 actions:
   - name: action_1
-    queueName: action_1_queueName
     customData:
       example: example
       valueFromLiteral: "'literalExample'"
@@ -43,8 +42,6 @@ actions:
           function onError(e) {
           }
   - name: action_2
-    queueName: action_2_queueName
     conditionFunction: function (document) { return fieldExists(document, 'field-should-exist');}
   - name: action_3
-    queueName: action_3_queueName
     conditionFunction: function (document) { return fieldHasStringValue(document, 'fieldHasValue', 'This value'); }

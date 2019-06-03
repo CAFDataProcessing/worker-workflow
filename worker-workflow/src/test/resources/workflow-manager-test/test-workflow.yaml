@@ -44,7 +44,6 @@ arguments:
         type: CUSTOM_DATA
 actions:
   - name: family_hashing
-    queueName: dataprocessing-family-hashing-in
     customData:
       tenantId: tenantId
     scripts:
@@ -68,7 +67,6 @@ actions:
       function (document) {
         return fieldExists(document, 'CONTENT_PRIMARY');
       }
-    queueName: dataprocessing-family-hashing-in,
     customData:
       fieldSpecs: "'CONTENT_PRIMARY'"
     scripts:
@@ -87,4 +85,3 @@ actions:
             e.rootDocument.getField("LONG_LANGUAGE_DETECTION_FAILED_TIME").set(failedTime.getTime());
           }
   - name: bulk_index
-    queueName: bulk-index

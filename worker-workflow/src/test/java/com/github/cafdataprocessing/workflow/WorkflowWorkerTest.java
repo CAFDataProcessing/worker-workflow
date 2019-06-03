@@ -34,6 +34,9 @@ public class WorkflowWorkerTest
 {
     private WorkflowTestExecutor workflowTestExecutor;
     private WorkflowWorker workflowWorker;
+    private String action_1_queueName;
+    private String action_2_queueName;
+    private String action_3_queueName;
 
     @Before
     public void before() {
@@ -56,6 +59,16 @@ public class WorkflowWorkerTest
         } catch (ConfigurationException | WorkerException e) {
             throw new RuntimeException(e);
         }
+        if(System.getenv("QUEUE_NAME_SOURCE")!=null && System.getenv("QUEUE_NAME_SOURCE").equalsIgnoreCase("ENV_VAR")){
+            action_1_queueName="dataprocessing-action-1-in";
+            action_2_queueName="dataprocessing-action-2-in";
+            action_3_queueName="dataprocessing-action-3-in";
+        }
+        else{
+            action_1_queueName="action_1-in";
+            action_2_queueName="action_2-in";
+            action_3_queueName="action_3-in";
+        }
     }
 
 
@@ -71,20 +84,20 @@ public class WorkflowWorkerTest
         final ActionExpectationsBuilder actionExpectationsBuilder = new ActionExpectationsBuilder();
         actionExpectationsBuilder
                 .withAction("action_1")
-                    .successQueue("action_1_queueName")
-                    .failureQueue("action_1_queueName")
+                    .successQueue(action_1_queueName)
+                    .failureQueue(action_1_queueName)
                     .withCustomData()
                     .addCustomData("example", "value from field")
                     .addCustomData("valueFromLiteral", "literalExample")
                 .actionExpectationsBuilder()
                 .withAction("action_2")
-                    .successQueue("action_2_queueName")
-                    .failureQueue("action_2_queueName")
+                    .successQueue(action_2_queueName)
+                    .failureQueue(action_2_queueName)
                     .withCustomData()
                 .actionExpectationsBuilder()
                 .withAction("action_3")
-                .successQueue("action_3_queueName")
-                .failureQueue("action_3_queueName")
+                .successQueue(action_3_queueName)
+                .failureQueue(action_3_queueName)
                 .withCustomData();
 
         workflowTestExecutor.assertWorkflowActionsExecuted("sample-workflow",
@@ -101,12 +114,12 @@ public class WorkflowWorkerTest
         final Map<String, String[]> fields = new HashMap<>();
 
         fields.put("example", new String[]{"value from field"});
-
+        
         final ActionExpectationsBuilder actionExpectationsBuilder = new ActionExpectationsBuilder();
         actionExpectationsBuilder
                 .withAction("action_1")
-                .successQueue("action_1_queueName")
-                .failureQueue("action_1_queueName")
+                .successQueue(action_1_queueName)
+                .failureQueue(action_1_queueName)
                 .withCustomData()
                 .addCustomData("example", "value from field")
                 .addCustomData("valueFromLiteral", "literalExample");
@@ -133,20 +146,20 @@ public class WorkflowWorkerTest
         final ActionExpectationsBuilder actionExpectationsBuilder = new ActionExpectationsBuilder();
         actionExpectationsBuilder
                 .withAction("action_1")
-                .successQueue("action_1_queueName")
-                .failureQueue("action_1_queueName")
+                .successQueue(action_1_queueName)
+                .failureQueue(action_1_queueName)
                 .withCustomData()
                 .addCustomData("example", "value from field")
                 .addCustomData("valueFromLiteral", "literalExample")
                 .actionExpectationsBuilder()
                 .withAction("action_2")
-                .successQueue("action_2_queueName")
-                .failureQueue("action_2_queueName")
+                .successQueue(action_2_queueName)
+                .failureQueue(action_2_queueName)
                 .withCustomData()
                 .actionExpectationsBuilder()
                 .withAction("action_3")
-                .successQueue("action_3_queueName")
-                .failureQueue("action_3_queueName")
+                .successQueue(action_3_queueName)
+                .failureQueue(action_3_queueName)
                 .withCustomData();
 
         workflowTestExecutor.assertWorkflowActionsExecuted("sample-workflow",

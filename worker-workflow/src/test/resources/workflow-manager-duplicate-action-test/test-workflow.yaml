@@ -17,6 +17,4 @@
 ---
 actions:
   - name: action_1
-    queueName: action_1_queue
   - name: action_1
-    queueName: action_2_queue
