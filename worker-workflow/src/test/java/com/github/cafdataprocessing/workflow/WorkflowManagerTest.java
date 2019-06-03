@@ -18,13 +18,16 @@ package com.github.cafdataprocessing.workflow;
 import com.github.cafdataprocessing.workflow.model.Action;
 import com.github.cafdataprocessing.workflow.model.ArgumentDefinition;
 import com.github.cafdataprocessing.workflow.model.Workflow;
+import com.github.cafdataprocessing.workflow.testing.WorkflowTestExecutor;
 import com.hpe.caf.api.ConfigurationException;
 import com.hpe.caf.api.worker.WorkerException;
 import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.testing.DocumentBuilder;
 import com.hpe.caf.worker.document.testing.TestServices;
 import com.google.common.io.Resources;
+import com.hpe.caf.worker.document.model.Failure;
 import com.hpe.caf.worker.document.scripting.events.CancelableDocumentEventObject;
+import com.microfocus.darwin.settings.client.SettingsApi;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
@@ -37,6 +40,7 @@ import javax.script.ScriptException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.mock;
 
 public class WorkflowManagerTest {
 
@@ -133,12 +137,12 @@ public class WorkflowManagerTest {
 
     }
 
-    private static void invokeOnBeforeFunction(Invocable invocable, Document document) throws NoSuchMethodException, ScriptException
+    private static void invokeOnBeforeFunction(Invocable invocable, Document document)
+        throws NoSuchMethodException, ScriptException
     {
         final CancelableDocumentEventObject cancelTaskEventObject = new CancelableDocumentEventObject(document);
         boolean valueCheck = document.getField("CONTENT_PRIMARY").hasValues();
         invocable.invokeFunction("onBeforeProcessDocument", cancelTaskEventObject);
-        System.out.println("e.cancel: " + cancelTaskEventObject.cancel);
         assertEquals(!valueCheck, cancelTaskEventObject.cancel);
         if (document.hasSubdocuments()) {
             for (Document subDoc : document.getSubdocuments()) {
@@ -153,11 +157,13 @@ public class WorkflowManagerTest {
          * *********
          * doc1, doc7, doc6 pass main document has sub-documents as below
          *
-         * doc1-->doc5--->doc4 --->doc8
-         *
-         * doc7
-         *
-         * doc6-->doc2 -->doc3-->docA(content_primary)
+         *      ------- doc7
+         *      |                          ------ doc3 ---- docA(content_primary)
+         *      |                          |
+         *  doc -------- doc1----- doc5-----
+         *      |                          |
+         *      |                          ------ doc2
+         *      ------- doc6
          *
          */
         final DocumentBuilder subDocumentA = DocumentBuilder.configure()
