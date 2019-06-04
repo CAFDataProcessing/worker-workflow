@@ -26,7 +26,22 @@ function onProcessTask() {
 }
 
 function onAfterProcessTask(eventObj) {
-    processDocument(eventObj.rootDocument);
+    routeTask(eventObj.rootDocument);
+}
+
+function onBeforeProcessDocument(e) {
+    //Get the action from ACTIONS, use the value of CAF_WORKFLOW_ACTION to know the name of the action
+    if(!e.rootDocument.getField("CAF_WORKFLOW_ACTION").hasValues())
+        throw new java.lang.UnsupportedOperationException("Document must contain field CAF_WORKFLOW_ACTION.");
+    var index = ACTIONS.map(function (x) {
+                return x.name;
+            }).indexOf(e.rootDocument.getField("CAF_WORKFLOW_ACTION").getStringValues().get(0));
+
+    var action = ACTIONS[index];
+    if (!action.conditionFunction) {
+        return;
+    }
+    e.cancel = ! eval(action.conditionFunction)(e.document);
 }
 
 function onError(errorEventObj) {
@@ -35,12 +50,12 @@ function onError(errorEventObj) {
 
     // Even though the action failed it still completed in terms of the document being sent for processing against the
     // action, so the action should be marked as completed
-    processDocument(errorEventObj.rootDocument);
+    routeTask(errorEventObj.rootDocument);
 }
 
-function processDocument(document) {
-    var argumentsCustomData = document.getCustomData("CAF_WORKFLOW_SETTINGS");
-    var argumentsField = document.getField("CAF_WORKFLOW_SETTINGS");
+function routeTask(rootDocument) {
+    var argumentsCustomData = rootDocument.getCustomData("CAF_WORKFLOW_SETTINGS");
+    var argumentsField = rootDocument.getField("CAF_WORKFLOW_SETTINGS");
     var argumentsJson = argumentsCustomData
         ? argumentsCustomData
         : argumentsField.getStringValues().stream().findFirst()
@@ -54,24 +69,36 @@ function processDocument(document) {
     }
     var arguments = JSON.parse(argumentsJson);
 
-    markPreviousActionAsCompleted(document);
+    markPreviousActionAsCompleted(rootDocument);
 
     for (var index = 0; index < ACTIONS.length; index ++ ) {
         var action = ACTIONS[index];
-        if (!isActionCompleted(document, action.name)) {
-            if(!action.conditionFunction || eval(action.conditionFunction)(document, arguments)) {
+        if (!isActionCompleted(rootDocument, action.name)) {
+            if(!action.conditionFunction || anyDocumentMatches(action.conditionFunction, rootDocument)) {
                 var actionDetails = {
                     queueName: action.queueName,
                     scripts: action.scripts,
                     customData: evalCustomData(arguments, action.customData)
                 };
 
-                document.getField('CAF_WORKFLOW_ACTION').add(action.name);
-                applyActionDetails(document, actionDetails);
+                rootDocument.getField('CAF_WORKFLOW_ACTION').add(action.name);
+                applyActionDetails(rootDocument, actionDetails);
                 break;
             }
         }
     }
+}
+
+function anyDocumentMatches(conditionFunction, document) {
+
+    if (eval(conditionFunction)(document)){
+        return true;
+    }
+
+    return document.getSubdocuments().stream().anyMatch(
+        function (d) {
+            return anyDocumentMatches(conditionFunction, d);
+        });
 }
 
 function evalCustomData(arguments, customDataToEval){
@@ -143,20 +170,10 @@ function applyActionDetails(document, actionDetails) {
 //Field Conditions
 
 function fieldExists(document, fieldName) {
-    if (document.getField(fieldName).hasValues()) {
-        return true;
-    }
-    if (document.hasSubdocuments())
-    {
-        return document.getSubdocuments().stream().filter(
-            function (x) {
-                return fieldExists(x, fieldName)
-            }).findFirst().isPresent();
-    } else
-        return false;
+    return document.getField(fieldName).hasValues();
 }
 
-function fieldHasStringValue(document, fieldName, value, includeSubDocuments) {
+function fieldHasStringValue(document, fieldName, value) {
 
     var fieldValues = document.getField(fieldName).getValues();
     if (fieldValues)
@@ -168,12 +185,5 @@ function fieldHasStringValue(document, fieldName, value, includeSubDocuments) {
         }
     }
 
-    if (includeSubDocuments){
-        return document.getSubdocuments().stream().anyMatch(
-            function (x) {
-                return fieldHasStringValue(x, fieldName, value, includeSubDocuments);
-            });
-    } else {
-        return false;
-    }
+    return false;
 }
