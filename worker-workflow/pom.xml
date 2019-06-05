@@ -86,6 +86,11 @@
         </dependency>
         <dependency>
             <groupId>com.github.cafdataprocessing</groupId>
+            <artifactId>worker-document</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.cafdataprocessing</groupId>
             <artifactId>worker-document-testing-unit</artifactId>
             <scope>test</scope>
         </dependency>
