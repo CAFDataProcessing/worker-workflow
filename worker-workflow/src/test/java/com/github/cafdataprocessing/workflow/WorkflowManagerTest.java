@@ -115,7 +115,8 @@ public class WorkflowManagerTest {
     {
         final Document document = getDocumentWithSubDocument();
         document.getField("CAF_WORKFLOW_ACTION").add("lang_detect");
-
+        document.getField("CAF_WORKFLOW_SETTINGS").add("{}");
+        
         final WorkflowManager workflowManager = new WorkflowManager(document.getApplication(),
                                      WorkflowDirectoryProvider.getWorkflowDirectory("workflow-manager-test"));
 

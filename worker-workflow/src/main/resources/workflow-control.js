@@ -41,7 +41,10 @@ function onBeforeProcessDocument(e) {
     if (!action.conditionFunction) {
         return;
     }
-    e.cancel = ! eval(action.conditionFunction)(e.document);
+
+    var arguments = extractArguments(e.rootDocument);
+
+    e.cancel = ! eval(action.conditionFunction)(e.document, arguments);
 }
 
 function onError(errorEventObj) {
@@ -54,27 +57,15 @@ function onError(errorEventObj) {
 }
 
 function routeTask(rootDocument) {
-    var argumentsCustomData = rootDocument.getCustomData("CAF_WORKFLOW_SETTINGS");
-    var argumentsField = rootDocument.getField("CAF_WORKFLOW_SETTINGS");
-    var argumentsJson = argumentsCustomData
-        ? argumentsCustomData
-        : argumentsField.getStringValues().stream().findFirst()
-            .orElseThrow(function () {
-                throw new java.lang.UnsupportedOperationException
-                ("Document must contain field CAF_WORKFLOW_SETTINGS.");
-            });
 
-    if (argumentsJson === undefined) {
-        throw new java.lang.UnsupportedOperationException("Document must contain field CAF_WORKFLOW_SETTINGS.");
-    }
-    var arguments = JSON.parse(argumentsJson);
+    var arguments = extractArguments(rootDocument);
 
     markPreviousActionAsCompleted(rootDocument);
 
     for (var index = 0; index < ACTIONS.length; index ++ ) {
         var action = ACTIONS[index];
         if (!isActionCompleted(rootDocument, action.name)) {
-            if(!action.conditionFunction || anyDocumentMatches(action.conditionFunction, rootDocument)) {
+            if(!action.conditionFunction || anyDocumentMatches(action.conditionFunction, rootDocument, arguments)) {
                 var actionDetails = {
                     queueName: action.queueName,
                     scripts: action.scripts,
@@ -89,15 +80,35 @@ function routeTask(rootDocument) {
     }
 }
 
-function anyDocumentMatches(conditionFunction, document) {
+function extractArguments(document){
 
-    if (eval(conditionFunction)(document)){
+    var rootDocument = document.getRootDocument();
+    var argumentsCustomData = rootDocument.getCustomData("CAF_WORKFLOW_SETTINGS");
+    var argumentsField = rootDocument.getField("CAF_WORKFLOW_SETTINGS");
+    var argumentsJson = argumentsCustomData
+        ? argumentsCustomData
+        : argumentsField.getStringValues().stream().findFirst()
+            .orElseThrow(function () {
+                throw new java.lang.UnsupportedOperationException
+                ("Document must contain field CAF_WORKFLOW_SETTINGS.");
+            });
+
+    if (argumentsJson === undefined) {
+        throw new java.lang.UnsupportedOperationException("Document must contain field CAF_WORKFLOW_SETTINGS.");
+    }
+
+    return JSON.parse(argumentsJson);
+}
+
+function anyDocumentMatches(conditionFunction, document, arguments) {
+
+    if (eval(conditionFunction)(document, arguments)){
         return true;
     }
 
     return document.getSubdocuments().stream().anyMatch(
         function (d) {
-            return anyDocumentMatches(conditionFunction, d);
+            return anyDocumentMatches(conditionFunction, d, arguments);
         });
 }
 
