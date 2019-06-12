@@ -184,6 +184,16 @@ function fieldExists(document, fieldName) {
     return document.getField(fieldName).hasValues();
 }
 
+function isNotEmptyMap(obj) {   
+    if(!obj)
+        return false;
+    var jsonObj = JSON.parse(obj);
+    if (Object.getOwnPropertyNames(jsonObj).length === 0) {
+        return false;
+    }
+    return true;
+}
+
 function fieldHasStringValue(document, fieldName, value) {
 
     var fieldValues = document.getField(fieldName).getValues();
