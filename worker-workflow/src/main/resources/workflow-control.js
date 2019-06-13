@@ -184,6 +184,13 @@ function fieldExists(document, fieldName) {
     return document.getField(fieldName).hasValues();
 }
 
+function isEmptyMap(mapValue) {
+    if(!mapValue)
+        return true;
+    var jsonString= mapValue.replace(/\s/g, '');    
+    return jsonString === '{}';
+}
+
 function fieldHasStringValue(document, fieldName, value) {
 
     var fieldValues = document.getField(fieldName).getValues();
