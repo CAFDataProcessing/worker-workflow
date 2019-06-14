@@ -63,8 +63,7 @@ public class WorkflowManager {
         if(Strings.isNullOrEmpty(dir.toString())){
             throw new ConfigurationException(String.format("No workflows found in [%s].", workflowsDirectory));
         }
-        final FilenameFilter filter = (final File dir1, final String name) -> 
-                                        {return (name.endsWith(".yaml") ||name.endsWith(".yml")); };
+        final FilenameFilter filter = (final File dir1, final String name) -> name.endsWith(".yaml");
         for (final File workflowFile : dir.listFiles(filter)) {
 
             if(!workflowFile.exists()){
@@ -91,7 +90,7 @@ public class WorkflowManager {
                         dataStore.store(workflow.getWorkflowScript().getBytes(StandardCharsets.UTF_8),
                                 "workflow-scripts"));
 
-                final String entryname = workflowFile.getName().replaceAll(".(yaml|yml)$", "");                
+                final String entryname = workflowFile.getName().replaceAll(".yaml$", "");
                 workflowMap.put(entryname, workflow);
             }
             catch(final IOException ex){
