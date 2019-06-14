@@ -155,7 +155,9 @@ function applyActionDetails(document, actionDetails) {
     var queueToSet = actionDetails.queueName;
     var response = document.getTask().getResponse();
     response.successQueue.set(queueToSet);
-    actionDetails.terminateOnFailure? response.failureQueue.reset():response.failureQueue.set(queueToSet);    
+    if (!actionDetails.terminateOnFailure){
+        response.failureQueue.set(queueToSet);
+    }   
     response.customData.putAll(responseCustomData);
 
     // Add any scripts specified on the action
