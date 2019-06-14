@@ -39,6 +39,11 @@ public class ActionExpectationBuilder {
     public CustomDataExpectationBuilder withCustomData() {
         return new CustomDataExpectationBuilder(actionExpectation, this);
     }
+    
+    public ActionExpectationBuilder terminateOnFailure(final boolean terminateOnFailure) {
+        actionExpectation.setTerminateOnFailure(terminateOnFailure);
+        return this;
+    }
 
     public ActionExpectationsBuilder actionExpectationsBuilder() {
         return actionExpectationsBuilder;

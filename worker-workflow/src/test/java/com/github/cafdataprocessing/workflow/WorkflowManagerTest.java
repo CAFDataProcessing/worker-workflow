@@ -37,6 +37,7 @@ import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import org.junit.Assert;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -107,6 +108,27 @@ public class WorkflowManagerTest {
         } catch (ConfigurationException ex) {
             assertEquals("Action name is not defined for action [0].", ex.getMessage());
         }
+
+    }
+    
+    @Test
+    public void terminateOnFailureValueTest() throws WorkerException, ConfigurationException {
+
+        final Document document = getDocumentWithSubDocument();
+        document.getField("CAF_WORKFLOW_ACTION").add("lang_detect");
+        document.getField("CAF_WORKFLOW_SETTINGS").add("{}");
+        
+        final WorkflowManager workflowManager = new WorkflowManager(document.getApplication(),
+                                     WorkflowDirectoryProvider.getWorkflowDirectory("wokflow-worker-action-fields-test"));
+
+        final Workflow workflow = workflowManager.get("test-workflow");
+        
+        final List<Action> actions = workflow.getActions();
+        assertEquals(2, actions.size());
+        assertEquals("family_hashing", actions.get(0).getName());
+        Assert.assertFalse(actions.get(0).isTerminateOnFailure());
+        assertEquals("bulk_index", actions.get(1).getName());
+        Assert.assertTrue(actions.get(1).isTerminateOnFailure());
 
     }
     
