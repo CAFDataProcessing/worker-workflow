@@ -23,6 +23,7 @@ public class ActionExpectation {
     private final Map<String, String> customData = new HashMap<>();
     private String successQueue;
     private String failureQueue;
+    private boolean terminateOnFailure;
 
     public String getAction() {
         return action;
@@ -50,5 +51,15 @@ public class ActionExpectation {
 
     public void setFailureQueue(final String failureQueue) {
         this.failureQueue = failureQueue;
+    }
+
+    public boolean isTerminateOnFailure()
+    {
+        return terminateOnFailure;
+    }
+
+    public void setTerminateOnFailure(boolean terminateOnFailure)
+    {
+        this.terminateOnFailure = terminateOnFailure;
     }
 }

@@ -44,6 +44,7 @@ public class ActionTypeAdapter extends TypeAdapter<Action>
         out.name("scripts");
         gson.toJson(action.getScripts(), Object.class, out);
         out.name("queueName").value(queueName);
+        out.name("terminateOnFailure").value(action.isTerminateOnFailure());        
         out.endObject();
     }
 

@@ -24,6 +24,7 @@ public class Action {
     private String conditionFunction;
     private Map<String, String> customData;
     private Script[] scripts;
+    private boolean terminateOnFailure;
 
     public String getName() {
         return name;
@@ -55,6 +56,16 @@ public class Action {
 
     public void setScripts(final Script[] scripts) {
         this.scripts = scripts;
+    }
+
+    public boolean isTerminateOnFailure()
+    {
+        return terminateOnFailure;
+    }
+
+    public void setTerminateOnFailure(boolean terminateOnFailure)
+    {
+        this.terminateOnFailure = terminateOnFailure;
     }
 
 }

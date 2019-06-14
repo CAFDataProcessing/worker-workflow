@@ -69,7 +69,8 @@ function routeTask(rootDocument) {
                 var actionDetails = {
                     queueName: action.queueName,
                     scripts: action.scripts,
-                    customData: evalCustomData(arguments, action.customData)
+                    customData: evalCustomData(arguments, action.customData),
+                    terminateOnFailure: action.terminateOnFailure
                 };
 
                 rootDocument.getField('CAF_WORKFLOW_ACTION').add(action.name);
@@ -154,7 +155,9 @@ function applyActionDetails(document, actionDetails) {
     var queueToSet = actionDetails.queueName;
     var response = document.getTask().getResponse();
     response.successQueue.set(queueToSet);
-    response.failureQueue.set(queueToSet);
+    if (!actionDetails.terminateOnFailure){
+        response.failureQueue.set(queueToSet);
+    }   
     response.customData.putAll(responseCustomData);
 
     // Add any scripts specified on the action
