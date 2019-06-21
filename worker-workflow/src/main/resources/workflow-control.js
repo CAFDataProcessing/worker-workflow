@@ -60,7 +60,8 @@ function routeTask(rootDocument) {
 
     var arguments = extractArguments(rootDocument);
 
-    markPreviousActionAsCompleted(rootDocument);
+    var previousAction = markPreviousActionAsCompleted(rootDocument);
+    var terminateOnFailure = getTerminateOnFailure(previousAction);	
 
     for (var index = 0; index < ACTIONS.length; index ++ ) {
         var action = ACTIONS[index];
@@ -69,16 +70,26 @@ function routeTask(rootDocument) {
                 var actionDetails = {
                     queueName: action.queueName,
                     scripts: action.scripts,
-                    customData: evalCustomData(arguments, action.customData),
-                    terminateOnFailure: action.terminateOnFailure
+                    customData: evalCustomData(arguments, action.customData)
                 };
 
                 rootDocument.getField('CAF_WORKFLOW_ACTION').add(action.name);
-                applyActionDetails(rootDocument, actionDetails);
+                applyActionDetails(rootDocument, actionDetails, terminateOnFailure);
                 break;
             }
         }
     }
+}
+
+function getTerminateOnFailure(previousAction)
+{
+    if (previousAction) {
+        var previousIndex = ACTIONS.map(function (a) {
+            return a.name;
+        }).indexOf(previousAction);
+        return	ACTIONS[previousIndex].terminateOnFailure;
+    }
+    return false;
 }
 
 function extractArguments(document){
@@ -142,20 +153,21 @@ function markPreviousActionAsCompleted(document) {
     var previousActionId = document.getField('CAF_WORKFLOW_ACTION').getStringValues().get(0);
     document.getField('CAF_WORKFLOW_ACTIONS_COMPLETED').add(previousActionId);
     document.getField('CAF_WORKFLOW_ACTION').clear();
+    return previousActionId;
 }
 
 function isActionCompleted(document, actionId) {
     return document.getField('CAF_WORKFLOW_ACTIONS_COMPLETED').getStringValues().contains(actionId);
 }
 
-function applyActionDetails(document, actionDetails) {
+function applyActionDetails(document, actionDetails, terminateOnFailure) {
     // Propagate the custom data if it exists
     var responseCustomData = actionDetails.customData ? actionDetails.customData : {};
     // Update document destination queue to that specified by action and pass appropriate settings and customData
     var queueToSet = actionDetails.queueName;
     var response = document.getTask().getResponse();
     response.successQueue.set(queueToSet);
-    if (!actionDetails.terminateOnFailure){
+    if (!terminateOnFailure){
         response.failureQueue.set(queueToSet);
     }   
     response.customData.putAll(responseCustomData);
