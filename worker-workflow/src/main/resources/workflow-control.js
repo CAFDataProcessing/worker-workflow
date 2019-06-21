@@ -153,6 +153,7 @@ function markPreviousActionAsCompleted(document) {
     var previousActionId = document.getField('CAF_WORKFLOW_ACTION').getStringValues().get(0);
     document.getField('CAF_WORKFLOW_ACTIONS_COMPLETED').add(previousActionId);
     document.getField('CAF_WORKFLOW_ACTION').clear();
+    return previousActionId;
 }
 
 function isActionCompleted(document, actionId) {
@@ -165,14 +166,10 @@ function applyActionDetails(document, actionDetails, terminateOnFailure) {
     // Update document destination queue to that specified by action and pass appropriate settings and customData
     var queueToSet = actionDetails.queueName;
     var response = document.getTask().getResponse();
-    print("Before:: Succes--",response.successQueue.name);
-    print("Before:: Failure--",response.failureQueue.name);
     response.successQueue.set(queueToSet);
     if (!terminateOnFailure){
         response.failureQueue.set(queueToSet);
     }   
-    print("After:: Succes--",response.successQueue.name);
-    print("After:: Failure--",response.failureQueue.name);
     response.customData.putAll(responseCustomData);
 
     // Add any scripts specified on the action
