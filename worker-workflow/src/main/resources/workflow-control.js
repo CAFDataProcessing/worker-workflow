@@ -61,7 +61,7 @@ function routeTask(rootDocument) {
     var arguments = extractArguments(rootDocument);
 
     var previousAction = markPreviousActionAsCompleted(rootDocument);
-    var terminateOnFailure = checkTerminateOnFailure(previousAction);	
+    var terminateOnFailure = getTerminateOnFailure(previousAction);	
 
     for (var index = 0; index < ACTIONS.length; index ++ ) {
         var action = ACTIONS[index];
@@ -81,11 +81,11 @@ function routeTask(rootDocument) {
     }
 }
 
-function checkTerminateOnFailure(previousAction)
+function getTerminateOnFailure(previousAction)
 {
     if (previousAction) {
-        var previousIndex = ACTIONS.map(function (x) {
-            return x.name;
+        var previousIndex = ACTIONS.map(function (a) {
+            return a.name;
         }).indexOf(previousAction);
         return	ACTIONS[previousIndex].terminateOnFailure;
     }
