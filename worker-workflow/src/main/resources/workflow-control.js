@@ -193,6 +193,44 @@ function applyActionDetails(document, actionDetails, terminateOnFailure) {
     }
 }
 
+function haveFailuresChanged(document) {
+    if (document.getFailures().isChanged()) {
+        
+        var listOfFailures = new java.util.ArrayList();
+        document.getFailures().stream().forEach(function (failure) {
+            listOfFailures.add(failure);
+        });
+        
+        document.getFailures().reset();
+        
+        var listOfOriginalFailures = new java.util.ArrayList();
+        document.getFailures().stream().forEach(function (failure) {
+            listOfOriginalFailures.add(failure);
+        });
+        
+        var newListOfFailures = new java.util.ArrayList();
+        for each (var f in listOfFailures){
+            if(!listOfOriginalFailures.contains(f)){
+                var message = {
+                    id: f.getFailureId(),
+                    stack: f.getFailureStack(),
+                    description: {
+                        source:  document.getTask().getService(com.hpe.caf.api.worker.WorkerTaskData.class).getSourceInfo().getName(),
+                        version: document.getTask().getService(com.hpe.caf.api.worker.WorkerTaskData.class).getSourceInfo().getVersion(),
+                        workflowName: document.getField("CAF_WORKFLOW_NAME"),
+                        originalDescription: f.getFailureMessage(),
+                        stack: f.getFailureStack()
+                    }
+                };
+                document.getFailures().add(f.getFailureId(), message.toString());
+                newListOfFailures.add(message);
+            }
+        }
+        document.getField("FAILURES").add(newListOfFailures);
+        return newListOfFailures;
+    }
+}
+
 //Field Conditions
 
 function fieldExists(document, fieldName) {
