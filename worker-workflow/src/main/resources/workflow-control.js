@@ -194,7 +194,7 @@ function applyActionDetails(document, actionDetails, terminateOnFailure) {
 }
 
 function onAfterProcessDocument(e){
-    haveFailuresChanged(e);
+    haveFailuresChanged(e.document);
 }
 
 function haveFailuresChanged(document) {

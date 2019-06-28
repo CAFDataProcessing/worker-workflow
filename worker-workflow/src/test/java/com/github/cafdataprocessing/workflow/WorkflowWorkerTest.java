@@ -31,6 +31,7 @@ import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.model.Failures;
 import com.hpe.caf.worker.document.model.Fields;
 import com.hpe.caf.worker.document.model.Task;
+import com.hpe.caf.worker.document.scripting.events.DocumentEventObject;
 import com.hpe.caf.worker.document.testing.DocumentBuilder;
 import com.microfocus.darwin.settings.client.SettingsApi;
 import java.io.FileInputStream;
@@ -275,8 +276,8 @@ public class WorkflowWorkerTest
                                                        "to", tsi);
         final Task task = new TaskTest(new HashMap<>(), null, null, wtd, null, null);
         final Document document = new DocumentTest("ref_1", fields, task, new HashMap<>(), failures, null, null, builderDoc, builderDoc);
-
-        invocable.invokeFunction("onAfterProcessDocument", document);
+        final DocumentEventObject documentEventObject = new DocumentEventObject(document);
+        invocable.invokeFunction("onAfterProcessDocument", documentEventObject);
         assertThat(document.getFailures().size(), is(equalTo((1))));
         assertThat(document.getFailures().stream().findFirst().get().getFailureId(), is(equalTo("error_id_1")));
         assertThat(document.getFailures().stream().findFirst().get().getFailureStack(), is(nullValue()));
