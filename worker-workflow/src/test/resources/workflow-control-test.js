@@ -227,8 +227,8 @@ function haveFailuresChanged(document) {
                         stack: f.getFailureStack()
                     }
                 };
-                document.getFailures().add(f.getFailureId(), message.toString());
-                newListOfFailures.add(message);
+                document.getFailures().add(f.getFailureId(), JSON.stringify(message));
+                newListOfFailures.add(JSON.stringify(message));
             }
         }
         document.getField("FAILURES").add(newListOfFailures);

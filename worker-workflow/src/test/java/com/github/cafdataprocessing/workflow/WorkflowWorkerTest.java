@@ -232,12 +232,12 @@ public class WorkflowWorkerTest
         final Document document = new DocumentTest("ref_1", fields, task, new HashMap<>(), failures, null, null, builderDoc, builderDoc);
 
         final ObjectMapper mapper = new ObjectMapper();
-        final List<NewFailure> failuresRetrieved = (List<NewFailure>) invocable.invokeFunction("haveFailuresChanged", document);
+        final List<String> failuresRetrieved = (List<String>) invocable.invokeFunction("haveFailuresChanged", document);
         assertThat(document.getFailures().size(), is(equalTo((1))));
         assertThat(document.getFailures().stream().findFirst().get().getFailureId(), is(equalTo("error_id_1")));
         assertThat(document.getFailures().stream().findFirst().get().getFailureStack(), is(nullValue()));
-        final String serializeFailure = mapper.writeValueAsString(failuresRetrieved.get(0));
-        final NewFailure failureMessage = mapper.readValue(serializeFailure, NewFailure.class);
+
+        final NewFailure failureMessage = mapper.readValue(failuresRetrieved.get(0), NewFailure.class);
         assertThat(failureMessage.getFailureId(), is(equalTo("error_id_1")));
         assertThat(failureMessage.getStack(), is(nullValue()));
         assertThat(failureMessage.getDescription().getSource(), is(equalTo("super_action")));
@@ -316,15 +316,14 @@ public class WorkflowWorkerTest
         final Document document = new DocumentTest("ref_1", fields, task, new HashMap<>(), failures, null, null, builderDoc, builderDoc);
 
         final ObjectMapper mapper = new ObjectMapper();
-        final List<NewFailure> failuresRetrieved = (List<NewFailure>) invocable.invokeFunction("haveFailuresChanged", document);
+        final List<String> failuresRetrieved = (List<String>) invocable.invokeFunction("haveFailuresChanged", document);
         assertThat(document.getFailures().size(), is(equalTo((2))));
         assertThat(document.getFailures().stream().map(f -> f.getFailureId()).collect(toList()), contains("error_id_1", "error_id_2"));
         assertThat(document.getFailures().stream().map(f -> f.getFailureStack()).filter(s -> !StringUtils.isEmpty(s)).collect(toList()),
                    is(emptyCollectionOf(String.class)));
 
         for (int i = 0; i < failuresRetrieved.size(); i++) {
-            final String serializeFailure = mapper.writeValueAsString(failuresRetrieved.get(i));
-            final NewFailure failureMessage = mapper.readValue(serializeFailure, NewFailure.class);
+            final NewFailure failureMessage = mapper.readValue(failuresRetrieved.get(i), NewFailure.class);
             assertThat(failureMessage.getFailureId(), isOneOf("error_id_1", "error_id_2"));
             assertThat(failureMessage.getStack(), is(nullValue()));
             assertThat(failureMessage.getDescription().getSource(), is(equalTo("super_action")));
