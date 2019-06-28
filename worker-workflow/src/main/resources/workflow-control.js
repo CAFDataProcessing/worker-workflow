@@ -193,6 +193,10 @@ function applyActionDetails(document, actionDetails, terminateOnFailure) {
     }
 }
 
+function onAfterProcessDocument(e){
+    haveFailuresChanged(e);
+}
+
 function haveFailuresChanged(document) {
     if (document.getFailures().isChanged()) {
         
