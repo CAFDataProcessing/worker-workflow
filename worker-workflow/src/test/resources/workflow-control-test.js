@@ -15,9 +15,10 @@
  */
 /* global Java, java, thisScript */
 
-if(!ACTIONS){
-    throw new java.lang.UnsupportedOperationException ("Workflow script must define an ACTIONS object.");
-}
+// commented for testing purposes
+//if(!ACTIONS){
+//    throw new java.lang.UnsupportedOperationException ("Workflow script must define an ACTIONS object.");
+//}
 
 var URL = Java.type("java.net.URL");
 
@@ -231,6 +232,8 @@ function haveFailuresChanged(document) {
             }
         }
         document.getField("FAILURES").add(newListOfFailures);
+        // returning only for debug purposes
+        return newListOfFailures;
     }
 }
 

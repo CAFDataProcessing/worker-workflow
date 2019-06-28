@@ -15,18 +15,49 @@
  */
 package com.github.cafdataprocessing.workflow;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.cafdataprocessing.workflow.models.DocumentTest;
+import com.github.cafdataprocessing.workflow.models.NewFailure;
+import com.github.cafdataprocessing.workflow.models.TaskTest;
+import com.github.cafdataprocessing.workflow.models.WorkerTaskDataTest;
 import com.github.cafdataprocessing.workflow.testing.ActionExpectationsBuilder;
 import com.github.cafdataprocessing.workflow.testing.WorkflowTestExecutor;
 import com.hpe.caf.api.ConfigurationException;
+import com.hpe.caf.api.worker.TaskSourceInfo;
+import com.hpe.caf.api.worker.TaskStatus;
 import com.hpe.caf.api.worker.WorkerException;
+import com.hpe.caf.api.worker.WorkerTaskData;
 import com.hpe.caf.worker.document.model.Document;
+import com.hpe.caf.worker.document.model.Failures;
+import com.hpe.caf.worker.document.model.Fields;
+import com.hpe.caf.worker.document.model.Task;
 import com.hpe.caf.worker.document.testing.DocumentBuilder;
 import com.microfocus.darwin.settings.client.SettingsApi;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.file.Paths;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import static java.util.stream.Collectors.toList;
+import javax.script.Invocable;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+import org.apache.commons.lang3.StringUtils;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.emptyCollectionOf;
+import static org.hamcrest.Matchers.isOneOf;
+import static org.hamcrest.core.IsNull.nullValue;
 
 import static org.mockito.Mockito.mock;
 
@@ -168,6 +199,238 @@ public class WorkflowWorkerTest
                 null,
                 actionExpectationsBuilder.build());
 
+    }
+    
+    @Test
+    public void failuresPositiveTest() throws ScriptException, NoSuchMethodException, FileNotFoundException, WorkerException, IOException
+    {
+        final ScriptEngine nashorn = new ScriptEngineManager().getEngineByName("nashorn");
+        nashorn.eval(new InputStreamReader(new FileInputStream(Paths.get("src", "test", "resources", "workflow-control-test.js")
+            .toFile())));
+        final Invocable invocable = (Invocable) nashorn;
+
+        final Document builderDoc = DocumentBuilder.configure().withFields()
+            .addFieldValues("CAF_WORKFLOW_ACTION", "super_action")
+            .addFieldValue("CAF_WORKFLOW_NAME", "example_workflow")
+            .addFieldValue("FAILURES", "")
+            .addFieldValue("example", "value from field")
+            .addFieldValue("fieldHasValue", "This value")
+            .documentBuilder()
+            .withSubDocuments(DocumentBuilder.configure().withFields()
+                .addFieldValue("field-should-exist", "action 2 requires this field to be present")
+                .documentBuilder())
+            .build();
+        builderDoc.addFailure("error_id_1", "message 1");
+
+        final Fields fields = builderDoc.getFields();
+        final Failures failures = builderDoc.getFailures();
+        final TaskSourceInfo tsi = new TaskSourceInfo("source_name", "5");
+        final WorkerTaskData wtd = new WorkerTaskDataTest("classifier", 2, TaskStatus.RESULT_SUCCESS, new byte[0], new byte[0], null,
+                                                       "to", tsi);
+        final Task task = new TaskTest(new HashMap<>(), null, null, wtd, null, null);
+        final Document document = new DocumentTest("ref_1", fields, task, new HashMap<>(), failures, null, null, builderDoc, builderDoc);
+
+        final ObjectMapper mapper = new ObjectMapper();
+        final List<NewFailure> failuresRetrieved = (List<NewFailure>) invocable.invokeFunction("haveFailuresChanged", document);
+        assertThat(document.getFailures().size(), is(equalTo((1))));
+        assertThat(document.getFailures().stream().findFirst().get().getFailureId(), is(equalTo("error_id_1")));
+        assertThat(document.getFailures().stream().findFirst().get().getFailureStack(), is(nullValue()));
+        final String serializeFailure = mapper.writeValueAsString(failuresRetrieved.get(0));
+        final NewFailure failureMessage = mapper.readValue(serializeFailure, NewFailure.class);
+        assertThat(failureMessage.getFailureId(), is(equalTo("error_id_1")));
+        assertThat(failureMessage.getStack(), is(nullValue()));
+        assertThat(failureMessage.getDescription().getSource(), is(equalTo("super_action")));
+        assertThat(failureMessage.getDescription().getOriginalDescription(), is(equalTo("message 1")));
+        assertThat(failureMessage.getDescription().getVersion(), is(equalTo(5)));
+        assertThat(failureMessage.getDescription().getWorkflowName(), is(equalTo("example_workflow")));
+        assertThat(failureMessage.getDescription().getStack(), is(nullValue()));
+    }
+    
+    @Test
+    public void onAfterProcessDocumentTest() throws ScriptException, NoSuchMethodException, FileNotFoundException, WorkerException,
+                                                    IOException
+    {
+        final ScriptEngine nashorn = new ScriptEngineManager().getEngineByName("nashorn");
+        nashorn.eval(new InputStreamReader(new FileInputStream(Paths.get("src", "test", "resources", "workflow-control-test.js")
+            .toFile())));
+        final Invocable invocable = (Invocable) nashorn;
+
+        final Document builderDoc = DocumentBuilder.configure().withFields()
+            .addFieldValues("CAF_WORKFLOW_ACTION", "super_action")
+            .addFieldValue("CAF_WORKFLOW_NAME", "example_workflow")
+            .addFieldValue("FAILURES", "")
+            .addFieldValue("example", "value from field")
+            .addFieldValue("fieldHasValue", "This value")
+            .documentBuilder()
+            .withSubDocuments(DocumentBuilder.configure().withFields()
+                .addFieldValue("field-should-exist", "action 2 requires this field to be present")
+                .documentBuilder())
+            .build();
+        builderDoc.addFailure("error_id_1", "message 1");
+
+        final Fields fields = builderDoc.getFields();
+        final Failures failures = builderDoc.getFailures();
+        final TaskSourceInfo tsi = new TaskSourceInfo("source_name", "5");
+        final WorkerTaskData wtd = new WorkerTaskDataTest("classifier", 2, TaskStatus.RESULT_SUCCESS, new byte[0], new byte[0], null,
+                                                       "to", tsi);
+        final Task task = new TaskTest(new HashMap<>(), null, null, wtd, null, null);
+        final Document document = new DocumentTest("ref_1", fields, task, new HashMap<>(), failures, null, null, builderDoc, builderDoc);
+
+        invocable.invokeFunction("onAfterProcessDocument", document);
+        assertThat(document.getFailures().size(), is(equalTo((1))));
+        assertThat(document.getFailures().stream().findFirst().get().getFailureId(), is(equalTo("error_id_1")));
+        assertThat(document.getFailures().stream().findFirst().get().getFailureStack(), is(nullValue()));
+        
+    }
+    
+    @Test
+    public void multipleFailuresPositiveTest() throws ScriptException, NoSuchMethodException, FileNotFoundException, WorkerException,
+                                                      IOException
+    {
+        final ScriptEngine nashorn = new ScriptEngineManager().getEngineByName("nashorn");
+        nashorn.eval(new InputStreamReader(new FileInputStream(Paths.get("src", "test", "resources", "workflow-control-test.js")
+            .toFile())));
+        final Invocable invocable = (Invocable) nashorn;
+
+        final Document builderDoc = DocumentBuilder.configure().withFields()
+            .addFieldValues("CAF_WORKFLOW_ACTION", "super_action")
+            .addFieldValue("CAF_WORKFLOW_NAME", "example_workflow")
+            .addFieldValue("FAILURES", "")
+            .addFieldValue("example", "value from field")
+            .addFieldValue("fieldHasValue", "This value")
+            .documentBuilder()
+            .withSubDocuments(DocumentBuilder.configure().withFields()
+                .addFieldValue("field-should-exist", "action 2 requires this field to be present")
+                .documentBuilder())
+            .build();
+        builderDoc.addFailure("error_id_1", "message 1");
+        builderDoc.addFailure("error_id_2", "message 2");
+
+        final Fields fields = builderDoc.getFields();
+        final Failures failures = builderDoc.getFailures();
+        final TaskSourceInfo tsi = new TaskSourceInfo("source_name", "5");
+        final WorkerTaskData wtd = new WorkerTaskDataTest("classifier", 2, TaskStatus.RESULT_SUCCESS, new byte[0], new byte[0], null,
+                                                       "to", tsi);
+        final Task task = new TaskTest(new HashMap<>(), null, null, wtd, null, null);
+        final Document document = new DocumentTest("ref_1", fields, task, new HashMap<>(), failures, null, null, builderDoc, builderDoc);
+
+        final ObjectMapper mapper = new ObjectMapper();
+        final List<NewFailure> failuresRetrieved = (List<NewFailure>) invocable.invokeFunction("haveFailuresChanged", document);
+        assertThat(document.getFailures().size(), is(equalTo((2))));
+        assertThat(document.getFailures().stream().map(f -> f.getFailureId()).collect(toList()), contains("error_id_1", "error_id_2"));
+        assertThat(document.getFailures().stream().map(f -> f.getFailureStack()).filter(s -> !StringUtils.isEmpty(s)).collect(toList()),
+                   is(emptyCollectionOf(String.class)));
+
+        for (int i = 0; i < failuresRetrieved.size(); i++) {
+            final String serializeFailure = mapper.writeValueAsString(failuresRetrieved.get(i));
+            final NewFailure failureMessage = mapper.readValue(serializeFailure, NewFailure.class);
+            assertThat(failureMessage.getFailureId(), isOneOf("error_id_1", "error_id_2"));
+            assertThat(failureMessage.getStack(), is(nullValue()));
+            assertThat(failureMessage.getDescription().getSource(), is(equalTo("super_action")));
+            assertThat(failureMessage.getDescription().getOriginalDescription(), isOneOf("message 1", "message 2"));
+            assertThat(failureMessage.getDescription().getVersion(), is(equalTo(5)));
+            assertThat(failureMessage.getDescription().getWorkflowName(), is(equalTo("example_workflow")));
+            assertThat(failureMessage.getDescription().getStack(), is(nullValue()));
+        }
+    }
+    
+    @Test(expected = NoSuchElementException.class)
+    public void failuresNegativeNoFailuresFieldTest() throws ScriptException, NoSuchMethodException, FileNotFoundException,
+                                                             WorkerException, IOException
+    {
+        final ScriptEngine nashorn = new ScriptEngineManager().getEngineByName("nashorn");
+        nashorn.eval(new InputStreamReader(new FileInputStream(Paths.get("src", "test", "resources", "workflow-control-test.js")
+            .toFile())));
+        final Invocable invocable = (Invocable) nashorn;
+
+        final Document builderDoc = DocumentBuilder.configure().withFields()
+            .addFieldValues("CAF_WORKFLOW_ACTION", "super_action")
+            .addFieldValue("CAF_WORKFLOW_NAME", "example_workflow")
+            .addFieldValue("example", "value from field")
+            .addFieldValue("fieldHasValue", "This value")
+            .documentBuilder()
+            .withSubDocuments(DocumentBuilder.configure().withFields()
+                .addFieldValue("field-should-exist", "action 2 requires this field to be present")
+                .documentBuilder())
+            .build();
+        builderDoc.addFailure("error_id_1", "message 1");
+        builderDoc.addFailure("error_id_2", "message 2");
+
+        final Fields fields = builderDoc.getFields();
+        final Failures failures = builderDoc.getFailures();
+        final TaskSourceInfo tsi = new TaskSourceInfo("source_name", "5");
+        final WorkerTaskData wtd = new WorkerTaskDataTest("classifier", 2, TaskStatus.RESULT_SUCCESS, new byte[0], new byte[0], null,
+                                                       "to", tsi);
+        final Task task = new TaskTest(new HashMap<>(), null, null, wtd, null, null);
+        final Document document = new DocumentTest("ref_1", fields, task, new HashMap<>(), failures, null, null, builderDoc, builderDoc);
+
+        invocable.invokeFunction("haveFailuresChanged", document);
+    }
+    
+    @Test(expected = NoSuchElementException.class)
+    public void failuresNegativeNoWorkflowNameFieldTest() throws ScriptException, NoSuchMethodException, FileNotFoundException,
+                                                             WorkerException, IOException
+    {
+        final ScriptEngine nashorn = new ScriptEngineManager().getEngineByName("nashorn");
+        nashorn.eval(new InputStreamReader(new FileInputStream(Paths.get("src", "test", "resources", "workflow-control-test.js")
+            .toFile())));
+        final Invocable invocable = (Invocable) nashorn;
+
+        final Document builderDoc = DocumentBuilder.configure().withFields()
+            .addFieldValues("CAF_WORKFLOW_ACTION", "super_action")
+            .addFieldValue("FAILURES", "")
+            .addFieldValue("example", "value from field")
+            .addFieldValue("fieldHasValue", "This value")
+            .documentBuilder()
+            .withSubDocuments(DocumentBuilder.configure().withFields()
+                .addFieldValue("field-should-exist", "action 2 requires this field to be present")
+                .documentBuilder())
+            .build();
+        builderDoc.addFailure("error_id_1", "message 1");
+        builderDoc.addFailure("error_id_2", "message 2");
+
+        final Fields fields = builderDoc.getFields();
+        final Failures failures = builderDoc.getFailures();
+        final TaskSourceInfo tsi = new TaskSourceInfo("source_name", "5");
+        final WorkerTaskData wtd = new WorkerTaskDataTest("classifier", 2, TaskStatus.RESULT_SUCCESS, new byte[0], new byte[0], null,
+                                                       "to", tsi);
+        final Task task = new TaskTest(new HashMap<>(), null, null, wtd, null, null);
+        final Document document = new DocumentTest("ref_1", fields, task, new HashMap<>(), failures, null, null, builderDoc, builderDoc);
+
+        invocable.invokeFunction("haveFailuresChanged", document);
+    }
+    
+    @Test(expected = IndexOutOfBoundsException.class)
+    public void failuresNegativeNoWorkflowActionFieldTest() throws ScriptException, NoSuchMethodException, FileNotFoundException,
+                                                             WorkerException, IOException
+    {
+        final ScriptEngine nashorn = new ScriptEngineManager().getEngineByName("nashorn");
+        nashorn.eval(new InputStreamReader(new FileInputStream(Paths.get("src", "test", "resources", "workflow-control-test.js")
+            .toFile())));
+        final Invocable invocable = (Invocable) nashorn;
+
+        final Document builderDoc = DocumentBuilder.configure().withFields()
+            .addFieldValue("FAILURES", "")
+            .addFieldValue("CAF_WORKFLOW_NAME", "example_workflow")
+            .addFieldValue("example", "value from field")
+            .addFieldValue("fieldHasValue", "This value")
+            .documentBuilder()
+            .withSubDocuments(DocumentBuilder.configure().withFields()
+                .addFieldValue("field-should-exist", "action 2 requires this field to be present")
+                .documentBuilder())
+            .build();
+        builderDoc.addFailure("error_id_1", "message 1");
+        builderDoc.addFailure("error_id_2", "message 2");
+
+        final Fields fields = builderDoc.getFields();
+        final Failures failures = builderDoc.getFailures();
+        final TaskSourceInfo tsi = new TaskSourceInfo("source_name", "5");
+        final WorkerTaskData wtd = new WorkerTaskDataTest("classifier", 2, TaskStatus.RESULT_SUCCESS, new byte[0], new byte[0], null,
+                                                       "to", tsi);
+        final Task task = new TaskTest(new HashMap<>(), null, null, wtd, null, null);
+        final Document document = new DocumentTest("ref_1", fields, task, new HashMap<>(), failures, null, null, builderDoc, builderDoc);
+
+        invocable.invokeFunction("haveFailuresChanged", document);
     }
 
 }
