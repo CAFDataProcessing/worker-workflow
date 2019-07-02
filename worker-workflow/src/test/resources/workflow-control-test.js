@@ -194,16 +194,34 @@ function applyActionDetails(document, actionDetails, terminateOnFailure) {
     }
 }
 
-function onAfterProcessDocument(e){
-    haveFailuresChanged(e.document);
+function onAfterProcessDocument(e) {
+    var newListOfFailures = new java.util.ArrayList();
+    if (!e.application.getInputMessageProcessor().getProcessSubdocumentsSeparately() && e.rootDocument.hasSubdocuments()) {
+        for each (var subdoc in e.rootDocument.getSubdocuments()){
+            var temp = processFailures(subdoc);
+            addFailures(newListOfFailures, temp);
+        }
+    }
+    var temp = processFailures(e.document);
+    addFailures(newListOfFailures, temp);
+    return newListOfFailures;
 }
 
-function haveFailuresChanged(document) {
+function addFailures(newListOfFailures, listOfFailuresJustExtracted) {
+    if (listOfFailuresJustExtracted !== null) {
+        for each(var f in listOfFailuresJustExtracted) {
+            newListOfFailures.add(f);
+        }
+    }
+}
+
+function processFailures(document) {
     if (document.getFailures().isChanged()) {
 
         var listOfFailures = new java.util.ArrayList();
         document.getFailures().stream().forEach(function (failure) {
             listOfFailures.add(failure);
+            print("List of failure: " + failure.getFailureId());
         });
 
         document.getFailures().reset();
@@ -211,30 +229,53 @@ function haveFailuresChanged(document) {
         var listOfOriginalFailures = new java.util.ArrayList();
         document.getFailures().stream().forEach(function (failure) {
             listOfOriginalFailures.add(failure);
+            print("List of original failure: " + failure.getFailureId());
         });
 
         var newListOfFailures = new java.util.ArrayList();
         for each (var f in listOfFailures) {
-            if (!listOfOriginalFailures.contains(f)) {
+            if (!isFailureInOriginal(listOfOriginalFailures, f)) {
                 var message = {
                     id: f.getFailureId(),
-                    stack: f.getFailureStack(),
-                    description: {
-                        source: document.rootDocument.getField("CAF_WORKFLOW_ACTION").getStringValues().get(0),
-                        version: document.getTask().getService(com.hpe.caf.api.worker.WorkerTaskData.class).getSourceInfo().getVersion(),
-                        workflowName: document.getField("CAF_WORKFLOW_NAME").getStringValues().get(0),
-                        originalDescription: f.getFailureMessage(),
-                        stack: f.getFailureStack()
-                    }
+                    stack: f.getFailureStack() || undefined,
+                    source: document.rootDocument.getField("CAF_WORKFLOW_ACTION").getStringValues().get(0),
+                    version: document.getTask().getService(com.hpe.caf.api.worker.WorkerTaskData.class).getSourceInfo().getVersion() || undefined,
+                    workflowName: document.getField("CAF_WORKFLOW_NAME").getStringValues().get(0),
+                    originalDescription: f.getFailureMessage()
                 };
                 document.getFailures().add(f.getFailureId(), JSON.stringify(message));
                 newListOfFailures.add(JSON.stringify(message));
+                document.getField("FAILURES").add(JSON.stringify(message));
+                print("Failure added: " + JSON.stringify(message));
+                print("Field: " + document.getField("FAILURES").getStringValues());
             }
         }
-        document.getField("FAILURES").add(newListOfFailures);
         // returning only for debug purposes
         return newListOfFailures;
     }
+}
+
+function isFailureInOriginal(listOfOriginalFailures, newFailure) {
+    for each(var failure in listOfOriginalFailures) {
+        print("New Failure Id: " + newFailure.getFailureId() + " List Failure Id: " + failure.getFailureId());
+        if (newFailure.getFailureId() == failure.getFailureId()) {
+            print("Same ids");
+            print("New Failure Message: " + newFailure.getFailureMessage() + " List Failure Message: " + failure.getFailureMessage());
+            if (newFailure.getFailureMessage() == failure.getFailureMessage()) {
+                print("Same messages");
+                print("New Failure Stack: " + newFailure.getFailureStack() + " List Failure Stack: " + failure.getFailureStack());
+                if (newFailure.getFailureStack() == failure.getFailureStack()) {
+                    print("Same stack");
+                    print("I am true");
+                    print("==========");
+                    return true;
+                }
+            }
+        }
+    }
+    print("I am false");
+    print("==========");
+    return false;
 }
 
 //Field Conditions

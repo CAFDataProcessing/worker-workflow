@@ -194,10 +194,15 @@ function applyActionDetails(document, actionDetails, terminateOnFailure) {
 }
 
 function onAfterProcessDocument(e){
-    haveFailuresChanged(e.document);
+    if (!e.application.getInputMessageProcessor().getProcessSubdocumentsSeparately() && e.rootDocument.hasSubdocuments()) {
+        for each (var subdoc in e.rootDocument.getSubdocuments()){
+            processFailures(subdoc);
+        }
+    }
+    processFailures(e.document);
 }
 
-function haveFailuresChanged(document) {
+function processFailures(document) {
     if (document.getFailures().isChanged()) {
 
         var listOfFailures = new java.util.ArrayList();
@@ -212,26 +217,34 @@ function haveFailuresChanged(document) {
             listOfOriginalFailures.add(failure);
         });
 
-        var newListOfFailures = new java.util.ArrayList();
         for each (var f in listOfFailures) {
-            if (!listOfOriginalFailures.contains(f)) {
+            if (!isFailureInOriginal(listOfOriginalFailures, f)) {
                 var message = {
                     id: f.getFailureId(),
-                    stack: f.getFailureStack(),
-                    description: {
-                        source: document.rootDocument.getField("CAF_WORKFLOW_ACTION").getStringValues().get(0),
-                        version: document.getTask().getService(com.hpe.caf.api.worker.WorkerTaskData.class).getSourceInfo().getVersion(),
-                        workflowName: document.getField("CAF_WORKFLOW_NAME").getStringValues().get(0),
-                        originalDescription: f.getFailureMessage(),
-                        stack: f.getFailureStack()
-                    }
+                    stack: f.getFailureStack() || undefined,
+                    source: document.rootDocument.getField("CAF_WORKFLOW_ACTION").getStringValues().get(0),
+                    version: document.getTask().getService(com.hpe.caf.api.worker.WorkerTaskData.class).getSourceInfo().getVersion(),
+                    workflowName: document.getField("CAF_WORKFLOW_NAME").getStringValues().get(0),
+                    originalDescription: f.getFailureMessage()
                 };
                 document.getFailures().add(f.getFailureId(), JSON.stringify(message));
-                newListOfFailures.add(JSON.stringify(message));
+                document.getField("FAILURES").add(JSON.stringify(message));
             }
         }
-        document.getField("FAILURES").add(newListOfFailures);
     }
+}
+
+function isFailureInOriginal(listOfOriginalFailures, newFailure) {
+    for each(var failure in listOfOriginalFailures) {
+        if (newFailure.getFailureId() == failure.getFailureId()) {
+            if (newFailure.getFailureMessage() == failure.getFailureMessage()) {
+                if (newFailure.getFailureStack() == failure.getFailureStack()) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
 }
 
 //Field Conditions

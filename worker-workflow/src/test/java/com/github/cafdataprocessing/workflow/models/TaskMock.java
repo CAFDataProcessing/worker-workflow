@@ -23,17 +23,17 @@ import com.hpe.caf.worker.document.model.Scripts;
 import com.hpe.caf.worker.document.model.Task;
 import java.util.Map;
 
-public class TaskTest implements Task
+public class TaskMock implements Task
 {
 
     private final Map<String, String> customData;
-    private final Document document;
+    private Document document;
     private final Scripts scripts;
     private final WorkerTaskData service;
     private final Response response;
     private final Application application;
 
-    public TaskTest(final Map<String, String> customData, final Document document, final Scripts scripts,
+    public TaskMock(final Map<String, String> customData, final Document document, final Scripts scripts,
                     final WorkerTaskData service, final Response response, final Application application)
     {
         this.customData = customData;
@@ -78,6 +78,11 @@ public class TaskTest implements Task
     public Application getApplication()
     {
         return application;
+    }
+
+    public void setDocument(final Document document)
+    {
+        this.document = document;
     }
 
 }

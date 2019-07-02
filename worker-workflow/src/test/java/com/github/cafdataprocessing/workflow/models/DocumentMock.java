@@ -24,7 +24,7 @@ import com.hpe.caf.worker.document.model.Subdocuments;
 import com.hpe.caf.worker.document.model.Task;
 import java.util.Map;
 
-public class DocumentTest implements Document
+public class DocumentMock implements Document
 {
     private String reference;
     private final Fields fields;
@@ -36,7 +36,7 @@ public class DocumentTest implements Document
     private final Document parentDocument;
     private final Document rootDocument;
 
-    public DocumentTest(final String reference, final Fields fields, final Task task, final Map<String, String> customData,
+    public DocumentMock(final String reference, final Fields fields, final Task task, final Map<String, String> customData,
                      final Failures failures, final Subdocuments subdocuments, final Application application,
                      final Document parentDocument, final Document rootDocument)
     {

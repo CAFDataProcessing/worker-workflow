@@ -22,7 +22,7 @@ import com.hpe.caf.api.worker.TrackingInfo;
 import com.hpe.caf.api.worker.WorkerResponse;
 import com.hpe.caf.api.worker.WorkerTaskData;
 
-public class WorkerTaskDataTest implements WorkerTaskData
+public class WorkerTaskDataMock implements WorkerTaskData
 {
     private final String classifier;
     private final int version;
@@ -33,7 +33,7 @@ public class WorkerTaskDataTest implements WorkerTaskData
     private final String to;
     private final TaskSourceInfo taskSourceInfo;
 
-    public WorkerTaskDataTest(final String classifier, final int version, final TaskStatus status, final byte[] data,
+    public WorkerTaskDataMock(final String classifier, final int version, final TaskStatus status, final byte[] data,
                               final byte[] context, final TrackingInfo trackingInfo, final String to, final TaskSourceInfo taskSourceInfo)
     {
         this.classifier = classifier;

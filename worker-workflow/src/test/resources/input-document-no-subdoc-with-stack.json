@@ -1,0 +1,25 @@
+{
+    "document": {
+        "reference": "ref_1_file",
+        "fields": {
+            "CAF_WORKFLOW_ACTION": [{
+                    "data": "super_action"
+                }
+            ],
+            "CAF_WORKFLOW_NAME": [{
+                    "data": "example_workflow",
+                    "encoding": "utf8"
+                }
+            ],
+            "FAILURES": []
+        },
+        "failures": [{
+            "failureId": "original_fail_id_1",
+            "failureMessage": "original message 1",
+            "failureStack": "super stack"
+        }]
+    },
+    "customData": {
+        "tenantId": "tenant1"
+    }
+}

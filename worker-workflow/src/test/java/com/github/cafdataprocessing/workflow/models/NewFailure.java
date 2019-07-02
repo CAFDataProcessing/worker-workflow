@@ -22,10 +22,16 @@ public class NewFailure
 
     @JsonProperty("id")
     private String failureId;
-    @JsonProperty("description")
-    private Description description;
+    @JsonProperty("originalDescription")
+    private String description;
     @JsonProperty("stack")
     private String stack;
+    @JsonProperty("version")
+    private String version;
+    @JsonProperty("workflowName")
+    private String workflowName;
+    @JsonProperty("source")
+    private String source;
 
     public String getFailureId()
     {
@@ -38,9 +44,25 @@ public class NewFailure
         return stack;
     }
 
-    public Description getDescription()
+    public String getDescription()
     {
         return description;
     }
 
+    public String getVersion()
+    {
+        return version;
+    }
+
+    public String getWorkflowName()
+    {
+        return workflowName;
+    }
+
+    public String getSource()
+    {
+        return source;
+    }
+
+    
 }
