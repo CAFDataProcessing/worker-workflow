@@ -207,7 +207,7 @@ function onAfterProcessDocument(e) {
 function processSubDocumentFailures(subdocuments, newListOfFailures) {
     for each(var subdoc in subdocuments) {
         if (subdoc.hasSubdocuments()) {
-            processSubdocuments(subdoc.getSubdocuments());
+            processSubDocumentFailures(subdoc.getSubdocuments());
         } else {
             var temp = processFailures(subdoc);
             addFailures(newListOfFailures, temp);

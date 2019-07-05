@@ -195,7 +195,7 @@ function applyActionDetails(document, actionDetails, terminateOnFailure) {
 
 function onAfterProcessDocument(e) {
     if (!e.application.getInputMessageProcessor().getProcessSubdocumentsSeparately() && e.rootDocument.hasSubdocuments()) {
-        processSubdocuments(e.rootDocument.getSubdocuments());
+        processSubDocumentFailures(e.rootDocument.getSubdocuments());
     }
     processFailures(e.document);
 }
