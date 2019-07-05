@@ -200,10 +200,10 @@ function onAfterProcessDocument(e) {
     processFailures(e.document);
 }
 
-function processSubdocuments(subdocuments) {
+function processSubDocumentFailures(subdocuments) {
     for each(var subdoc in subdocuments) {
         if (subdoc.hasSubdocuments()) {
-            processSubdocuments(subdoc.getSubdocuments());
+            processSubDocumentFailures(subdoc.getSubdocuments());
         } else {
             processFailures(subdoc);
         }
