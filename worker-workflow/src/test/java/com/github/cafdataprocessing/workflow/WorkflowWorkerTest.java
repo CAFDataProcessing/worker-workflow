@@ -374,6 +374,95 @@ public class WorkflowWorkerTest
     }
     
     @Test
+    public void onAfterProcessDocumentMultipleLevelOfSubdocsTest() throws ScriptException, NoSuchMethodException,
+                                                                                FileNotFoundException, WorkerException, IOException
+    {
+        final ScriptEngine nashorn = new ScriptEngineManager().getEngineByName("nashorn");
+        nashorn.eval(new InputStreamReader(new FileInputStream(Paths.get("src", "test", "resources", "workflow-control-test.js")
+            .toFile())));
+        final Invocable invocable = (Invocable) nashorn;
+
+        // doc with one original failure subdocuments
+        final Document builderDoc = DocumentBuilder.fromFile(
+            Paths.get("src", "test", "resources", "input-document-with-multiple-levels-subdoc-with-stack.json").toString()).build();
+        // add one new failure to the root doc
+        builderDoc.addFailure("error_id_1", "message 1");
+        
+        final Fields fields = builderDoc.getFields();
+        final Failures failures = builderDoc.getFailures();
+        final Subdocuments subdocuments = builderDoc.getSubdocuments();
+        // add a failure to the lowest inner level
+        subdocuments.stream()
+            .filter(sub->sub.getReference().equals("ref_level_2_sub_2"))
+            .flatMap(doc->doc.getSubdocuments().stream())
+            .filter(sub2->sub2.getReference().equals("ref_level_3_sub_1"))
+            .flatMap(doc2->doc2.getSubdocuments().stream())
+            .filter(sub3->sub3.getReference().equals("ref_level_4_sub_1"))
+            .findFirst()
+            .get()
+            .addFailure("level_4_id", "level 4 failure");
+        //add one to the third level
+        subdocuments.stream()
+            .filter(sub->sub.getReference().equals("ref_level_2_sub_2"))
+            .flatMap(doc->doc.getSubdocuments().stream())
+            .filter(sub2->sub2.getReference().equals("ref_level_3_sub_2"))
+            .findFirst()
+            .get()
+            .addFailure("level_3_id", "level 3 failure");
+        //add one to the level two
+        subdocuments.stream()
+            .filter(sub->sub.getReference().equals("ref_level_2_sub_2"))
+            .findFirst()
+            .get()
+            .addFailure("level_2_id", "level 2 failure");
+        
+        final TaskSourceInfo tsi = new TaskSourceInfo("source_name", "5");
+        final WorkerTaskData wtd = new WorkerTaskDataMock("classifier", 2, TaskStatus.RESULT_SUCCESS, new byte[0], new byte[0], null,
+                                                          "to", tsi);
+        final InputMessageProcessor inputMessageProcessorTest = new InputMessageProcessorMock(true);
+        final Application application = new ApplicationMock(inputMessageProcessorTest);
+        final Task task = new TaskMock(new HashMap<>(), null, null, wtd, null, application);
+        final Document document = new DocumentMock("ref_1", fields, task, new HashMap<>(), failures, subdocuments, null, builderDoc,
+                                                   builderDoc);
+        final DocumentEventObject documentEventObject = new DocumentEventObject(document);
+        invocable.invokeFunction("onAfterProcessDocument", documentEventObject);
+        assertThat(document.getFailures().size(), is(equalTo((2))));
+        assertThat(document.getFailures().stream().map(f -> f.getFailureId()).collect(toList()),
+                   containsInAnyOrder("error_id_1", "original_fail_id_1"));
+        
+        //level 2
+        final Subdocument firstSubdocLevel2 = document.getSubdocuments().stream().filter(s->s.getReference().equals("ref_level_2_sub_1"))
+            .findFirst().get();
+        final Subdocument secondSubdocLevel2 = document.getSubdocuments().stream().filter(s->s.getReference().equals("ref_level_2_sub_2"))
+            .findFirst().get();
+        assertThat(firstSubdocLevel2.getFailures().size(), is(equalTo(1)));
+        assertThat(firstSubdocLevel2.getFailures().stream().map(f->f.getFailureId()).findFirst().get(), 
+                   is(equalTo("original_fail_subdoc_id_1")));
+        assertThat(secondSubdocLevel2.getFailures().size(), is(equalTo(2)));
+        assertThat(secondSubdocLevel2.getFailures().stream().map(f->f.getFailureId()).collect(toList()), 
+                   containsInAnyOrder("original_fail_subdoc_id_2", "level_2_id"));
+        
+        // level 3
+        final Subdocument firstSubdocLevel3 = secondSubdocLevel2.getSubdocuments().stream()
+            .filter(s->s.getReference().equals("ref_level_3_sub_1")).findFirst().get();
+        assertThat(firstSubdocLevel3.getFailures().size(), is(equalTo(1)));
+        assertThat(firstSubdocLevel3.getFailures().stream().map(f->f.getFailureId()).findFirst().get(), 
+                   is(equalTo("original_fail_level_3_sub1")));
+        final Subdocument secondSubdocLevel3 = secondSubdocLevel2.getSubdocuments().stream()
+            .filter(s->s.getReference().equals("ref_level_3_sub_2")).findFirst().get();
+        assertThat(secondSubdocLevel3.getFailures().size(), is(equalTo(2)));
+        assertThat(secondSubdocLevel3.getFailures().stream().map(f->f.getFailureId()).collect(toList()), 
+                   containsInAnyOrder("original_fail_level_3_sub2", "level_3_id"));
+        
+        // level 4
+        final Subdocument firstSubdocLevel4 = firstSubdocLevel3.getSubdocuments().stream()
+            .filter(s->s.getReference().equals("ref_level_4_sub_1")).findFirst().get();
+        assertThat(firstSubdocLevel4.getFailures().size(), is(equalTo(2)));
+        assertThat(firstSubdocLevel4.getFailures().stream().map(f->f.getFailureId()).collect(toList()), 
+                   containsInAnyOrder("original_fail_level_4_sub1", "level_4_id"));
+    }
+    
+    @Test
     public void onAfterProcessDocumentSubDocNotProcessedSeparatelyTest() throws ScriptException, NoSuchMethodException,
                                                                                 FileNotFoundException, WorkerException, IOException
     {

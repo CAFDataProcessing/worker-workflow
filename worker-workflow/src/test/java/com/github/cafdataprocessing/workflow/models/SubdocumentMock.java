@@ -127,7 +127,11 @@ public class SubdocumentMock implements Subdocument
     @Override
     public boolean hasSubdocuments()
     {
-        return !subdocuments.isEmpty();
+        if (subdocuments == null) {
+            return false;
+        } else {
+            return !subdocuments.isEmpty();
+        }
     }
 
     @Override

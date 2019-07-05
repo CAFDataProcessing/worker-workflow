@@ -193,13 +193,21 @@ function applyActionDetails(document, actionDetails, terminateOnFailure) {
     }
 }
 
-function onAfterProcessDocument(e){
+function onAfterProcessDocument(e) {
     if (!e.application.getInputMessageProcessor().getProcessSubdocumentsSeparately() && e.rootDocument.hasSubdocuments()) {
-        for each (var subdoc in e.rootDocument.getSubdocuments()){
+        processSubdocuments(e.rootDocument.getSubdocuments());
+    }
+    processFailures(e.document);
+}
+
+function processSubdocuments(subdocuments) {
+    for each(var subdoc in subdocuments) {
+        if (subdoc.hasSubdocuments()) {
+            processSubdocuments(subdoc.getSubdocuments());
+        } else {
             processFailures(subdoc);
         }
     }
-    processFailures(e.document);
 }
 
 function processFailures(document) {
