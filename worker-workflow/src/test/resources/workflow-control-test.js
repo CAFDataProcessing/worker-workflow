@@ -197,17 +197,17 @@ function applyActionDetails(document, actionDetails, terminateOnFailure) {
 function onAfterProcessDocument(e) {
     var newListOfFailures = new java.util.ArrayList();
     if (!e.application.getInputMessageProcessor().getProcessSubdocumentsSeparately() && e.rootDocument.hasSubdocuments()) {
-        processSubDocumentFailures(e.rootDocument.getSubdocuments(), newListOfFailures);
+        processSubdocumentFailures(e.rootDocument.getSubdocuments(), newListOfFailures);
     }
     var temp = processFailures(e.document);
     addFailures(newListOfFailures, temp);
     return newListOfFailures;
 }
 
-function processSubDocumentFailures(subdocuments, newListOfFailures) {
+function processSubdocumentFailures(subdocuments, newListOfFailures) {
     for each(var subdoc in subdocuments) {
         if (subdoc.hasSubdocuments()) {
-            processSubDocumentFailures(subdoc.getSubdocuments());
+            processSubdocumentFailures(subdoc.getSubdocuments());
         } else {
             var temp = processFailures(subdoc);
             addFailures(newListOfFailures, temp);

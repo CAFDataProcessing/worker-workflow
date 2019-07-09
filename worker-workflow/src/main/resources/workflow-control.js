@@ -195,15 +195,15 @@ function applyActionDetails(document, actionDetails, terminateOnFailure) {
 
 function onAfterProcessDocument(e) {
     if (!e.application.getInputMessageProcessor().getProcessSubdocumentsSeparately() && e.rootDocument.hasSubdocuments()) {
-        processSubDocumentFailures(e.rootDocument.getSubdocuments());
+        processSubdocumentFailures(e.rootDocument.getSubdocuments());
     }
     processFailures(e.document);
 }
 
-function processSubDocumentFailures(subdocuments) {
+function processSubdocumentFailures(subdocuments) {
     for each(var subdoc in subdocuments) {
         if (subdoc.hasSubdocuments()) {
-            processSubDocumentFailures(subdoc.getSubdocuments());
+            processSubdocumentFailures(subdoc.getSubdocuments());
         } else {
             processFailures(subdoc);
         }
