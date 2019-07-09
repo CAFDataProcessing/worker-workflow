@@ -67,6 +67,7 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import org.apache.commons.lang3.StringUtils;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -294,9 +295,22 @@ public class WorkflowWorkerTest
                                                    builderDoc);
         final DocumentEventObject documentEventObject = new DocumentEventObject(document);
         invocable.invokeFunction("onAfterProcessDocument", documentEventObject);
+        
         assertThat(document.getFailures().size(), is(equalTo((1))));
         assertThat(document.getFailures().stream().findFirst().get().getFailureId(), is(equalTo("error_id_1")));
         assertThat(document.getFailures().stream().findFirst().get().getFailureStack(), is(nullValue()));
+        
+        assertThat(document.getField("FAILURES").getValues()
+            .stream().filter(x->!x.getStringValue().isEmpty()).count(), is(equalTo((1L))));
+        final ObjectMapper mapper = new ObjectMapper();
+        final NewFailure failureMessage = mapper.readValue(document.getField("FAILURES").getValues()
+            .stream().filter(x->!x.getStringValue().isEmpty()).findFirst().get().getStringValue(), NewFailure.class);
+        assertThat(failureMessage.getFailureId(), is(equalTo("error_id_1")));
+        assertThat(failureMessage.getStack(), is(nullValue()));
+        assertThat(failureMessage.getDescription(), is(equalTo("message 1")));
+        assertThat(failureMessage.getVersion(), is(equalTo("5")));
+        assertThat(failureMessage.getWorkflowName(), is(equalTo("example_workflow")));
+        assertThat(failureMessage.getSource(), is(equalTo("super_action")));
     }
     
     @Test
@@ -430,6 +444,27 @@ public class WorkflowWorkerTest
         assertThat(document.getFailures().stream().map(f -> f.getFailureId()).collect(toList()),
                    containsInAnyOrder("error_id_1", "original_fail_id_1"));
         
+        assertThat(document.getField("FAILURES").getValues()
+            .stream().filter(x->!x.getStringValue().isEmpty()).count(), is(equalTo((1L))));
+        final String mainFailure = document.getField("FAILURES").getValues()
+            .stream()
+            .map(i -> i.getStringValue())
+            .findFirst()
+            .get();
+        
+        assertThat(mainFailure,
+                   isJsonStringMatching(jsonObject().where("id", is(jsonText("error_id_1")))));
+        assertThat(mainFailure,
+                   isJsonStringMatching(jsonObject().where("stack", is(jsonMissing()))));
+        assertThat(mainFailure,
+                   isJsonStringMatching(jsonObject().where("source", is(jsonText("super_action")))));
+        assertThat(mainFailure,
+                   isJsonStringMatching(jsonObject().where("version", is(jsonText("5")))));
+        assertThat(mainFailure,
+                   isJsonStringMatching(jsonObject().where("workflowName", is(jsonText("example_workflow")))));
+        assertThat(mainFailure,
+                   isJsonStringMatching(jsonObject().where("originalDescription", is(jsonText("message 1")))));
+        
         //level 2
         final Subdocument firstSubdocLevel2 = document.getSubdocuments().stream().filter(s->s.getReference().equals("ref_level_2_sub_1"))
             .findFirst().get();
@@ -440,7 +475,7 @@ public class WorkflowWorkerTest
                    is(equalTo("original_fail_subdoc_id_1")));
         assertThat(secondSubdocLevel2.getFailures().size(), is(equalTo(2)));
         assertThat(secondSubdocLevel2.getFailures().stream().map(f->f.getFailureId()).collect(toList()), 
-                   containsInAnyOrder("original_fail_subdoc_id_2", "level_2_id"));
+                   hasItems("original_fail_subdoc_id_2", "level_2_id"));
         
         // level 3
         final Subdocument firstSubdocLevel3 = secondSubdocLevel2.getSubdocuments().stream()
@@ -452,14 +487,14 @@ public class WorkflowWorkerTest
             .filter(s->s.getReference().equals("ref_level_3_sub_2")).findFirst().get();
         assertThat(secondSubdocLevel3.getFailures().size(), is(equalTo(2)));
         assertThat(secondSubdocLevel3.getFailures().stream().map(f->f.getFailureId()).collect(toList()), 
-                   containsInAnyOrder("original_fail_level_3_sub2", "level_3_id"));
+                   hasItems("original_fail_level_3_sub2", "level_3_id"));
         
         // level 4
         final Subdocument firstSubdocLevel4 = firstSubdocLevel3.getSubdocuments().stream()
             .filter(s->s.getReference().equals("ref_level_4_sub_1")).findFirst().get();
         assertThat(firstSubdocLevel4.getFailures().size(), is(equalTo(2)));
         assertThat(firstSubdocLevel4.getFailures().stream().map(f->f.getFailureId()).collect(toList()), 
-                   containsInAnyOrder("original_fail_level_4_sub1", "level_4_id"));
+                   hasItems("original_fail_level_4_sub1", "level_4_id"));
     }
     
     @Test
@@ -519,53 +554,55 @@ public class WorkflowWorkerTest
             -> sub.getReference().equals("subd_ref_1")).flatMap(s->s.getFailures().stream()).map(f->f.getFailureId()).collect(toList()),
                    containsInAnyOrder("error_id_2", "original_fail_id_2_sub"));
         
-        final Failure firstFailure = document.getSubdocuments()
+        final String firstFailure = document.getSubdocuments()
             .stream()
             .filter(sub -> sub.getReference().equals("subd_ref_1"))
-            .flatMap(s->s.getFailures().stream())
-            .filter(i->i.getFailureId().equals("error_id_2"))
+            .flatMap(s -> s.getField("FAILURES").getValues().stream())
+            .map(i -> i.getStringValue())
             .findFirst()
             .get();
         
-        assertThat(firstFailure.getFailureMessage(),
+        assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("id", is(jsonText("error_id_2")))));
-        assertThat(firstFailure.getFailureMessage(),
+        assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("stack", is(jsonMissing()))));
-        assertThat(firstFailure.getFailureMessage(),
+        assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("source", is(jsonText("super_action")))));
-        assertThat(firstFailure.getFailureMessage(),
+        assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("version", is(jsonText("5")))));
-        assertThat(firstFailure.getFailureMessage(),
+        assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("workflowName", is(jsonText("example_workflow")))));
 
         
         assertThat(document.getSubdocuments().stream().filter(sub
             -> sub.getReference().equals("subd_ref_2")).flatMap(s->s.getFailures().stream()).map(f->f.getFailureId()).collect(toList()),
-                   containsInAnyOrder("error_id_3", "original_fail_id_3_sub"));
+                   hasItem("original_fail_id_3_sub"));
         
-        final Failure secondFailure = document.getSubdocuments()
+        final String secondFailure = document.getSubdocuments()
             .stream()
             .filter(sub -> sub.getReference().equals("subd_ref_2"))
-            .flatMap(s->s.getFailures().stream())
-            .filter(i->i.getFailureId().equals("error_id_3"))
+            .flatMap(s -> s.getField("FAILURES").getValues().stream())
+            .map(i -> i.getStringValue())
             .findFirst()
             .get();
         
-        assertThat(secondFailure.getFailureId(),
-                   is(equalTo("error_id_3")));
-        assertThat(secondFailure.getFailureMessage(),
+        assertThat(secondFailure,
                    isJsonStringMatching(jsonObject().where("id", is(jsonText("error_id_3")))));
-        assertThat(secondFailure.getFailureMessage(),
+        assertThat(secondFailure,
                    isJsonStringMatching(jsonObject().where("stack", is(jsonMissing()))));
-        assertThat(secondFailure.getFailureMessage(),
+        assertThat(secondFailure,
                    isJsonStringMatching(jsonObject().where("source", is(jsonText("super_action")))));
-        assertThat(secondFailure.getFailureMessage(),
+        assertThat(secondFailure,
                    isJsonStringMatching(jsonObject().where("version", is(jsonText("5")))));
-        assertThat(secondFailure.getFailureMessage(),
+        assertThat(secondFailure,
                    isJsonStringMatching(jsonObject().where("workflowName", is(jsonText("example_workflow")))));
-        
+
         final int sum = document.getFailures().size() + document.getSubdocuments().stream().mapToInt(s -> s.getFailures().size()).sum();
         assertThat(sum, is(equalTo(6)));
+        
+        final int sumField = document.getField("FAILURES").getValues().size()
+            + document.getSubdocuments().stream().mapToInt(s -> s.getField("FAILURES").getValues().size()).sum();
+        assertThat(sumField, is(equalTo(3)));
     }
     
     @Test
