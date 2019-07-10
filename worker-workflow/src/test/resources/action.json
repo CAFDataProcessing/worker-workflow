@@ -1,0 +1,13 @@
+{
+    "name": "family_hashing",
+    "queueName": "dataprocessing-family-hashing-in",
+    "customData": {
+        "tenantId": "tenantId"
+    },
+    "scripts": [
+        {
+            "name": "recordProcessingTimes.js",
+            "script": "function onProcessTask(e) {\n  var startTime \u003d new Date();\n  e.rootDocument.getField(\"LONG_FAMILY_HASHING_START_TIME\").set(startTime.getTime());\n  e.rootDocument.getField(\"ENRICHMENT_TIME\").set(Math.round(startTime.getTime() / 1000));\n}\nfunction onAfterProcessTask(e) {\n  var endTime \u003d new Date();\n  e.rootDocument.getField(\"LONG_FAMILY_HASHING_END_TIME\").set(endTime.getTime());\n}\nfunction onError(e) {\n  var failedTime \u003d new Date();\n  e.rootDocument.getField(\"LONG_FAMILY_HASHING_FAILED_TIME\").set(failedTime.getTime());\n}\n"
+        }
+    ]
+}
