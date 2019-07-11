@@ -96,6 +96,7 @@ public class WorkflowWorkerTest
                     .withCustomData()
                     .addCustomData("literalWithDoubleQuotes_1", "literalExample_1")
                     .addCustomData("literalWithDoubleQuotes_2", "literalExample_2")
+                    .addCustomData("literalWithDoubleQuotes_3", "literalExample_3")
                 .actionExpectationsBuilder()
                 .withAction("action_3")
                 .successQueue(action_3_queueName)
