@@ -125,7 +125,7 @@ function anyDocumentMatches(conditionFunction, document, arguments) {
 }
 
 function evalCustomData(arguments, customDataToEval){
-    var regex = /d".*"|'.*'/g;
+    var regex = /".*"|'.*'/g;
     var customData = {};
     if (!customDataToEval) {
         return customData;

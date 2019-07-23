@@ -43,5 +43,9 @@ actions:
           }
   - name: action_2
     conditionFunction: function (document) { return fieldExists(document, 'field-should-exist');}
+    customData:
+      literalWithDoubleQuotes_1: "\"literalExample_1\""
+      literalWithDoubleQuotes_2: '"literalExample_2"'
+      literalWithDoubleQuotes_3: "'literalExample_3'"
   - name: action_3
     conditionFunction: function (document) { return fieldHasStringValue(document, 'fieldHasValue', 'This value'); }
