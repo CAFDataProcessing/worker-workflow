@@ -255,11 +255,11 @@ function processFailures(document) {
                 var message = {
                     ID: f.getFailureId(),
                     STACK: f.getFailureStack() || undefined,
-                    WORKFLOW_ACTION: document.rootDocument.getField("CAF_WORKFLOW_ACTION").getStringValues().get(0),
+                    WORKFLOW_ACTION: document.getField("CAF_WORKFLOW_ACTION").getStringValues().get(0),
                     VERSION: source.trim() + " " + numericVersion.trim(),
                     WORKFLOW_NAME: document.getField("CAF_WORKFLOW_NAME").getStringValues().get(0),
                     MESSAGE: f.getFailureMessage(),
-                    DATE: new Date().toLocaleString('en-US')
+                    DATE: new Date().toISOString()
                 };
                 document.getField("FAILURES").add(JSON.stringify(message));
             }
