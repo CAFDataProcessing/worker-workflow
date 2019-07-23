@@ -227,13 +227,13 @@ function processFailures(document) {
 
         for each (var f in listOfFailures) {
             if (!isFailureInOriginal(listOfOriginalFailures, f)) {
-                var source = document.rootDocument.getField("CAF_WORKFLOW_ACTION").getStringValues().get(0);
+                var source = document.getTask().getService(com.hpe.caf.api.worker.WorkerTaskData.class).getSourceInfo().getName();
                 var numericVersion = document.getTask().getService(com.hpe.caf.api.worker.WorkerTaskData.class).getSourceInfo().getVersion();
                 var message = {
                     ID: f.getFailureId(),
                     STACK: f.getFailureStack() || undefined,
-                    WORKFLOW_ACTION: source,
-                    VERSION: source.trim() + numericVersion.trim(),
+                    WORKFLOW_ACTION: document.rootDocument.getField("CAF_WORKFLOW_ACTION").getStringValues().get(0),
+                    VERSION: source.trim() + " " + numericVersion.trim(),
                     WORKFLOW_NAME: document.getField("CAF_WORKFLOW_NAME").getStringValues().get(0),
                     MESSAGE: f.getFailureMessage(),
                     DATE: new Date().toLocaleString('en-US')

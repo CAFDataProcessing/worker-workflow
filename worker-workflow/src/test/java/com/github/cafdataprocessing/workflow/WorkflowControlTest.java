@@ -118,7 +118,7 @@ public class WorkflowControlTest
         assertThat(mainFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("super_action")))));
         assertThat(mainFailure,
-                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("super_action5")))));
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("source_name 5")))));
         assertThat(mainFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
         assertThat(mainFailure,
@@ -173,7 +173,7 @@ public class WorkflowControlTest
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("super_action")))));
         assertThat(firstFailure,
-                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("super_action5")))));
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("source_name 5")))));
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
         assertThat(firstFailure,
@@ -195,7 +195,7 @@ public class WorkflowControlTest
         assertThat(secondFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("super_action")))));
         assertThat(secondFailure,
-                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("super_action5")))));
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("source_name 5")))));
         assertThat(secondFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
         assertThat(secondFailure,
@@ -466,7 +466,7 @@ public class WorkflowControlTest
         assertThat(failureMessage.getFailureId(), is(equalTo("error_id_1")));
         assertThat(failureMessage.getStack(), is(nullValue()));
         assertThat(failureMessage.getMessage(), is(equalTo("message 1")));
-        assertThat(failureMessage.getVersion(), is(equalTo("super_action5")));
+        assertThat(failureMessage.getVersion(), is(equalTo("source_name 5")));
         assertThat(failureMessage.getWorkflowName(), is(equalTo("example_workflow")));
         assertThat(failureMessage.getWorkflowAction(), is(equalTo("super_action")));
         assertThat(failureMessage.getDate(), is(not(isEmptyString())));
@@ -516,7 +516,7 @@ public class WorkflowControlTest
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("super_action")))));
         assertThat(firstFailure,
-                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("super_action5")))));
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("source_name 5")))));
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
         assertThat(firstFailure,
@@ -567,7 +567,7 @@ public class WorkflowControlTest
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("super_action")))));
         assertThat(firstFailure,
-                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("super_action5")))));
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("source_name 5")))));
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
         assertThat(firstFailure,
@@ -661,7 +661,7 @@ public class WorkflowControlTest
         assertThat(mainFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("super_action")))));
         assertThat(mainFailure,
-                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("super_action5")))));
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("source_name 5")))));
         assertThat(mainFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
         assertThat(mainFailure,
@@ -813,7 +813,7 @@ public class WorkflowControlTest
         assertThat(mainFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("super_action")))));
         assertThat(mainFailure,
-                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("super_action5")))));
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("source_name 5")))));
         assertThat(mainFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
         assertThat(mainFailure,
@@ -851,7 +851,7 @@ public class WorkflowControlTest
         assertThat(secondFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("super_action")))));
         assertThat(secondFailure,
-                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("super_action5")))));
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("source_name 5")))));
         assertThat(secondFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
         assertThat(secondFailure,
@@ -888,7 +888,7 @@ public class WorkflowControlTest
         assertThat(thirdFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("super_action")))));
         assertThat(thirdFailure,
-                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("super_action5")))));
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("source_name 5")))));
         assertThat(thirdFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
         assertThat(thirdFailure,
