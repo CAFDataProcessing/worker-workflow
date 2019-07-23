@@ -37,8 +37,8 @@ public class DocumentMock implements Document
     private final Document rootDocument;
 
     public DocumentMock(final String reference, final Fields fields, final Task task, final Map<String, String> customData,
-                     final Failures failures, final Subdocuments subdocuments, final Application application,
-                     final Document parentDocument, final Document rootDocument)
+                        final Failures failures, final Subdocuments subdocuments, final Application application,
+                        final Document parentDocument, final Document rootDocument)
     {
         this.reference = reference;
         this.fields = fields;
@@ -126,7 +126,11 @@ public class DocumentMock implements Document
     @Override
     public boolean hasSubdocuments()
     {
-        return !subdocuments.isEmpty();
+        if (subdocuments == null) {
+            return false;
+        } else {
+            return !subdocuments.isEmpty();
+        }
     }
 
     @Override

@@ -194,23 +194,46 @@ function applyActionDetails(document, actionDetails, terminateOnFailure) {
 }
 
 function onAfterProcessDocument(e) {
-    if (!e.application.getInputMessageProcessor().getProcessSubdocumentsSeparately() && e.rootDocument.hasSubdocuments()) {
-        processSubdocumentFailures(e.rootDocument.getSubdocuments());
+    if (!e.application.getInputMessageProcessor().getProcessSubdocumentsSeparately()) {
+        //print("I am false");
+        traverseDocumentForFailures(e.document);
+    } else {
+        processFailures(e.document);
     }
-    processFailures(e.document);
+}
+
+function traverseDocumentForFailures(document) {
+    //print("Document reference \t\t\t" + document.getReference());
+    if (document.getRootDocument() != null) {
+        if (document.getRootDocument() != document) {
+            //print("The root document is different from this document \t\t\t" + document.getRootDocument().getReference());
+            traverseDocumentForFailures(document.getRootDocument());
+        }
+    }
+    //print("Parent doc: \t\t\t" + document.getParentDocument());
+    if (document.getParentDocument() != null) {
+        //print("The parent doc is not null: \t\t\t" + document.getParentDocument().getReference());
+        traverseDocumentForFailures(document.getParentDocument());
+    }
+    //print("I am going to process subdocuments");
+    processSubdocumentFailures(document.getSubdocuments());
+    processFailures(document);
 }
 
 function processSubdocumentFailures(subdocuments) {
     for each(var subdoc in subdocuments) {
         if (subdoc.hasSubdocuments()) {
+            //print("Subdocument " + subdoc.getReference() + " has subdocs that I am going to process");
             processSubdocumentFailures(subdoc.getSubdocuments());
         } else {
+            //print("Subdocument " + subdoc.getReference() + " does not have subdocs; so I am going to process failures");
             processFailures(subdoc);
         }
     }
 }
 
 function processFailures(document) {
+    //print("I am processing the failures of: \t\t\t" + document.getReference());
     if (document.getFailures().isChanged()) {
 
         var listOfFailures = new java.util.ArrayList();
