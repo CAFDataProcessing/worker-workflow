@@ -227,15 +227,17 @@ function processFailures(document) {
 
         for each (var f in listOfFailures) {
             if (!isFailureInOriginal(listOfOriginalFailures, f)) {
+                var source = document.rootDocument.getField("CAF_WORKFLOW_ACTION").getStringValues().get(0);
+                var numericVersion = document.getTask().getService(com.hpe.caf.api.worker.WorkerTaskData.class).getSourceInfo().getVersion();
                 var message = {
-                    id: f.getFailureId(),
-                    stack: f.getFailureStack() || undefined,
-                    source: document.rootDocument.getField("CAF_WORKFLOW_ACTION").getStringValues().get(0),
-                    version: document.getTask().getService(com.hpe.caf.api.worker.WorkerTaskData.class).getSourceInfo().getVersion(),
-                    workflowName: document.getField("CAF_WORKFLOW_NAME").getStringValues().get(0),
-                    originalDescription: f.getFailureMessage()
+                    ID: f.getFailureId(),
+                    STACK: f.getFailureStack() || undefined,
+                    WORKFLOW_ACTION: source,
+                    VERSION: source.trim() + numericVersion.trim(),
+                    WORKFLOW_NAME: document.getField("CAF_WORKFLOW_NAME").getStringValues().get(0),
+                    MESSAGE: f.getFailureMessage(),
+                    DATE: new Date().toLocaleString('en-US')
                 };
-                document.getFailures().add(f.getFailureId(), JSON.stringify(message));
                 document.getField("FAILURES").add(JSON.stringify(message));
             }
         }
@@ -244,12 +246,10 @@ function processFailures(document) {
 
 function isFailureInOriginal(listOfOriginalFailures, newFailure) {
     for each(var failure in listOfOriginalFailures) {
-        if (newFailure.getFailureId() == failure.getFailureId()) {
-            if (newFailure.getFailureMessage() == failure.getFailureMessage()) {
-                if (newFailure.getFailureStack() == failure.getFailureStack()) {
-                    return true;
-                }
-            }
+        if (newFailure.getFailureId() == failure.getFailureId()
+                && newFailure.getFailureMessage() == failure.getFailureMessage()
+                && newFailure.getFailureStack() == failure.getFailureStack()) {
+            return true;
         }
     }
     return false;

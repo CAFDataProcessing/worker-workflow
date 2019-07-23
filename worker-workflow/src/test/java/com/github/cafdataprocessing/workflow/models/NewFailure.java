@@ -20,33 +20,39 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class NewFailure
 {
 
-    @JsonProperty("id")
+    @JsonProperty("ID")
     private String failureId;
-    @JsonProperty("originalDescription")
-    private String description;
-    @JsonProperty("stack")
+    @JsonProperty("MESSAGE")
+    private String message;
+    @JsonProperty("STACK")
     private String stack;
-    @JsonProperty("version")
+    @JsonProperty("VERSION")
     private String version;
-    @JsonProperty("workflowName")
+    @JsonProperty("WORKFLOW_NAME")
     private String workflowName;
-    @JsonProperty("source")
-    private String source;
+    @JsonProperty("WORKFLOW_ACTION")
+    private String workflowAction;
+    @JsonProperty("DATE")
+    private String date;
 
     public String getFailureId()
     {
         return failureId;
     }
 
+    public String getDate()
+    {
+        return date;
+    }
 
     public String getStack()
     {
         return stack;
     }
 
-    public String getDescription()
+    public String getMessage()
     {
-        return description;
+        return message;
     }
 
     public String getVersion()
@@ -59,9 +65,9 @@ public class NewFailure
         return workflowName;
     }
 
-    public String getSource()
+    public String getWorkflowAction()
     {
-        return source;
+        return workflowAction;
     }
 
     
