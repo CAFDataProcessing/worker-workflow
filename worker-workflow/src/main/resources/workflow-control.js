@@ -203,30 +203,13 @@ function onAfterProcessDocument(e) {
 }
 
 function traverseDocumentForFailures(document) {
-    //print("Document reference \t\t\t" + document.getReference());
-    if (document.getRootDocument() != null) {
-        if (document.getRootDocument() != document) {
-            //print("The root document is different from this document \t\t\t" + document.getRootDocument().getReference());
-            traverseDocumentForFailures(document.getRootDocument());
-        }
-    }
-    //print("Parent doc: \t\t\t" + document.getParentDocument());
-    if (document.getParentDocument() != null) {
-        //print("The parent doc is not null: \t\t\t" + document.getParentDocument().getReference());
-        traverseDocumentForFailures(document.getParentDocument());
-    }
-    //print("I am going to process subdocuments");
-    processSubdocumentFailures(document.getSubdocuments());
     processFailures(document);
-}
-
-function processSubdocumentFailures(subdocuments) {
-    for each(var subdoc in subdocuments) {
+    for each(var subdoc in document.getSubdocuments()) {
         if (subdoc.hasSubdocuments()) {
-            //print("Subdocument " + subdoc.getReference() + " has subdocs that I am going to process");
+            print("Subdocument " + subdoc.getReference() + " has subdocs that I am going to process");
             processSubdocumentFailures(subdoc.getSubdocuments());
         } else {
-            //print("Subdocument " + subdoc.getReference() + " does not have subdocs; so I am going to process failures");
+            print("Subdocument " + subdoc.getReference() + " does not have subdocs; so I am going to process failures");
             processFailures(subdoc);
         }
     }
