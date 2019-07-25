@@ -195,7 +195,6 @@ function applyActionDetails(document, actionDetails, terminateOnFailure) {
 
 function onAfterProcessDocument(e) {
     if (!e.application.getInputMessageProcessor().getProcessSubdocumentsSeparately()) {
-        //print("I am false");
         traverseDocumentForFailures(e.document);
     } else {
         processFailures(e.document);
@@ -205,18 +204,11 @@ function onAfterProcessDocument(e) {
 function traverseDocumentForFailures(document) {
     processFailures(document);
     for each(var subdoc in document.getSubdocuments()) {
-        if (subdoc.hasSubdocuments()) {
-            print("Subdocument " + subdoc.getReference() + " has subdocs that I am going to process");
-            processSubdocumentFailures(subdoc.getSubdocuments());
-        } else {
-            print("Subdocument " + subdoc.getReference() + " does not have subdocs; so I am going to process failures");
-            processFailures(subdoc);
-        }
+        traverseDocumentForFailures(subdoc);
     }
 }
 
 function processFailures(document) {
-    //print("I am processing the failures of: \t\t\t" + document.getReference());
     if (document.getFailures().isChanged()) {
 
         var listOfFailures = new java.util.ArrayList();
@@ -252,9 +244,9 @@ function processFailures(document) {
 
 function isFailureInOriginal(listOfOriginalFailures, newFailure) {
     for each(var failure in listOfOriginalFailures) {
-        if (newFailure.getFailureId() == failure.getFailureId()
-                && newFailure.getFailureMessage() == failure.getFailureMessage()
-                && newFailure.getFailureStack() == failure.getFailureStack()) {
+        if (newFailure.getFailureId() === failure.getFailureId()
+                && newFailure.getFailureMessage() === failure.getFailureMessage()
+                && newFailure.getFailureStack() === failure.getFailureStack()) {
             return true;
         }
     }

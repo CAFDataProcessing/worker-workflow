@@ -278,6 +278,130 @@ public class WorkflowControlTest
 
         invocable.invokeFunction("processFailures", document);
     }
+    
+    @Test
+    public void failuresNegativeNoIdFieldTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
+    {
+        // this method shows what happens when there is not an ID field
+        final Invocable invocable = createInvocableNashornEngine();
+
+        final Document builderDoc = DocumentBuilder.configure().withFields()
+            .addFieldValues("CAF_WORKFLOW_ACTION", "super_action")
+            .addFieldValue("CAF_WORKFLOW_NAME", "example_workflow")
+            .addFieldValue("FAILURES", "")
+            .addFieldValue("example", "value from field")
+            .addFieldValue("fieldHasValue", "This value")
+            .documentBuilder()
+            .withSubDocuments(DocumentBuilder.configure().withFields()
+                .addFieldValue("field-should-exist", "action 2 requires this field to be present")
+                .documentBuilder())
+            .build();
+        builderDoc.addFailure(null, "message 1");
+
+        final Document document = createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, builderDoc, builderDoc,
+                                                 false, true);
+
+        invocable.invokeFunction("processFailures", document);
+        assertThat(document.getFailures().size(), is(equalTo((0))));
+
+        assertThat(document.getField("FAILURES").getValues()
+            .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((1L))));
+
+        final String firstFailure = document.getField("FAILURES").getValues()
+            .stream()
+            .filter(v -> !v.getStringValue().isEmpty() && v.getStringValue().contains("message 1"))
+            .map(v -> v.getStringValue())
+            .findFirst()
+            .get();
+
+        assertThat(firstFailure,
+                   isJsonStringMatching(jsonObject().where("ID", is(jsonNull()))));
+        assertThat(firstFailure,
+                   isJsonStringMatching(jsonObject().where("STACK", is(jsonMissing()))));
+        assertThat(firstFailure,
+                   isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("super_action")))));
+        assertThat(firstFailure,
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("source_name 5")))));
+        assertThat(firstFailure,
+                   isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
+        assertThat(firstFailure,
+                   isJsonStringMatching(jsonObject().where("MESSAGE", is(jsonText("message 1")))));
+        assertThat(firstFailure,
+                   isJsonStringMatching(jsonObject().where("DATE", is(not(jsonNull())))));
+    }
+    
+    @Test
+    public void failuresNegativeNoMessageFieldTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
+    {
+        // this method shows what happens when there is not a MESSAGE field
+        final Invocable invocable = createInvocableNashornEngine();
+
+        final Document builderDoc = DocumentBuilder.configure().withFields()
+            .addFieldValues("CAF_WORKFLOW_ACTION", "super_action")
+            .addFieldValue("CAF_WORKFLOW_NAME", "example_workflow")
+            .addFieldValue("FAILURES", "")
+            .addFieldValue("example", "value from field")
+            .addFieldValue("fieldHasValue", "This value")
+            .documentBuilder()
+            .withSubDocuments(DocumentBuilder.configure().withFields()
+                .addFieldValue("field-should-exist", "action 2 requires this field to be present")
+                .documentBuilder())
+            .build();
+        builderDoc.addFailure("error_id_1", null);
+
+        final Document document = createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, builderDoc, builderDoc,
+                                                 false, true);
+
+        invocable.invokeFunction("processFailures", document);
+        assertThat(document.getFailures().size(), is(equalTo((0))));
+
+        assertThat(document.getField("FAILURES").getValues()
+            .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((1L))));
+
+        final String firstFailure = document.getField("FAILURES").getValues()
+            .stream()
+            .filter(v -> !v.getStringValue().isEmpty() && v.getStringValue().contains("error_id_1"))
+            .map(v -> v.getStringValue())
+            .findFirst()
+            .get();
+
+        assertThat(firstFailure,
+                   isJsonStringMatching(jsonObject().where("ID", is(jsonText("error_id_1")))));
+        assertThat(firstFailure,
+                   isJsonStringMatching(jsonObject().where("STACK", is(jsonMissing()))));
+        assertThat(firstFailure,
+                   isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("super_action")))));
+        assertThat(firstFailure,
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("source_name 5")))));
+        assertThat(firstFailure,
+                   isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
+        assertThat(firstFailure,
+                   isJsonStringMatching(jsonObject().where("MESSAGE", is(jsonNull()))));
+        assertThat(firstFailure,
+                   isJsonStringMatching(jsonObject().where("DATE", is(not(jsonNull())))));
+    }
+    
+    @Test(expected = javax.script.ScriptException.class)
+    public void failuresNegativeNoSourceNameTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
+    {
+        // this method fails because there is not a SOURCE NAME in the document
+        final Invocable invocable = createInvocableNashornEngine();
+
+        final Document builderDoc = DocumentBuilder.configure().withFields()
+            .addFieldValues("CAF_WORKFLOW_ACTION", "super_action")
+            .addFieldValue("CAF_WORKFLOW_NAME", "example_workflow")
+            .addFieldValue("FAILURES", "")
+            .addFieldValue("example", "value from field")
+            .addFieldValue("fieldHasValue", "This value")
+            .documentBuilder()
+            .withSubDocuments(DocumentBuilder.configure().withFields()
+                .addFieldValue("field-should-exist", "action 2 requires this field to be present")
+                .documentBuilder())
+            .build();
+        builderDoc.addFailure("error_id_1", "message 1");
+
+        invocable.invokeFunction("processFailures", builderDoc);
+    }
 
     @Test
     public void isFailureInOriginalTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
