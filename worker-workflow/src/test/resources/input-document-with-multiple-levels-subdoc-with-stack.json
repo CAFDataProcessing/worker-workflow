@@ -1,0 +1,130 @@
+{
+    "document": {
+        "reference": "ref_level_1",
+        "fields": {
+            "CAF_WORKFLOW_ACTION": [{
+                    "data": "super_action"
+                }
+            ],
+            "CAF_WORKFLOW_NAME": [{
+                    "data": "example_workflow",
+                    "encoding": "utf8"
+                }
+            ],
+            "FAILURES": []
+        },
+        "failures": [{
+                "failureId": "original_fail_id_1",
+                "failureMessage": "original message 1",
+                "failureStack": "super stack"
+            }],
+        "subdocuments": [
+            {
+                "reference": "ref_level_2_sub_1",
+                "fields": {
+                    "CAF_WORKFLOW_ACTION": [{
+                            "data": "super_action"
+                        }
+                    ],
+                    "CAF_WORKFLOW_NAME": [{
+                            "data": "example_workflow",
+                            "encoding": "utf8"
+                        }
+                    ],
+                    "FAILURES": []
+                },
+                "failures": [{
+                        "failureId": "original_fail_subdoc_id_1",
+                        "failureMessage": "original message 1",
+                        "failureStack": "super stack"
+                    }]
+            },
+            {
+                "reference": "ref_level_2_sub_2",
+                "fields": {
+                    "CAF_WORKFLOW_ACTION": [{
+                            "data": "super_action"
+                        }
+                    ],
+                    "CAF_WORKFLOW_NAME": [{
+                            "data": "example_workflow",
+                            "encoding": "utf8"
+                        }
+                    ],
+                    "FAILURES": []
+                },
+                "failures": [{
+                        "failureId": "original_fail_subdoc_id_2",
+                        "failureMessage": "original message 1",
+                        "failureStack": "super stack"
+                    }],
+                "subdocuments": [
+                    {
+                        "reference": "ref_level_3_sub_1",
+                        "fields": {
+                            "CAF_WORKFLOW_ACTION": [{
+                                    "data": "super_action"
+                                }
+                            ],
+                            "CAF_WORKFLOW_NAME": [{
+                                    "data": "example_workflow",
+                                    "encoding": "utf8"
+                                }
+                            ],
+                            "FAILURES": []
+                        },
+                        "failures": [{
+                                "failureId": "original_fail_level_3_sub1",
+                                "failureMessage": "original message 1",
+                                "failureStack": "super stack"
+                            }],
+                        "subdocuments": [
+                            {
+                                "reference": "ref_level_4_sub_1",
+                                "fields": {
+                                    "CAF_WORKFLOW_ACTION": [{
+                                            "data": "super_action"
+                                        }
+                                    ],
+                                    "CAF_WORKFLOW_NAME": [{
+                                            "data": "example_workflow",
+                                            "encoding": "utf8"
+                                        }
+                                    ],
+                                    "FAILURES": []
+                                },
+                                "failures": [{
+                                        "failureId": "original_fail_level_4_sub1",
+                                        "failureMessage": "original message 1",
+                                        "failureStack": "super stack"
+                                    }]
+                            }]
+                    },
+                    {
+                        "reference": "ref_level_3_sub_2",
+                        "fields": {
+                            "CAF_WORKFLOW_ACTION": [{
+                                    "data": "super_action"
+                                }
+                            ],
+                            "CAF_WORKFLOW_NAME": [{
+                                    "data": "example_workflow",
+                                    "encoding": "utf8"
+                                }
+                            ],
+                            "FAILURES": []
+                        },
+                        "failures": [{
+                                "failureId": "original_fail_level_3_sub2",
+                                "failureMessage": "original message 1",
+                                "failureStack": "super stack"
+                            }]
+                    }
+                ]
+            }
+        ]
+    },
+    "customData": {
+        "tenantId": "tenant1"
+    }
+}

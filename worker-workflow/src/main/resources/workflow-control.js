@@ -193,6 +193,66 @@ function applyActionDetails(document, actionDetails, terminateOnFailure) {
     }
 }
 
+function onAfterProcessDocument(e) {
+    if (!e.application.getInputMessageProcessor().getProcessSubdocumentsSeparately()) {
+        traverseDocumentForFailures(e.document);
+    } else {
+        processFailures(e.document);
+    }
+}
+
+function traverseDocumentForFailures(document) {
+    processFailures(document);
+    for each(var subdoc in document.getSubdocuments()) {
+        traverseDocumentForFailures(subdoc);
+    }
+}
+
+function processFailures(document) {
+    if (document.getFailures().isChanged()) {
+
+        var listOfFailures = new java.util.ArrayList();
+        document.getFailures().stream().forEach(function (failure) {
+            listOfFailures.add(failure);
+        });
+
+        document.getFailures().reset();
+
+        var listOfOriginalFailures = new java.util.ArrayList();
+        document.getFailures().stream().forEach(function (failure) {
+            listOfOriginalFailures.add(failure);
+        });
+
+        for each (var f in listOfFailures) {
+            if (!isFailureInOriginal(listOfOriginalFailures, f)) {
+                var source = document.getTask().getService(com.hpe.caf.api.worker.WorkerTaskData.class).getSourceInfo().getName();
+                var numericVersion = document.getTask().getService(com.hpe.caf.api.worker.WorkerTaskData.class).getSourceInfo().getVersion();
+                var message = {
+                    ID: f.getFailureId(),
+                    STACK: f.getFailureStack() || undefined,
+                    WORKFLOW_ACTION: document.getField("CAF_WORKFLOW_ACTION").getStringValues().get(0),
+                    VERSION: source.trim() + " " + numericVersion.trim(),
+                    WORKFLOW_NAME: document.getField("CAF_WORKFLOW_NAME").getStringValues().get(0),
+                    MESSAGE: f.getFailureMessage(),
+                    DATE: new Date().toISOString()
+                };
+                document.getField("FAILURES").add(JSON.stringify(message));
+            }
+        }
+    }
+}
+
+function isFailureInOriginal(listOfOriginalFailures, newFailure) {
+    for each(var failure in listOfOriginalFailures) {
+        if (newFailure.getFailureId() === failure.getFailureId()
+                && newFailure.getFailureMessage() === failure.getFailureMessage()
+                && newFailure.getFailureStack() === failure.getFailureStack()) {
+            return true;
+        }
+    }
+    return false;
+}
+
 //Field Conditions
 
 function fieldExists(document, fieldName) {
