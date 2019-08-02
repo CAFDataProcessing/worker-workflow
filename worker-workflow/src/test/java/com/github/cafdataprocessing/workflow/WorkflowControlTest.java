@@ -1093,8 +1093,7 @@ public class WorkflowControlTest
     @Test
     public void terminalActionTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
-        // test that no FAILUES are added with a single document if the current worker has terminal action == true, 
-        // the usual failures would be still populated
+        // test that no FAILUES are added if the current worker has terminal action == true, 
         final Invocable invocable = createInvocableNashornEngine();
 
         final Document builderDoc = DocumentBuilder.configure().withFields()
@@ -1107,7 +1106,6 @@ public class WorkflowControlTest
             .build();
         builderDoc.addFailure("error_id_1", "message 1");
 
-        // processSubdocumentFailures() not called
         final Document document = createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null, null,
                                                  true, true);
         final DocumentEventObject documentEventObject = new DocumentEventObject(document);
@@ -1120,13 +1118,13 @@ public class WorkflowControlTest
         assertThat(document.getField("FAILURES").getValues()
             .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((0L))));
     }
-    
+
     @Test
     @Ignore
     public void failuresNegativeNoWorkflowActionFieldInOnAfterProcessDocumentTest() throws ScriptException, NoSuchMethodException,
                                                                                            WorkerException, IOException
     {
-        // this method fails because there is not a CAF_WORKFLOW_ACTION field
+        // this method checks that the FAILURES field is not populated because the WORKFLOW_ACTION is not set
         final Invocable invocable = createInvocableNashornEngine();
 
         final Document builderDoc = DocumentBuilder.configure().withFields()
@@ -1140,16 +1138,13 @@ public class WorkflowControlTest
                 .documentBuilder())
             .build();
         builderDoc.addFailure("error_id_1", "message 1");
-        
-        //builderDoc.getField("fdsfdfsdfsd").hasValues();
 
-        // create the test document that will NOT contain subdocuments
         final Document document = createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null,
                                                  null, true, false);
 
         final DocumentEventObject documentEventObject = new DocumentEventObject(document);
         invocable.invokeFunction("onAfterProcessDocument", documentEventObject);
-        
+
         assertThat(document.getFailures().size(), is(equalTo((1))));
         assertThat(document.getFailures().stream().map(f -> f.getFailureId()).findFirst().get(), is(equalTo("error_id_1")));
         assertThat(document.getFailures().stream().map(f -> f.getFailureMessage()).findFirst().get(), is(equalTo("message 1")));
