@@ -23,6 +23,7 @@ import com.hpe.caf.worker.document.model.Fields;
 import com.hpe.caf.worker.document.model.Subdocuments;
 import com.hpe.caf.worker.document.model.Task;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 public class DocumentMock implements Document
 {
@@ -84,7 +85,7 @@ public class DocumentMock implements Document
     @Override
     public Field getField(final String fieldName)
     {
-        return fields.stream().filter(f -> f.getName().equals(fieldName)).findFirst().get();
+        return fields.stream().filter(f -> f.getName().equals(fieldName)).findFirst().orElse(null);
     }
 
     @Override

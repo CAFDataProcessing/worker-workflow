@@ -50,7 +50,6 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.NoSuchElementException;
 import static java.util.stream.Collectors.toList;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
@@ -64,6 +63,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.IsNull.nullValue;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class WorkflowControlTest
@@ -202,7 +202,7 @@ public class WorkflowControlTest
                    isJsonStringMatching(jsonObject().where("DATE", is(not(jsonNull())))));
     }
 
-    @Test(expected = NoSuchElementException.class)
+    @Test(expected = ScriptException.class)
     public void failuresNegativeNoFailuresFieldTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
         // this method fails because the FAILURES field is not present
@@ -227,7 +227,7 @@ public class WorkflowControlTest
         invocable.invokeFunction("processFailures", document);
     }
 
-    @Test(expected = NoSuchElementException.class)
+    @Test(expected = ScriptException.class)
     public void failuresNegativeNoWorkflowNameFieldTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
         // this method fails because there is not the CAF_WORKFLOW_NAME field
@@ -252,7 +252,7 @@ public class WorkflowControlTest
         invocable.invokeFunction("processFailures", document);
     }
 
-    @Test(expected = NoSuchElementException.class)
+    @Test(expected = ScriptException.class)
     public void failuresNegativeNoWorkflowActionFieldTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
         // this method fails because there is not a CAF_WORKFLOW_ACTION field
@@ -1113,6 +1113,43 @@ public class WorkflowControlTest
         final DocumentEventObject documentEventObject = new DocumentEventObject(document);
         invocable.invokeFunction("onAfterProcessDocument", documentEventObject);
 
+        assertThat(document.getFailures().size(), is(equalTo((1))));
+        assertThat(document.getFailures().stream().map(f -> f.getFailureId()).findFirst().get(), is(equalTo("error_id_1")));
+        assertThat(document.getFailures().stream().map(f -> f.getFailureMessage()).findFirst().get(), is(equalTo("message 1")));
+
+        assertThat(document.getField("FAILURES").getValues()
+            .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((0L))));
+    }
+    
+    @Test
+    @Ignore
+    public void failuresNegativeNoWorkflowActionFieldInOnAfterProcessDocumentTest() throws ScriptException, NoSuchMethodException,
+                                                                                           WorkerException, IOException
+    {
+        // this method fails because there is not a CAF_WORKFLOW_ACTION field
+        final Invocable invocable = createInvocableNashornEngine();
+
+        final Document builderDoc = DocumentBuilder.configure().withFields()
+            .addFieldValue("FAILURES", "")
+            .addFieldValue("CAF_WORKFLOW_NAME", "example_workflow")
+            .addFieldValue("example", "value from field")
+            .addFieldValue("fieldHasValue", "This value")
+            .documentBuilder()
+            .withSubDocuments(DocumentBuilder.configure().withFields()
+                .addFieldValue("field-should-exist", "action 2 requires this field to be present")
+                .documentBuilder())
+            .build();
+        builderDoc.addFailure("error_id_1", "message 1");
+        
+        //builderDoc.getField("fdsfdfsdfsd").hasValues();
+
+        // create the test document that will NOT contain subdocuments
+        final Document document = createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null,
+                                                 null, true, false);
+
+        final DocumentEventObject documentEventObject = new DocumentEventObject(document);
+        invocable.invokeFunction("onAfterProcessDocument", documentEventObject);
+        
         assertThat(document.getFailures().size(), is(equalTo((1))));
         assertThat(document.getFailures().stream().map(f -> f.getFailureId()).findFirst().get(), is(equalTo("error_id_1")));
         assertThat(document.getFailures().stream().map(f -> f.getFailureMessage()).findFirst().get(), is(equalTo("message 1")));
