@@ -31,18 +31,22 @@ public class ActionMock
     private CustomDataMock customData;
     @JsonProperty("scripts")
     private List<ScriptMock> scripts = null;
+    @JsonProperty("terminateOnFailure")
+    private boolean terminateOnFailure = true;
 
     public ActionMock()
     {
     }
 
-    public ActionMock(final String name, final String queueName, final CustomDataMock customData, final List<ScriptMock> scripts)
+    public ActionMock(final String name, final String queueName, final CustomDataMock customData, final List<ScriptMock> scripts,
+                      final boolean terminateOnFailure)
     {
         super();
         this.name = name;
         this.queueName = queueName;
         this.customData = customData;
         this.scripts = scripts;
+        this.terminateOnFailure = terminateOnFailure;
     }
 
     @JsonProperty("name")
@@ -91,6 +95,18 @@ public class ActionMock
     public void setScripts(final List<ScriptMock> scripts)
     {
         this.scripts = scripts;
+    }
+
+    @JsonProperty("terminateOnFailure")
+    public boolean isTerminateOnFailure()
+    {
+        return terminateOnFailure;
+    }
+
+    @JsonProperty("terminateOnFailure")
+    public void setTerminateOnFailure(boolean terminateOnFailure)
+    {
+        this.terminateOnFailure = terminateOnFailure;
     }
 
 }

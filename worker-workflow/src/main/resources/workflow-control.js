@@ -194,10 +194,12 @@ function applyActionDetails(document, actionDetails, terminateOnFailure) {
 }
 
 function onAfterProcessDocument(e) {
-    if (!e.application.getInputMessageProcessor().getProcessSubdocumentsSeparately()) {
-        traverseDocumentForFailures(e.document);
-    } else {
-        processFailures(e.document);
+    if (!getTerminateOnFailure(e.document.getField("CAF_WORKFLOW_ACTION").getStringValues().get(0))) {
+        if (!e.application.getInputMessageProcessor().getProcessSubdocumentsSeparately()) {
+            traverseDocumentForFailures(e.document);
+        } else {
+            processFailures(e.document);
+        }
     }
 }
 

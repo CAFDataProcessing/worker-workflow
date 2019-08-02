@@ -3,7 +3,7 @@
         "reference": "ref_level_1",
         "fields": {
             "CAF_WORKFLOW_ACTION": [{
-                    "data": "super_action"
+                    "data": "family_hashing"
                 }
             ],
             "CAF_WORKFLOW_NAME": [{
@@ -23,7 +23,7 @@
                 "reference": "ref_level_2_sub_1",
                 "fields": {
                     "CAF_WORKFLOW_ACTION": [{
-                            "data": "super_action"
+                            "data": "family_hashing"
                         }
                     ],
                     "CAF_WORKFLOW_NAME": [{
@@ -43,7 +43,7 @@
                 "reference": "ref_level_2_sub_2",
                 "fields": {
                     "CAF_WORKFLOW_ACTION": [{
-                            "data": "super_action"
+                            "data": "family_hashing"
                         }
                     ],
                     "CAF_WORKFLOW_NAME": [{
@@ -63,7 +63,7 @@
                         "reference": "ref_level_3_sub_1",
                         "fields": {
                             "CAF_WORKFLOW_ACTION": [{
-                                    "data": "super_action"
+                                    "data": "family_hashing"
                                 }
                             ],
                             "CAF_WORKFLOW_NAME": [{
@@ -83,7 +83,7 @@
                                 "reference": "ref_level_4_sub_1",
                                 "fields": {
                                     "CAF_WORKFLOW_ACTION": [{
-                                            "data": "super_action"
+                                            "data": "family_hashing"
                                         }
                                     ],
                                     "CAF_WORKFLOW_NAME": [{
@@ -104,7 +104,7 @@
                         "reference": "ref_level_3_sub_2",
                         "fields": {
                             "CAF_WORKFLOW_ACTION": [{
-                                    "data": "super_action"
+                                    "data": "family_hashing"
                                 }
                             ],
                             "CAF_WORKFLOW_NAME": [{

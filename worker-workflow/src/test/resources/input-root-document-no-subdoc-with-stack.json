@@ -3,7 +3,7 @@
         "reference": "ref_root_doc",
         "fields": {
             "CAF_WORKFLOW_ACTION": [{
-                    "data": "super_action"
+                    "data": "family_hashing"
                 }
             ],
             "CAF_WORKFLOW_NAME": [{

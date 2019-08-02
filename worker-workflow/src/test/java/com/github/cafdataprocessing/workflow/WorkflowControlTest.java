@@ -24,7 +24,6 @@ import com.github.cafdataprocessing.workflow.models.SubdocumentMock;
 import com.github.cafdataprocessing.workflow.models.SubdocumentsMock;
 import com.github.cafdataprocessing.workflow.models.TaskMock;
 import com.github.cafdataprocessing.workflow.models.WorkerTaskDataMock;
-import com.github.cafdataprocessing.workflow.models.actions.ActionMock;
 import com.hpe.caf.api.worker.TaskSourceInfo;
 import com.hpe.caf.api.worker.TaskStatus;
 import com.hpe.caf.api.worker.WorkerException;
@@ -54,7 +53,6 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import static java.util.stream.Collectors.toList;
 import javax.script.Invocable;
-import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
@@ -80,7 +78,7 @@ public class WorkflowControlTest
 
         // get a base document used to fill in the basic structure
         final Document builderDoc = DocumentBuilder.configure().withFields()
-            .addFieldValues("CAF_WORKFLOW_ACTION", "super_action")
+            .addFieldValues("CAF_WORKFLOW_ACTION", "family_hashing")
             .addFieldValue("CAF_WORKFLOW_NAME", "example_workflow")
             .addFieldValue("FAILURES", "")
             .addFieldValue("example", "value from field")
@@ -116,7 +114,7 @@ public class WorkflowControlTest
         assertThat(mainFailure,
                    isJsonStringMatching(jsonObject().where("STACK", is(jsonMissing()))));
         assertThat(mainFailure,
-                   isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("super_action")))));
+                   isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
         assertThat(mainFailure,
                    isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("source_name 5")))));
         assertThat(mainFailure,
@@ -135,7 +133,7 @@ public class WorkflowControlTest
         final Invocable invocable = createInvocableNashornEngine();
 
         final Document builderDoc = DocumentBuilder.configure().withFields()
-            .addFieldValues("CAF_WORKFLOW_ACTION", "super_action")
+            .addFieldValues("CAF_WORKFLOW_ACTION", "family_hashing")
             .addFieldValue("CAF_WORKFLOW_NAME", "example_workflow")
             .addFieldValue("FAILURES", "")
             .addFieldValue("example", "value from field")
@@ -171,7 +169,7 @@ public class WorkflowControlTest
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("STACK", is(jsonMissing()))));
         assertThat(firstFailure,
-                   isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("super_action")))));
+                   isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("source_name 5")))));
         assertThat(firstFailure,
@@ -193,7 +191,7 @@ public class WorkflowControlTest
         assertThat(secondFailure,
                    isJsonStringMatching(jsonObject().where("STACK", is(jsonMissing()))));
         assertThat(secondFailure,
-                   isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("super_action")))));
+                   isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
         assertThat(secondFailure,
                    isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("source_name 5")))));
         assertThat(secondFailure,
@@ -211,7 +209,7 @@ public class WorkflowControlTest
         final Invocable invocable = createInvocableNashornEngine();
 
         final Document builderDoc = DocumentBuilder.configure().withFields()
-            .addFieldValues("CAF_WORKFLOW_ACTION", "super_action")
+            .addFieldValues("CAF_WORKFLOW_ACTION", "family_hashing")
             .addFieldValue("CAF_WORKFLOW_NAME", "example_workflow")
             .addFieldValue("example", "value from field")
             .addFieldValue("fieldHasValue", "This value")
@@ -236,7 +234,7 @@ public class WorkflowControlTest
         final Invocable invocable = createInvocableNashornEngine();
 
         final Document builderDoc = DocumentBuilder.configure().withFields()
-            .addFieldValues("CAF_WORKFLOW_ACTION", "super_action")
+            .addFieldValues("CAF_WORKFLOW_ACTION", "family_hashing")
             .addFieldValue("FAILURES", "")
             .addFieldValue("example", "value from field")
             .addFieldValue("fieldHasValue", "This value")
@@ -278,7 +276,7 @@ public class WorkflowControlTest
 
         invocable.invokeFunction("processFailures", document);
     }
-    
+
     @Test
     public void failuresNegativeNoIdFieldTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
@@ -286,7 +284,7 @@ public class WorkflowControlTest
         final Invocable invocable = createInvocableNashornEngine();
 
         final Document builderDoc = DocumentBuilder.configure().withFields()
-            .addFieldValues("CAF_WORKFLOW_ACTION", "super_action")
+            .addFieldValues("CAF_WORKFLOW_ACTION", "family_hashing")
             .addFieldValue("CAF_WORKFLOW_NAME", "example_workflow")
             .addFieldValue("FAILURES", "")
             .addFieldValue("example", "value from field")
@@ -319,7 +317,7 @@ public class WorkflowControlTest
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("STACK", is(jsonMissing()))));
         assertThat(firstFailure,
-                   isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("super_action")))));
+                   isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("source_name 5")))));
         assertThat(firstFailure,
@@ -329,7 +327,7 @@ public class WorkflowControlTest
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("DATE", is(not(jsonNull())))));
     }
-    
+
     @Test
     public void failuresNegativeNoMessageFieldTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
@@ -337,7 +335,7 @@ public class WorkflowControlTest
         final Invocable invocable = createInvocableNashornEngine();
 
         final Document builderDoc = DocumentBuilder.configure().withFields()
-            .addFieldValues("CAF_WORKFLOW_ACTION", "super_action")
+            .addFieldValues("CAF_WORKFLOW_ACTION", "family_hashing")
             .addFieldValue("CAF_WORKFLOW_NAME", "example_workflow")
             .addFieldValue("FAILURES", "")
             .addFieldValue("example", "value from field")
@@ -370,7 +368,7 @@ public class WorkflowControlTest
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("STACK", is(jsonMissing()))));
         assertThat(firstFailure,
-                   isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("super_action")))));
+                   isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("source_name 5")))));
         assertThat(firstFailure,
@@ -380,7 +378,7 @@ public class WorkflowControlTest
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("DATE", is(not(jsonNull())))));
     }
-    
+
     @Test(expected = javax.script.ScriptException.class)
     public void failuresNegativeNoSourceNameTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
@@ -388,7 +386,7 @@ public class WorkflowControlTest
         final Invocable invocable = createInvocableNashornEngine();
 
         final Document builderDoc = DocumentBuilder.configure().withFields()
-            .addFieldValues("CAF_WORKFLOW_ACTION", "super_action")
+            .addFieldValues("CAF_WORKFLOW_ACTION", "family_hashing")
             .addFieldValue("CAF_WORKFLOW_NAME", "example_workflow")
             .addFieldValue("FAILURES", "")
             .addFieldValue("example", "value from field")
@@ -565,7 +563,7 @@ public class WorkflowControlTest
         final Invocable invocable = createInvocableNashornEngine();
 
         final Document builderDoc = DocumentBuilder.configure().withFields()
-            .addFieldValues("CAF_WORKFLOW_ACTION", "super_action")
+            .addFieldValues("CAF_WORKFLOW_ACTION", "family_hashing")
             .addFieldValue("CAF_WORKFLOW_NAME", "example_workflow")
             .addFieldValue("FAILURES", "")
             .addFieldValue("example", "value from field")
@@ -592,7 +590,7 @@ public class WorkflowControlTest
         assertThat(failureMessage.getMessage(), is(equalTo("message 1")));
         assertThat(failureMessage.getVersion(), is(equalTo("source_name 5")));
         assertThat(failureMessage.getWorkflowName(), is(equalTo("example_workflow")));
-        assertThat(failureMessage.getWorkflowAction(), is(equalTo("super_action")));
+        assertThat(failureMessage.getWorkflowAction(), is(equalTo("family_hashing")));
         assertThat(failureMessage.getDate(), is(not(isEmptyString())));
     }
 
@@ -638,7 +636,7 @@ public class WorkflowControlTest
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("STACK", is(jsonMissing()))));
         assertThat(firstFailure,
-                   isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("super_action")))));
+                   isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("source_name 5")))));
         assertThat(firstFailure,
@@ -689,7 +687,7 @@ public class WorkflowControlTest
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("STACK", is(jsonMissing()))));
         assertThat(firstFailure,
-                   isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("super_action")))));
+                   isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("source_name 5")))));
         assertThat(firstFailure,
@@ -783,7 +781,7 @@ public class WorkflowControlTest
         assertThat(mainFailure,
                    isJsonStringMatching(jsonObject().where("STACK", is(jsonMissing()))));
         assertThat(mainFailure,
-                   isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("super_action")))));
+                   isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
         assertThat(mainFailure,
                    isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("source_name 5")))));
         assertThat(mainFailure,
@@ -935,7 +933,7 @@ public class WorkflowControlTest
         assertThat(mainFailure,
                    isJsonStringMatching(jsonObject().where("STACK", is(jsonMissing()))));
         assertThat(mainFailure,
-                   isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("super_action")))));
+                   isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
         assertThat(mainFailure,
                    isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("source_name 5")))));
         assertThat(mainFailure,
@@ -973,7 +971,7 @@ public class WorkflowControlTest
         assertThat(secondFailure,
                    isJsonStringMatching(jsonObject().where("STACK", is(jsonMissing()))));
         assertThat(secondFailure,
-                   isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("super_action")))));
+                   isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
         assertThat(secondFailure,
                    isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("source_name 5")))));
         assertThat(secondFailure,
@@ -1010,7 +1008,7 @@ public class WorkflowControlTest
         assertThat(thirdFailure,
                    isJsonStringMatching(jsonObject().where("STACK", is(jsonMissing()))));
         assertThat(thirdFailure,
-                   isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("super_action")))));
+                   isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
         assertThat(thirdFailure,
                    isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("source_name 5")))));
         assertThat(thirdFailure,
@@ -1069,7 +1067,7 @@ public class WorkflowControlTest
         assertThat(mainFailure,
                    isJsonStringMatching(jsonObject().where("STACK", is(jsonMissing()))));
         assertThat(mainFailure,
-                   isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("super_action")))));
+                   isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
         assertThat(mainFailure,
                    isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("source_name 5")))));
         assertThat(mainFailure,
@@ -1080,12 +1078,56 @@ public class WorkflowControlTest
                    isJsonStringMatching(jsonObject().where("DATE", is(not(jsonNull())))));
     }
 
+    @Test
+    public void getTerminateOnFailureTest() throws IOException, ScriptException, NoSuchMethodException
+    {
+        final Invocable invocable = createInvocableNashornEngine();
+        boolean result = (boolean) invocable.invokeFunction("getTerminateOnFailure", "family_hashing");
+        assertThat(result, is(equalTo(false)));
+        boolean result2 = (boolean) invocable.invokeFunction("getTerminateOnFailure", "elastic");
+        assertThat(result2, is(equalTo(false)));
+        boolean result3 = (boolean) invocable.invokeFunction("getTerminateOnFailure", "bulk_indexer");
+        assertThat(result3, is(equalTo(true)));
+    }
+
+    @Test
+    public void terminalActionTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
+    {
+        // test that no FAILUES are added with a single document if the current worker has terminal action == true, 
+        // the usual failures would be still populated
+        final Invocable invocable = createInvocableNashornEngine();
+
+        final Document builderDoc = DocumentBuilder.configure().withFields()
+            .addFieldValues("CAF_WORKFLOW_ACTION", "bulk_indexer")
+            .addFieldValue("CAF_WORKFLOW_NAME", "example_workflow")
+            .addFieldValue("FAILURES", "")
+            .addFieldValue("example", "value from field")
+            .addFieldValue("fieldHasValue", "This value")
+            .documentBuilder()
+            .build();
+        builderDoc.addFailure("error_id_1", "message 1");
+
+        // processSubdocumentFailures() not called
+        final Document document = createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null, null,
+                                                 true, true);
+        final DocumentEventObject documentEventObject = new DocumentEventObject(document);
+        invocable.invokeFunction("onAfterProcessDocument", documentEventObject);
+
+        assertThat(document.getFailures().size(), is(equalTo((1))));
+        assertThat(document.getFailures().stream().map(f -> f.getFailureId()).findFirst().get(), is(equalTo("error_id_1")));
+        assertThat(document.getFailures().stream().map(f -> f.getFailureMessage()).findFirst().get(), is(equalTo("message 1")));
+
+        assertThat(document.getField("FAILURES").getValues()
+            .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((0L))));
+    }
+
     private Invocable createInvocableNashornEngine() throws IOException, ScriptException
     {
         final ScriptEngine nashorn = new ScriptEngineManager().getEngineByName("nashorn");
-        final ObjectMapper mapper = new ObjectMapper();
-        final ActionMock action = mapper.readValue(Paths.get("src", "test", "resources", "action.json").toFile(), ActionMock.class);
-        nashorn.getContext().setAttribute("ACTIONS", action, ScriptContext.ENGINE_SCOPE);
+        nashorn.eval("var actionFamilyHashing = {name: \"family_hashing\", terminateOnFailure: false};\n"
+            + "var actionBulkIndexer = {name: \"bulk_indexer\", terminateOnFailure: true};\n"
+            + "var actionElastic = {name: \"elastic\", terminateOnFailure: false};\n"
+            + "var ACTIONS = [actionFamilyHashing, actionBulkIndexer, actionElastic];");
         nashorn.eval(new InputStreamReader(new FileInputStream(Paths.get("src", "main", "resources", "workflow-control.js")
             .toFile())));
         return (Invocable) nashorn;
