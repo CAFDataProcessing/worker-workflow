@@ -13,18 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.cafdataprocessing.workflow.models;
+package com.github.cafdataprocessing.workflow.testing.models;
 
 import com.hpe.caf.worker.document.model.Application;
 import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.model.Failures;
 import com.hpe.caf.worker.document.model.Field;
 import com.hpe.caf.worker.document.model.Fields;
+import com.hpe.caf.worker.document.model.Subdocument;
 import com.hpe.caf.worker.document.model.Subdocuments;
 import com.hpe.caf.worker.document.model.Task;
 import java.util.Map;
 
-public class DocumentMock implements Document
+public class SubdocumentMock implements Subdocument
 {
     private String reference;
     private final Fields fields;
@@ -36,9 +37,9 @@ public class DocumentMock implements Document
     private final Document parentDocument;
     private final Document rootDocument;
 
-    public DocumentMock(final String reference, final Fields fields, final Task task, final Map<String, String> customData,
-                        final Failures failures, final Subdocuments subdocuments, final Application application,
-                        final Document parentDocument, final Document rootDocument)
+    public SubdocumentMock(final String reference, final Fields fields, final Task task, final Map<String, String> customData,
+                           final Failures failures, final Subdocuments subdocuments, final Application application,
+                           final Document parentDocument, final Document rootDocument)
     {
         this.reference = reference;
         this.fields = fields;
@@ -148,6 +149,18 @@ public class DocumentMock implements Document
     public Application getApplication()
     {
         return application;
+    }
+
+    @Override
+    public void delete()
+    {
+
+    }
+
+    @Override
+    public boolean isDeleted()
+    {
+        return false;
     }
 
 }

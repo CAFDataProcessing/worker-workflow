@@ -13,44 +13,55 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.cafdataprocessing.workflow.models;
+package com.github.cafdataprocessing.workflow.testing.models;
 
 import com.hpe.caf.worker.document.model.Application;
-import com.hpe.caf.worker.document.model.BatchSizeController;
 import com.hpe.caf.worker.document.model.InputMessageProcessor;
-import com.hpe.caf.worker.document.model.ServiceLocator;
 
-public class ApplicationMock implements Application
+public class InputMessageProcessorMock implements InputMessageProcessor
 {
-    private final InputMessageProcessor inputMessageProcessor;
 
-    public ApplicationMock(final InputMessageProcessor inputMessageProcessor)
+    private final boolean processSybdocumentsSeparately;
+
+    public InputMessageProcessorMock(final boolean processSybdocumentsSeparately)
     {
-        this.inputMessageProcessor = inputMessageProcessor;
+        this.processSybdocumentsSeparately = processSybdocumentsSeparately;
     }
 
     @Override
-    public BatchSizeController getBatchSizeController()
+    public boolean getDocumentTasksAccepted()
     {
-        return null;
+        return true;
     }
 
     @Override
-    public InputMessageProcessor getInputMessageProcessor()
+    public boolean getFieldEnrichmentTasksAccepted()
     {
-        return inputMessageProcessor;
+        return true;
     }
 
     @Override
-    public <S> S getService(Class<S> service)
+    public boolean getProcessSubdocumentsSeparately()
     {
-        return null;
+        return processSybdocumentsSeparately;
     }
 
     @Override
-    public ServiceLocator getServiceLocator()
+    public void setDocumentTasksAccepted(boolean accepted)
     {
-        return null;
+
+    }
+
+    @Override
+    public void setFieldEnrichmentTasksAccepted(boolean accepted)
+    {
+
+    }
+
+    @Override
+    public void setProcessSubdocumentsSeparately(boolean processSubdocumentsSeparately)
+    {
+
     }
 
     @Override

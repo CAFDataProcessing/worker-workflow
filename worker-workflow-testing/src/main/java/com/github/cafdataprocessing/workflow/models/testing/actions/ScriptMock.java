@@ -13,38 +13,53 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.cafdataprocessing.workflow.models.actions;
+package com.github.cafdataprocessing.workflow.models.testing.actions;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class CustomDataMock
+public class ScriptMock
 {
 
-    @JsonProperty("tenantId")
-    private String tenantId;
+    @JsonProperty("name")
+    private String name;
+    @JsonProperty("script")
+    private String script;
 
-    public CustomDataMock()
+    public ScriptMock()
     {
     }
 
-    public CustomDataMock(final String tenantId)
+    public ScriptMock(final String name, final String script)
     {
         super();
-        this.tenantId = tenantId;
+        this.name = name;
+        this.script = script;
     }
 
-    @JsonProperty("tenantId")
-    public String getTenantId()
+    @JsonProperty("name")
+    public String getName()
     {
-        return tenantId;
+        return name;
     }
 
-    @JsonProperty("tenantId")
-    public void setTenantId(final String tenantId)
+    @JsonProperty("name")
+    public void setName(final String name)
     {
-        this.tenantId = tenantId;
+        this.name = name;
+    }
+
+    @JsonProperty("script")
+    public String getScript()
+    {
+        return script;
+    }
+
+    @JsonProperty("script")
+    public void setScript(final String script)
+    {
+        this.script = script;
     }
 
 }

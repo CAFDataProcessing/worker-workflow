@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.cafdataprocessing.workflow.models.actions;
+package com.github.cafdataprocessing.workflow.models.testing.actions;
 
 import java.util.List;
 import com.fasterxml.jackson.annotation.JsonInclude;
