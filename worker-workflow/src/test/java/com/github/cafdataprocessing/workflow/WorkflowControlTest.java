@@ -1199,6 +1199,55 @@ public class WorkflowControlTest
             .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((0L))));
     }
 
+    @Test
+    public void negativeIsLastActionTest() throws IOException, ScriptException, NoSuchMethodException
+    {
+        final Invocable invocable = createInvocableNashornEngine();
+        final boolean result = (boolean) invocable.invokeFunction("isLastAction", "no_elastic");
+        assertThat(result, is(equalTo(false)));
+    }
+    
+    @Test
+    public void isLastActionTest() throws IOException, ScriptException, NoSuchMethodException
+    {
+        final Invocable invocable = createInvocableNashornEngine();
+        final boolean result = (boolean) invocable.invokeFunction("isLastAction", "elastic");
+        assertThat(result, is(equalTo(true)));
+        final boolean result2 = (boolean) invocable.invokeFunction("isLastAction", "family_hashing");
+        assertThat(result2, is(equalTo(false)));
+        final boolean result3 = (boolean) invocable.invokeFunction("isLastAction", "bulk_indexer");
+        assertThat(result3, is(equalTo(false)));
+    }
+    
+    @Test
+    public void lastActionTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
+    {
+        // test that no FAILUES are added if the current worker is the last action
+        final Invocable invocable = createInvocableNashornEngine();
+
+        final Document builderDoc = DocumentBuilder.configure().withFields()
+            .addFieldValues("CAF_WORKFLOW_ACTION", "elastic")
+            .addFieldValue("CAF_WORKFLOW_NAME", "example_workflow")
+            .addFieldValue("FAILURES", "")
+            .addFieldValue("example", "value from field")
+            .addFieldValue("fieldHasValue", "This value")
+            .documentBuilder()
+            .build();
+        builderDoc.addFailure("error_id_1", "message 1");
+
+        final Document document = createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null, null,
+                                                 true, true);
+        final DocumentEventObject documentEventObject = new DocumentEventObject(document);
+        invocable.invokeFunction("onAfterProcessDocument", documentEventObject);
+
+        assertThat(document.getFailures().size(), is(equalTo((1))));
+        assertThat(document.getFailures().stream().map(f -> f.getFailureId()).findFirst().get(), is(equalTo("error_id_1")));
+        assertThat(document.getFailures().stream().map(f -> f.getFailureMessage()).findFirst().get(), is(equalTo("message 1")));
+
+        assertThat(document.getField("FAILURES").getValues()
+            .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((0L))));
+    }
+
     private Invocable createInvocableNashornEngine() throws IOException, ScriptException
     {
         final ScriptEngine nashorn = new ScriptEngineManager().getEngineByName("nashorn");

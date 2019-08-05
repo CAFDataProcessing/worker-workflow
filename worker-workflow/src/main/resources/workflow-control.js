@@ -195,7 +195,8 @@ function applyActionDetails(document, actionDetails, terminateOnFailure) {
 
 function onAfterProcessDocument(e) {
     if (fieldExists(e.rootDocument, "CAF_WORKFLOW_ACTION") &&
-            !getTerminateOnFailure(e.rootDocument.getField("CAF_WORKFLOW_ACTION").getStringValues().get(0))) {
+            !getTerminateOnFailure(e.rootDocument.getField("CAF_WORKFLOW_ACTION").getStringValues().get(0)) &&
+            !isLastAction(e.rootDocument.getField("CAF_WORKFLOW_ACTION").getStringValues().get(0))) {
         if (!e.application.getInputMessageProcessor().getProcessSubdocumentsSeparately()) {
             traverseDocumentForFailures(e.document);
         } else {
@@ -254,6 +255,10 @@ function isFailureInOriginal(listOfOriginalFailures, newFailure) {
         }
     }
     return false;
+}
+
+function isLastAction(action) {
+    return ACTIONS[ACTIONS.length - 1 ].name === action;
 }
 
 //Field Conditions
