@@ -16,15 +16,15 @@
 package com.github.cafdataprocessing.workflow;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.cafdataprocessing.workflow.models.ApplicationMock;
-import com.github.cafdataprocessing.workflow.models.DocumentMock;
-import com.github.cafdataprocessing.workflow.models.FieldsMock;
-import com.github.cafdataprocessing.workflow.models.InputMessageProcessorMock;
-import com.github.cafdataprocessing.workflow.models.NewFailure;
-import com.github.cafdataprocessing.workflow.models.SubdocumentMock;
-import com.github.cafdataprocessing.workflow.models.SubdocumentsMock;
-import com.github.cafdataprocessing.workflow.models.TaskMock;
-import com.github.cafdataprocessing.workflow.models.WorkerTaskDataMock;
+import com.github.cafdataprocessing.workflow.testing.models.ApplicationMock;
+import com.github.cafdataprocessing.workflow.testing.models.DocumentMock;
+import com.github.cafdataprocessing.workflow.testing.models.FieldsMock;
+import com.github.cafdataprocessing.workflow.testing.models.InputMessageProcessorMock;
+import com.github.cafdataprocessing.workflow.testing.models.NewFailure;
+import com.github.cafdataprocessing.workflow.testing.models.SubdocumentMock;
+import com.github.cafdataprocessing.workflow.testing.models.SubdocumentsMock;
+import com.github.cafdataprocessing.workflow.testing.models.TaskMock;
+import com.github.cafdataprocessing.workflow.testing.models.WorkerTaskDataMock;
 import com.hpe.caf.api.worker.TaskSourceInfo;
 import com.hpe.caf.api.worker.TaskStatus;
 import com.hpe.caf.api.worker.WorkerException;
@@ -1206,7 +1206,7 @@ public class WorkflowControlTest
         final boolean result = (boolean) invocable.invokeFunction("isLastAction", "no_elastic");
         assertThat(result, is(equalTo(false)));
     }
-    
+
     @Test
     public void isLastActionTest() throws IOException, ScriptException, NoSuchMethodException
     {
@@ -1218,7 +1218,7 @@ public class WorkflowControlTest
         final boolean result3 = (boolean) invocable.invokeFunction("isLastAction", "bulk_indexer");
         assertThat(result3, is(equalTo(false)));
     }
-    
+
     @Test
     public void lastActionTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
