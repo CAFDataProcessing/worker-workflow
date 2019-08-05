@@ -34,8 +34,10 @@ import com.hpe.caf.worker.document.model.Subdocuments;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.List;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -47,7 +49,14 @@ public class WorkflowHelper
     {
     }
 
-    public static Invocable createInvocableNashornEngineWithActions() throws IOException, ScriptException
+    /**
+     * Utility method to create a Nashorn engine with a predefined set of actions and the workflow-control.js loaded.
+     *
+     * @return an Invocable nashorn engine
+     * @throws IOException
+     * @throws ScriptException
+     */
+    public static Invocable createInvocableNashornEngineWithActionsAndWorkflowControl() throws IOException, ScriptException
     {
         final ScriptEngine nashorn = new ScriptEngineManager().getEngineByName("nashorn");
         nashorn.eval("var actionFamilyHashing = {name: \"family_hashing\", terminateOnFailure: false};\n"
@@ -56,6 +65,32 @@ public class WorkflowHelper
             + "var ACTIONS = [actionFamilyHashing, actionBulkIndexer, actionElastic];");
         nashorn.eval(new InputStreamReader(new FileInputStream(Paths.get("src", "main", "resources", "workflow-control.js")
             .toFile())));
+        return (Invocable) nashorn;
+    }
+
+    /**
+     * Utility method to create a Nashorn engine that accepts optional strings to be eval and/or paths to files to be eval as well.
+     *
+     * @param codesToEval list of strings
+     * @param filesToReadAndEval list of paths
+     * @return an Invocable nashorn engine
+     * @throws IOException
+     * @throws ScriptException
+     */
+    public static Invocable createInvocableNashornEngine(final List<String> codesToEval, final List<Path> filesToReadAndEval)
+        throws IOException, ScriptException
+    {
+        final ScriptEngine nashorn = new ScriptEngineManager().getEngineByName("nashorn");
+        if (!codesToEval.isEmpty()) {
+            for (final String code : codesToEval) {
+                nashorn.eval(code);
+            }
+        }
+        if (!filesToReadAndEval.isEmpty()) {
+            for (final Path inputFile : filesToReadAndEval) {
+                nashorn.eval(new InputStreamReader(new FileInputStream(inputFile.toFile())));
+            }
+        }
         return (Invocable) nashorn;
     }
 
