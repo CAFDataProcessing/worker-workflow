@@ -23,12 +23,11 @@ import com.hpe.caf.worker.document.model.Fields;
 import com.hpe.caf.worker.document.model.Subdocuments;
 import com.hpe.caf.worker.document.model.Task;
 import java.util.Map;
-import java.util.NoSuchElementException;
 
 public class DocumentMock implements Document
 {
     private String reference;
-    private final Fields fields;
+    private Fields fields;
     private final Task task;
     private final Map<String, String> customData;
     private final Failures failures;
@@ -85,7 +84,12 @@ public class DocumentMock implements Document
     @Override
     public Field getField(final String fieldName)
     {
-        return fields.stream().filter(f -> f.getName().equals(fieldName)).findFirst().orElse(null);
+        return fields.stream().filter(f -> f.getName().equals(fieldName)).findFirst().orElseGet(() -> {
+            final Field fieldMocked = new FieldMock(this, fieldName, application);
+            final FieldsMock fields = (FieldsMock)this.fields;
+            fields.addField(fieldMocked);
+            return fieldMocked;
+        });
     }
 
     @Override
@@ -149,6 +153,11 @@ public class DocumentMock implements Document
     public Application getApplication()
     {
         return application;
+    }
+
+    public void setFields(final Fields fields)
+    {
+        this.fields = fields;
     }
 
 }

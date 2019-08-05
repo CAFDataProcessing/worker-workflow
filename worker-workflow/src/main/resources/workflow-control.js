@@ -194,9 +194,8 @@ function applyActionDetails(document, actionDetails, terminateOnFailure) {
 }
 
 function onAfterProcessDocument(e) {
-    if (fieldExists(e.document, "CAF_WORKFLOW_ACTION") &&
-            e.document.getField("CAF_WORKFLOW_ACTION").getStringValues().get(0) !== null &&
-            !getTerminateOnFailure(e.document.getField("CAF_WORKFLOW_ACTION").getStringValues().get(0))) {
+    if (fieldExists(e.rootDocument, "CAF_WORKFLOW_ACTION") &&
+            !getTerminateOnFailure(e.rootDocument.getField("CAF_WORKFLOW_ACTION").getStringValues().get(0))) {
         if (!e.application.getInputMessageProcessor().getProcessSubdocumentsSeparately()) {
             traverseDocumentForFailures(e.document);
         } else {
@@ -234,7 +233,7 @@ function processFailures(document) {
                 var message = {
                     ID: f.getFailureId(),
                     STACK: f.getFailureStack() || undefined,
-                    WORKFLOW_ACTION: document.getField("CAF_WORKFLOW_ACTION").getStringValues().get(0),
+                    WORKFLOW_ACTION: document.getRootDocument().getField("CAF_WORKFLOW_ACTION").getStringValues().get(0),
                     VERSION: source.trim() + " " + numericVersion.trim(),
                     WORKFLOW_NAME: document.getField("CAF_WORKFLOW_NAME").getStringValues().get(0),
                     MESSAGE: f.getFailureMessage(),

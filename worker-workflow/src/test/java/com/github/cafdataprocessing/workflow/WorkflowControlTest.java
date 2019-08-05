@@ -18,6 +18,7 @@ package com.github.cafdataprocessing.workflow;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.cafdataprocessing.workflow.models.ApplicationMock;
 import com.github.cafdataprocessing.workflow.models.DocumentMock;
+import com.github.cafdataprocessing.workflow.models.FieldsMock;
 import com.github.cafdataprocessing.workflow.models.InputMessageProcessorMock;
 import com.github.cafdataprocessing.workflow.models.NewFailure;
 import com.github.cafdataprocessing.workflow.models.SubdocumentMock;
@@ -63,7 +64,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.IsNull.nullValue;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class WorkflowControlTest
@@ -92,7 +92,7 @@ public class WorkflowControlTest
         builderDoc.addFailure("error_id_1", "message 1");
 
         // create the various mocked objects to create the document that will be processed
-        final Document document = createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null, null,
+        final Document document = createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null, builderDoc,
                                                  false, false);
 
         invocable.invokeFunction("processFailures", document);
@@ -202,10 +202,10 @@ public class WorkflowControlTest
                    isJsonStringMatching(jsonObject().where("DATE", is(not(jsonNull())))));
     }
 
-    @Test(expected = ScriptException.class)
-    public void failuresNegativeNoFailuresFieldTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
+    @Test
+    public void noFailuresFieldTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
-        // this method fails because the FAILURES field is not present
+        // this method does not have the FAILURES field present
         final Invocable invocable = createInvocableNashornEngine();
 
         final Document builderDoc = DocumentBuilder.configure().withFields()
@@ -225,9 +225,56 @@ public class WorkflowControlTest
                                                  false, true);
 
         invocable.invokeFunction("processFailures", document);
+
+        assertThat(document.getFailures().size(), is(equalTo((0))));
+
+        assertThat(document.getField("FAILURES").getStringValues()
+            .stream().filter(x -> !x.isEmpty()).count(), is(equalTo((2L))));
+
+        final String firstFailure = document.getField("FAILURES").getStringValues()
+            .stream()
+            .filter(v -> !v.isEmpty() && v.contains("message 1"))
+            .findFirst()
+            .get();
+
+        assertThat(firstFailure,
+                   isJsonStringMatching(jsonObject().where("ID", is(jsonText("error_id_1")))));
+        assertThat(firstFailure,
+                   isJsonStringMatching(jsonObject().where("STACK", is(jsonMissing()))));
+        assertThat(firstFailure,
+                   isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
+        assertThat(firstFailure,
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("source_name 5")))));
+        assertThat(firstFailure,
+                   isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
+        assertThat(firstFailure,
+                   isJsonStringMatching(jsonObject().where("MESSAGE", is(jsonText("message 1")))));
+        assertThat(firstFailure,
+                   isJsonStringMatching(jsonObject().where("DATE", is(not(jsonNull())))));
+
+        final String secondFailure = document.getField("FAILURES").getStringValues()
+            .stream()
+            .filter(v -> !v.isEmpty() && v.contains("message 2"))
+            .findFirst()
+            .get();
+
+        assertThat(secondFailure,
+                   isJsonStringMatching(jsonObject().where("ID", is(jsonText("error_id_2")))));
+        assertThat(secondFailure,
+                   isJsonStringMatching(jsonObject().where("STACK", is(jsonMissing()))));
+        assertThat(secondFailure,
+                   isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
+        assertThat(secondFailure,
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("source_name 5")))));
+        assertThat(secondFailure,
+                   isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
+        assertThat(secondFailure,
+                   isJsonStringMatching(jsonObject().where("MESSAGE", is(jsonText("message 2")))));
+        assertThat(secondFailure,
+                   isJsonStringMatching(jsonObject().where("DATE", is(not(jsonNull())))));
     }
 
-    @Test(expected = ScriptException.class)
+    @Test(expected = IndexOutOfBoundsException.class)
     public void failuresNegativeNoWorkflowNameFieldTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
         // this method fails because there is not the CAF_WORKFLOW_NAME field
@@ -252,7 +299,7 @@ public class WorkflowControlTest
         invocable.invokeFunction("processFailures", document);
     }
 
-    @Test(expected = ScriptException.class)
+    @Test(expected = IndexOutOfBoundsException.class)
     public void failuresNegativeNoWorkflowActionFieldTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
         // this method fails because there is not a CAF_WORKFLOW_ACTION field
@@ -573,7 +620,7 @@ public class WorkflowControlTest
         builderDoc.addFailure("error_id_1", "message 1");
 
         // processSubdocumentFailures() not called
-        final Document document = createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null, null,
+        final Document document = createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null, builderDoc,
                                                  true, true);
         final DocumentEventObject documentEventObject = new DocumentEventObject(document);
         invocable.invokeFunction("onAfterProcessDocument", documentEventObject);
@@ -897,17 +944,17 @@ public class WorkflowControlTest
         // create the subdocuments
         final Subdocument subdocOne = createSubdocument("subd_ref_1", builderForFailuresOne.getFields(),
                                                         builderForFailuresOne.getFailures(), null,
-                                                        null, null, true, false);
+                                                        null, builderDoc, true, false);
 
         final Subdocument subdocTwo = createSubdocument("subd_ref_2", builderForFailuresTwo.getFields(),
                                                         builderForFailuresTwo.getFailures(), null,
-                                                        null, null, true, false);
+                                                        null, builderDoc, true, false);
 
         final Subdocuments subdocuments = new SubdocumentsMock(Arrays.asList(subdocOne, subdocTwo));
 
         // create the test document that wil contain subdocuments
         final Document document = createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), subdocuments, null,
-                                                 null, true, false);
+                                                 builderDoc, true, false);
 
         final DocumentEventObject documentEventObject = new DocumentEventObject(document);
         invocable.invokeFunction("onAfterProcessDocument", documentEventObject);
@@ -1041,7 +1088,7 @@ public class WorkflowControlTest
 
         // create the test document that will NOT contain subdocuments
         final Document document = createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null,
-                                                 null, true, false);
+                                                 builderDoc, true, false);
 
         final DocumentEventObject documentEventObject = new DocumentEventObject(document);
         invocable.invokeFunction("onAfterProcessDocument", documentEventObject);
@@ -1120,7 +1167,6 @@ public class WorkflowControlTest
     }
 
     @Test
-    @Ignore
     public void failuresNegativeNoWorkflowActionFieldInOnAfterProcessDocumentTest() throws ScriptException, NoSuchMethodException,
                                                                                            WorkerException, IOException
     {
@@ -1140,7 +1186,7 @@ public class WorkflowControlTest
         builderDoc.addFailure("error_id_1", "message 1");
 
         final Document document = createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null,
-                                                 null, true, false);
+                                                 builderDoc, true, false);
 
         final DocumentEventObject documentEventObject = new DocumentEventObject(document);
         invocable.invokeFunction("onAfterProcessDocument", documentEventObject);
@@ -1194,9 +1240,11 @@ public class WorkflowControlTest
             final Application application = new ApplicationMock(inputMessageProcessorTest);
             task = new TaskMock(new HashMap<>(), rootDoc, null, wtd, null, application);
         }
-        final Document temp
+        final DocumentMock temp
             = new DocumentMock(reference, fields, task, new HashMap<>(), failures, subdocuments, null, parentDoc, rootDoc);
         task.setDocument(temp);
+        final Fields mockedFields = new FieldsMock(fields, null, temp);
+        temp.setFields(mockedFields);
         return temp;
     }
 
