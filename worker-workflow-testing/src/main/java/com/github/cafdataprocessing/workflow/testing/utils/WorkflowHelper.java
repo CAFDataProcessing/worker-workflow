@@ -42,6 +42,7 @@ import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import org.apache.commons.collections4.CollectionUtils;
 
 public class WorkflowHelper
 {
@@ -81,12 +82,12 @@ public class WorkflowHelper
         throws IOException, ScriptException
     {
         final ScriptEngine nashorn = new ScriptEngineManager().getEngineByName("nashorn");
-        if (!codesToEval.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(codesToEval)) {
             for (final String code : codesToEval) {
                 nashorn.eval(code);
             }
         }
-        if (!filesToReadAndEval.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(filesToReadAndEval)) {
             for (final Path inputFile : filesToReadAndEval) {
                 nashorn.eval(new InputStreamReader(new FileInputStream(inputFile.toFile())));
             }
