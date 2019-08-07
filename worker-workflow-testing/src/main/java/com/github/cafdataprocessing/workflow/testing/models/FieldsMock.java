@@ -15,7 +15,6 @@
  */
 package com.github.cafdataprocessing.workflow.testing.models;
 
-import com.github.cafdataprocessing.workflow.testing.models.FieldMock;
 import com.hpe.caf.worker.document.model.Application;
 import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.model.Field;
