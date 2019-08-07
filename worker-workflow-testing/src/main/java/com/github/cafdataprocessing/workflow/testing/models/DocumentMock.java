@@ -13,22 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.cafdataprocessing.workflow.models;
+package com.github.cafdataprocessing.workflow.testing.models;
 
 import com.hpe.caf.worker.document.model.Application;
 import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.model.Failures;
 import com.hpe.caf.worker.document.model.Field;
 import com.hpe.caf.worker.document.model.Fields;
-import com.hpe.caf.worker.document.model.Subdocument;
 import com.hpe.caf.worker.document.model.Subdocuments;
 import com.hpe.caf.worker.document.model.Task;
 import java.util.Map;
 
-public class SubdocumentMock implements Subdocument
+public class DocumentMock implements Document
 {
     private String reference;
-    private final Fields fields;
+    private Fields fields;
     private final Task task;
     private final Map<String, String> customData;
     private final Failures failures;
@@ -37,9 +36,9 @@ public class SubdocumentMock implements Subdocument
     private final Document parentDocument;
     private final Document rootDocument;
 
-    public SubdocumentMock(final String reference, final Fields fields, final Task task, final Map<String, String> customData,
-                           final Failures failures, final Subdocuments subdocuments, final Application application,
-                           final Document parentDocument, final Document rootDocument)
+    public DocumentMock(final String reference, final Fields fields, final Task task, final Map<String, String> customData,
+                        final Failures failures, final Subdocuments subdocuments, final Application application,
+                        final Document parentDocument, final Document rootDocument)
     {
         this.reference = reference;
         this.fields = fields;
@@ -85,7 +84,12 @@ public class SubdocumentMock implements Subdocument
     @Override
     public Field getField(final String fieldName)
     {
-        return fields.stream().filter(f -> f.getName().equals(fieldName)).findFirst().get();
+        return fields.stream().filter(f -> f.getName().equals(fieldName)).findFirst().orElseGet(() -> {
+            final Field fieldMocked = new FieldMock(this, fieldName, application);
+            final FieldsMock fields = (FieldsMock)this.fields;
+            fields.addField(fieldMocked);
+            return fieldMocked;
+        });
     }
 
     @Override
@@ -151,16 +155,9 @@ public class SubdocumentMock implements Subdocument
         return application;
     }
 
-    @Override
-    public void delete()
+    public void setFields(final Fields fields)
     {
-
-    }
-
-    @Override
-    public boolean isDeleted()
-    {
-        return false;
+        this.fields = fields;
     }
 
 }
