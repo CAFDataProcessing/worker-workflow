@@ -17,6 +17,7 @@ package com.github.cafdataprocessing.workflow.testing.utils;
 
 import com.github.cafdataprocessing.workflow.testing.models.ApplicationMock;
 import com.github.cafdataprocessing.workflow.testing.models.DocumentMock;
+import com.github.cafdataprocessing.workflow.testing.models.FieldsMock;
 import com.github.cafdataprocessing.workflow.testing.models.InputMessageProcessorMock;
 import com.github.cafdataprocessing.workflow.testing.models.SubdocumentMock;
 import com.github.cafdataprocessing.workflow.testing.models.TaskMock;
@@ -125,9 +126,12 @@ public class WorkflowHelper
             final Application application = new ApplicationMock(inputMessageProcessorTest);
             task = new TaskMock(new HashMap<>(), rootDoc, null, wtd, null, application);
         }
-        final Document temp
+        final DocumentMock temp
             = new DocumentMock(reference, fields, task, new HashMap<>(), failures, subdocuments, null, parentDoc, rootDoc);
         task.setDocument(temp);
+        final Fields mockedFields = new FieldsMock(fields, null, temp);
+        temp.setFields(mockedFields);
+        temp.setRootDocument(temp);
         return temp;
     }
 
