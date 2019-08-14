@@ -229,8 +229,8 @@ function processFailures(document) {
 
         for each (var f in listOfFailures) {
             if (!isFailureInOriginal(listOfOriginalFailures, f)) {
-                var source = document.getTask().getService(com.hpe.caf.api.worker.WorkerTaskData.class).getSourceInfo().getName();
-                var numericVersion = document.getTask().getService(com.hpe.caf.api.worker.WorkerTaskData.class).getSourceInfo().getVersion();
+                var source = getSourceInfoName(document);
+                var numericVersion = getSourceInfoVersion(document);
                 var message = {
                     ID: f.getFailureId(),
                     STACK: f.getFailureStack() || undefined,
@@ -259,6 +259,67 @@ function isFailureInOriginal(listOfOriginalFailures, newFailure) {
 
 function isLastAction(action) {
     return ACTIONS[ACTIONS.length - 1 ].name === action;
+}
+
+function onProcessDocument(e) {
+    processWorkersVersions(e.rootDocument);
+}
+
+function processWorkersVersions(document) {
+    var arrayOfWorkersVersions = [];
+    var currentSourceInfoWorkerName = getSourceInfoName(document);
+    var currentSourceInfoWorkerVersion = getSourceInfoVersion(document);
+
+    if (fieldExists(document, "PROCESSING_WORKER_VERSIONS")) {
+        arrayOfWorkersVersions = getAllWorkerVersions(document.getField("PROCESSING_WORKER_VERSIONS").getStringValues());
+        var positionInArrayOfCurrentWorkerVersion = getPositionInArrayOfCurrentWorkerVersion(arrayOfWorkersVersions, currentSourceInfoWorkerName);
+        if (positionInArrayOfCurrentWorkerVersion === -1) {
+            var workerVersion = createWorkerVersionObject(currentSourceInfoWorkerName, currentSourceInfoWorkerVersion);
+            arrayOfWorkersVersions.push(workerVersion);
+        } else {
+            var workerVersionRetrieved = arrayOfWorkersVersions[positionInArrayOfCurrentWorkerVersion];
+            if (workerVersionRetrieved.VERSION !== currentSourceInfoWorkerVersion) {
+                workerVersionRetrieved = createWorkerVersionObject(workerVersionRetrieved.NAME, currentSourceInfoWorkerVersion);
+            }
+            arrayOfWorkersVersions[positionInArrayOfCurrentWorkerVersion] = workerVersionRetrieved;
+        }
+    } else {
+        var workerVersion = createWorkerVersionObject(currentSourceInfoWorkerName, currentSourceInfoWorkerVersion);
+        arrayOfWorkersVersions = [workerVersion];
+    }
+    document.getField("PROCESSING_WORKER_VERSIONS").set(JSON.stringify(arrayOfWorkersVersions));
+}
+
+function getSourceInfoName(document) {
+    return document.getTask().getService(com.hpe.caf.api.worker.WorkerTaskData.class).getSourceInfo().getName();
+}
+
+function getSourceInfoVersion(document) {
+    return document.getTask().getService(com.hpe.caf.api.worker.WorkerTaskData.class).getSourceInfo().getVersion();
+}
+
+function getPositionInArrayOfCurrentWorkerVersion(arrayOfWorkersVersions, name) {
+    for (var i = 0; i < arrayOfWorkersVersions.length; i++) {
+        if (arrayOfWorkersVersions[i].NAME === name) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+function createWorkerVersionObject(name, version) {
+    return {
+        NAME: name,
+        VERSION: version
+    };
+}
+
+function getAllWorkerVersions(fieldStringValues) {
+    var arrayOfWorkersVersions = [];
+    for each (var workerVersion in fieldStringValues) {
+        arrayOfWorkersVersions.push(JSON.parse(workerVersion));
+    }
+    return arrayOfWorkersVersions;
 }
 
 //Field Conditions
