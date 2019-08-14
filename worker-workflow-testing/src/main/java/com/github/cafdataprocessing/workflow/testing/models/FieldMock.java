@@ -102,7 +102,7 @@ public class FieldMock implements Field
     @Override
     public FieldValues getValues()
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return new FieldValuesMock(this, values);
     }
 
     @Override

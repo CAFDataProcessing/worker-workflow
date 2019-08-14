@@ -1351,7 +1351,8 @@ public class WorkflowControlTest
     public void getPositionInArrayOfCurrentWorkerVersionTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
         final Path workflowControl = Paths.get("src", "main", "resources", "workflow-control.js");
-        final Path testScript = Paths.get("src", "test", "resources", "scripts", "script-to-call-getPositionInArrayOfCurrentWorkerVersion.js");
+        final Path testScript = Paths.get("src", "test", "resources", "scripts",
+                                          "script-to-call-getPositionInArrayOfCurrentWorkerVersion.js");
         final Invocable invocable = WorkflowHelper.createInvocableNashornEngine(null, Arrays.asList(testScript, workflowControl));
 
         final Double result = (Double) invocable.invokeFunction("callGetPositionInArrayOfCurrentWorkerVersion", "worker-entityextract");
@@ -1367,7 +1368,8 @@ public class WorkflowControlTest
     {
         final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
 
-        final ScriptObjectMirror scriptObjectMirror = (ScriptObjectMirror) invocable.invokeFunction("createWorkerVersionObject", "worker-test-1", "2.0.0-SNAPSHOT");
+        final ScriptObjectMirror scriptObjectMirror = (ScriptObjectMirror) invocable.invokeFunction("createWorkerVersionObject",
+                                                                                                    "worker-test-1", "2.0.0-SNAPSHOT");
         assertThat(scriptObjectMirror.getMember("NAME"), is(equalTo(("worker-test-1"))));
         assertThat(scriptObjectMirror.getMember("VERSION"), is(equalTo(("2.0.0-SNAPSHOT"))));
     }
@@ -1377,27 +1379,33 @@ public class WorkflowControlTest
     {
         final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
 
-        final ScriptObjectMirror scriptObjectMirror = (ScriptObjectMirror) invocable.invokeFunction("createWorkerVersionObject", null, "2.0.0-SNAPSHOT");
+        final ScriptObjectMirror scriptObjectMirror = (ScriptObjectMirror) invocable.invokeFunction("createWorkerVersionObject",
+                                                                                                    null, "2.0.0-SNAPSHOT");
         assertThat(scriptObjectMirror.getMember("NAME"), is(nullValue()));
         assertThat(scriptObjectMirror.getMember("VERSION"), is(equalTo(("2.0.0-SNAPSHOT"))));
 
-        final ScriptObjectMirror scriptObjectMirror2 = (ScriptObjectMirror) invocable.invokeFunction("createWorkerVersionObject", "worker-classification", null);
+        final ScriptObjectMirror scriptObjectMirror2 = (ScriptObjectMirror) invocable.invokeFunction("createWorkerVersionObject",
+                                                                                                     "worker-classification", null);
         assertThat(scriptObjectMirror2.getMember("NAME"), is(equalTo("worker-classification")));
         assertThat(scriptObjectMirror2.getMember("VERSION"), is(nullValue()));
 
-        final ScriptObjectMirror scriptObjectMirror3 = (ScriptObjectMirror) invocable.invokeFunction("createWorkerVersionObject", null, null);
+        final ScriptObjectMirror scriptObjectMirror3 = (ScriptObjectMirror) invocable.invokeFunction("createWorkerVersionObject",
+                                                                                                     null, null);
         assertThat(scriptObjectMirror3.getMember("NAME"), is(nullValue()));
         assertThat(scriptObjectMirror3.getMember("VERSION"), is(nullValue()));
 
-        final ScriptObjectMirror scriptObjectMirror4 = (ScriptObjectMirror) invocable.invokeFunction("createWorkerVersionObject", "", "2.0.0-SNAPSHOT");
+        final ScriptObjectMirror scriptObjectMirror4 = (ScriptObjectMirror) invocable.invokeFunction("createWorkerVersionObject",
+                                                                                                     "", "2.0.0-SNAPSHOT");
         assertThat(scriptObjectMirror4.getMember("NAME"), is(equalTo("")));
         assertThat(scriptObjectMirror4.getMember("VERSION"), is(equalTo(("2.0.0-SNAPSHOT"))));
 
-        final ScriptObjectMirror scriptObjectMirror5 = (ScriptObjectMirror) invocable.invokeFunction("createWorkerVersionObject", "worker-classification", "");
+        final ScriptObjectMirror scriptObjectMirror5 = (ScriptObjectMirror) invocable.invokeFunction("createWorkerVersionObject",
+                                                                                                     "worker-classification", "");
         assertThat(scriptObjectMirror5.getMember("NAME"), is(equalTo("worker-classification")));
         assertThat(scriptObjectMirror5.getMember("VERSION"), is(equalTo("")));
 
-        final ScriptObjectMirror scriptObjectMirror6 = (ScriptObjectMirror) invocable.invokeFunction("createWorkerVersionObject", "", "");
+        final ScriptObjectMirror scriptObjectMirror6 = (ScriptObjectMirror) invocable.invokeFunction("createWorkerVersionObject",
+                                                                                                     "", "");
         assertThat(scriptObjectMirror6.getMember("NAME"), is(equalTo("")));
         assertThat(scriptObjectMirror6.getMember("VERSION"), is(equalTo("")));
     }
@@ -1408,11 +1416,13 @@ public class WorkflowControlTest
         final Invocable invocable = createInvocableNashornEngine();
 
         final Document builderDoc = DocumentBuilder.fromFile(
-            Paths.get("src", "test", "resources", "input-document-no-subdoc-with-processing-worker-versions-field.json").toString()).build();
+            Paths.get("src", "test", "resources",
+                      "input-document-no-subdoc-with-processing-worker-versions-field.json").toString()).build();
 
         final Document document = createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null, null,
                                                  true, true);
-        final ScriptObjectMirror scriptObjectMirror = (ScriptObjectMirror) invocable.invokeFunction("getAllWorkerVersions", document.getField("PROCESSING_WORKER_VERSIONS").getStringValues());
+        final ScriptObjectMirror scriptObjectMirror = (ScriptObjectMirror) invocable
+            .invokeFunction("getAllWorkerVersions", document.getField("PROCESSING_WORKER_VERSIONS").getStringValues());
         final List<ScriptObjectMirror> list = new ArrayList<>();
         for (final Object value : scriptObjectMirror.values()) {
             list.add((ScriptObjectMirror) value);
@@ -1445,107 +1455,206 @@ public class WorkflowControlTest
     }
 
     @Test
-    public void onProcessDocumentTest() throws IOException, ScriptException, WorkerException, NoSuchMethodException
+    public void processWorkersVersionsTest() throws IOException, ScriptException, WorkerException, NoSuchMethodException
     {
         // test addition of a worker version when 2 already existing (but different) ones are present
         final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
 
         // doc with one original failure and NO subdos
         final Document builderDoc = DocumentBuilder.fromFile(
-            Paths.get("src", "test", "resources", "input-document-no-subdoc-with-processing-worker-versions-field.json").toString()).build();
-        builderDoc.addFailure("error_id_1", "message 1");
-
-        // create the test document that will NOT contain subdocuments
+            Paths.get("src", "test", "resources", "input-document-no-subdoc-with-processing-worker-versions-field.json")
+                .toString()).build();
         final Document document = createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null,
                                                  builderDoc, true, false);
-        final DocumentEventObject documentEventObject = new DocumentEventObject(document);
 
-        invocable.invokeFunction("onProcessDocument", documentEventObject);
+        invocable.invokeFunction("processWorkersVersions", document);
 
         assertThat(document.getField("PROCESSING_WORKER_VERSIONS").getValues()
             .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((1L))));
 
         final ObjectMapper mapper = new ObjectMapper();
-        final List<ProcessingWorkerVersion> processingWorkerVersions = Arrays.asList(mapper.readValue(document.getField("PROCESSING_WORKER_VERSIONS").getValues()
-            .stream().filter(x -> !x.getStringValue().isEmpty()).findFirst().get().getStringValue(), ProcessingWorkerVersion[].class));
+        final List<ProcessingWorkerVersion> processingWorkerVersions = Arrays.asList(mapper.readValue(
+            document.getField("PROCESSING_WORKER_VERSIONS").getValues()
+                .stream()
+                .filter(x -> !x.getStringValue().isEmpty())
+                .findFirst()
+                .get()
+                .getStringValue(), ProcessingWorkerVersion[].class));
         assertThat(processingWorkerVersions.size(), is(equalTo(3)));
 
-        final ProcessingWorkerVersion versionAdded = processingWorkerVersions.stream().filter(p -> p.getName().equals("source_name")).findFirst().get();
+        final ProcessingWorkerVersion versionAdded = processingWorkerVersions
+            .stream()
+            .filter(p -> p.getName().equals("source_name"))
+            .findFirst()
+            .get();
         assertThat(versionAdded.getName(), is(equalTo("source_name")));
         assertThat(versionAdded.getVersion(), is(equalTo("5")));
 
-        final ProcessingWorkerVersion versionClassification = processingWorkerVersions.stream().filter(p -> p.getName().equals("worker-classification")).findFirst().get();
+        final ProcessingWorkerVersion versionClassification = processingWorkerVersions
+            .stream()
+            .filter(p -> p.getName().equals("worker-classification"))
+            .findFirst()
+            .get();
         assertThat(versionClassification.getName(), is(equalTo("worker-classification")));
         assertThat(versionClassification.getVersion(), is(equalTo("3.3.0-SNAPSHOT")));
 
-        final ProcessingWorkerVersion versionEntityExtract = processingWorkerVersions.stream().filter(p -> p.getName().equals("worker-entityextract")).findFirst().get();
+        final ProcessingWorkerVersion versionEntityExtract = processingWorkerVersions
+            .stream()
+            .filter(p -> p.getName().equals("worker-entityextract"))
+            .findFirst()
+            .get();
         assertThat(versionEntityExtract.getName(), is(equalTo("worker-entityextract")));
         assertThat(versionEntityExtract.getVersion(), is(equalTo("4.1.0-SNAPSHOT")));
     }
 
     @Test
-    public void onProcessDocument2Test() throws IOException, ScriptException, WorkerException, NoSuchMethodException
+    public void processWorkersVersionsEmptyFieldTest() throws IOException, ScriptException, WorkerException, NoSuchMethodException
     {
         // test addition of a worker version when the field was empty
         final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
-
-        // doc with one original failure and NO subdos
         final Document builderDoc = DocumentBuilder.fromFile(
-            Paths.get("src", "test", "resources", "input-document-no-subdoc-with-processing-worker-versions-field-2.json").toString()).build();
-        builderDoc.addFailure("error_id_1", "message 1");
-
-        // create the test document that will NOT contain subdocuments
+            Paths.get("src", "test", "resources", "input-document-no-subdoc-with-processing-worker-versions-field-2.json")
+                .toString()).build();
         final Document document = createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null,
                                                  builderDoc, true, false);
-        final DocumentEventObject documentEventObject = new DocumentEventObject(document);
 
-        invocable.invokeFunction("onProcessDocument", documentEventObject);
+        invocable.invokeFunction("processWorkersVersions", document);
 
         assertThat(document.getField("PROCESSING_WORKER_VERSIONS").getValues()
             .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((1L))));
 
         final ObjectMapper mapper = new ObjectMapper();
-        final List<ProcessingWorkerVersion> processingWorkerVersions = Arrays.asList(mapper.readValue(document.getField("PROCESSING_WORKER_VERSIONS").getValues()
-            .stream().filter(x -> !x.getStringValue().isEmpty()).findFirst().get().getStringValue(), ProcessingWorkerVersion[].class));
+        final List<ProcessingWorkerVersion> processingWorkerVersions = Arrays.asList(mapper.readValue(
+            document.getField("PROCESSING_WORKER_VERSIONS").getValues()
+                .stream()
+                .filter(x -> !x.getStringValue().isEmpty())
+                .findFirst()
+                .get()
+                .getStringValue(), ProcessingWorkerVersion[].class));
         assertThat(processingWorkerVersions.size(), is(equalTo(1)));
 
-        final ProcessingWorkerVersion versionAdded = processingWorkerVersions.stream().filter(p -> p.getName().equals("source_name")).findFirst().get();
+        final ProcessingWorkerVersion versionAdded = processingWorkerVersions
+            .stream()
+            .filter(p -> p.getName().equals("source_name"))
+            .findFirst()
+            .get();
         assertThat(versionAdded.getName(), is(equalTo("source_name")));
         assertThat(versionAdded.getVersion(), is(equalTo("5")));
     }
 
     @Test
-    public void onProcessDocument3Test() throws IOException, ScriptException, WorkerException, NoSuchMethodException
+    public void processWorkersVersionsNoFieldTest() throws IOException, ScriptException, WorkerException, NoSuchMethodException
     {
-        // test addition of a worker version when one of the worker was already added but had a different version
+        // test addition of a worker version when the field was empty
         final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
-
-        // doc with one original failure and NO subdos
         final Document builderDoc = DocumentBuilder.fromFile(
-            Paths.get("src", "test", "resources", "input-document-no-subdoc-with-processing-worker-versions-field-3.json").toString()).build();
-
-        // create the test document that will NOT contain subdocuments
+            Paths.get("src", "test", "resources", "input-document-no-subdoc-with-processing-worker-versions-field-4.json")
+                .toString()).build();
         final Document document = createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null,
                                                  builderDoc, true, false);
-        final DocumentEventObject documentEventObject = new DocumentEventObject(document);
 
-        invocable.invokeFunction("onProcessDocument", documentEventObject);
+        assertThat(document.getField("PROCESSING_WORKER_VERSIONS").getValues()
+            .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((0L))));
+
+        invocable.invokeFunction("processWorkersVersions", document);
 
         assertThat(document.getField("PROCESSING_WORKER_VERSIONS").getValues()
             .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((1L))));
 
         final ObjectMapper mapper = new ObjectMapper();
-        final List<ProcessingWorkerVersion> processingWorkerVersions = Arrays.asList(mapper.readValue(document.getField("PROCESSING_WORKER_VERSIONS").getValues()
-            .stream().filter(x -> !x.getStringValue().isEmpty()).findFirst().get().getStringValue(), ProcessingWorkerVersion[].class));
+        final List<ProcessingWorkerVersion> processingWorkerVersions = Arrays.asList(mapper.readValue(
+            document.getField("PROCESSING_WORKER_VERSIONS").getValues()
+                .stream()
+                .filter(x -> !x.getStringValue().isEmpty())
+                .findFirst()
+                .get()
+                .getStringValue(), ProcessingWorkerVersion[].class));
+        assertThat(processingWorkerVersions.size(), is(equalTo(1)));
+
+        final ProcessingWorkerVersion versionAdded = processingWorkerVersions
+            .stream()
+            .filter(p -> p.getName().equals("source_name"))
+            .findFirst()
+            .get();
+        assertThat(versionAdded.getName(), is(equalTo("source_name")));
+        assertThat(versionAdded.getVersion(), is(equalTo("5")));
+    }
+
+    @Test
+    public void processWorkersVersionsDifferentVersionsTest() throws IOException, ScriptException, WorkerException, NoSuchMethodException
+    {
+        // test addition of a worker version when one of the worker was already added but had a different version
+        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+        final Document builderDoc = DocumentBuilder.fromFile(
+            Paths.get("src", "test", "resources", "input-document-no-subdoc-with-processing-worker-versions-field-3.json")
+                .toString()).build();
+        final Document document = createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null,
+                                                 builderDoc, true, false);
+
+        invocable.invokeFunction("processWorkersVersions", document);
+
+        assertThat(document.getField("PROCESSING_WORKER_VERSIONS").getValues()
+            .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((1L))));
+
+        final ObjectMapper mapper = new ObjectMapper();
+        final List<ProcessingWorkerVersion> processingWorkerVersions = Arrays.asList(mapper.readValue(
+            document.getField("PROCESSING_WORKER_VERSIONS").getValues()
+                .stream().filter(x -> !x.getStringValue().isEmpty()).findFirst().get().getStringValue(), ProcessingWorkerVersion[].class));
         assertThat(processingWorkerVersions.size(), is(equalTo(2)));
 
-        final ProcessingWorkerVersion versionAdded = processingWorkerVersions.stream().filter(p -> p.getName().equals("source_name")).findFirst().get();
+        final ProcessingWorkerVersion versionAdded = processingWorkerVersions
+            .stream()
+            .filter(p -> p.getName().equals("source_name"))
+            .findFirst()
+            .get();
         assertThat(versionAdded.getName(), is(equalTo("source_name")));
         assertThat(versionAdded.getVersion(), is(equalTo("5")));
 
-        final ProcessingWorkerVersion versionEntityExtract = processingWorkerVersions.stream().filter(p -> p.getName().equals("worker-entityextract")).findFirst().get();
+        final ProcessingWorkerVersion versionEntityExtract = processingWorkerVersions
+            .stream()
+            .filter(p -> p.getName().equals("worker-entityextract"))
+            .findFirst()
+            .get();
         assertThat(versionEntityExtract.getName(), is(equalTo("worker-entityextract")));
         assertThat(versionEntityExtract.getVersion(), is(equalTo("4.1.0-SNAPSHOT")));
+    }
+
+    @Test
+    public void onProcessDocumentTest() throws IOException, ScriptException, WorkerException, NoSuchMethodException
+    {
+        // test addition of a worker version when the field was empty
+        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+        final Document builderDoc = DocumentBuilder.fromFile(
+            Paths.get("src", "test", "resources", "input-document-no-subdoc-with-processing-worker-versions-field-4.json")
+                .toString()).build();
+        final Document document = createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null,
+                                                 builderDoc, true, false);
+
+        assertThat(document.getField("PROCESSING_WORKER_VERSIONS").getValues()
+            .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((0L))));
+
+        invocable.invokeFunction("onProcessDocument", document);
+
+        assertThat(document.getField("PROCESSING_WORKER_VERSIONS").getValues()
+            .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((1L))));
+
+        final ObjectMapper mapper = new ObjectMapper();
+        final List<ProcessingWorkerVersion> processingWorkerVersions = Arrays.asList(mapper.readValue(
+            document.getField("PROCESSING_WORKER_VERSIONS").getValues()
+                .stream()
+                .filter(x -> !x.getStringValue().isEmpty())
+                .findFirst()
+                .get()
+                .getStringValue(), ProcessingWorkerVersion[].class));
+        assertThat(processingWorkerVersions.size(), is(equalTo(1)));
+
+        final ProcessingWorkerVersion versionAdded = processingWorkerVersions
+            .stream()
+            .filter(p -> p.getName().equals("source_name"))
+            .findFirst()
+            .get();
+        assertThat(versionAdded.getName(), is(equalTo("source_name")));
+        assertThat(versionAdded.getVersion(), is(equalTo("5")));
     }
 
     private Invocable createInvocableNashornEngine() throws IOException, ScriptException
@@ -1594,6 +1703,7 @@ public class WorkflowControlTest
         task.setDocument(temp);
         final Fields mockedFields = new FieldsMock(fields, null, temp);
         temp.setFields(mockedFields);
+        temp.setRootDocument(temp);
         return temp;
     }
 
