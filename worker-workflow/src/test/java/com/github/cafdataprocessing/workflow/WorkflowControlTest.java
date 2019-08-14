@@ -49,7 +49,9 @@ import static com.spotify.hamcrest.jackson.IsJsonText.jsonText;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -58,13 +60,16 @@ import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.isEmptyString;
+import static org.hamcrest.Matchers.isIn;
 import static org.hamcrest.core.IsNull.nullValue;
 import org.junit.Test;
 
@@ -1248,6 +1253,195 @@ public class WorkflowControlTest
 
         assertThat(document.getField("FAILURES").getValues()
             .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((0L))));
+    }
+
+    @Test
+    public void getSourceInfoNameTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
+    {
+        final Invocable invocable = createInvocableNashornEngine();
+
+        final Document builderDoc = DocumentBuilder.configure().withFields()
+            .addFieldValues("CAF_WORKFLOW_ACTION", "elastic")
+            .addFieldValue("CAF_WORKFLOW_NAME", "example_workflow")
+            .addFieldValue("FAILURES", "")
+            .addFieldValue("example", "value from field")
+            .addFieldValue("fieldHasValue", "This value")
+            .documentBuilder()
+            .build();
+
+        final Document document = createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null, null,
+                                                 true, true);
+        final String result = (String) invocable.invokeFunction("getSourceInfoName", document);
+
+        assertThat(result, is(equalTo(("source_name"))));
+    }
+
+    @Test
+    public void getSourceInfoNameEmptyTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
+    {
+        final Invocable invocable = createInvocableNashornEngine();
+
+        final Document builderDoc = DocumentBuilder.configure().withFields()
+            .addFieldValues("CAF_WORKFLOW_ACTION", "elastic")
+            .addFieldValue("CAF_WORKFLOW_NAME", "example_workflow")
+            .addFieldValue("FAILURES", "")
+            .addFieldValue("example", "value from field")
+            .addFieldValue("fieldHasValue", "This value")
+            .documentBuilder()
+            .build();
+
+        final Document document = createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null, null,
+                                                 true, true);
+        document.getTask().getService(WorkerTaskData.class).getSourceInfo().setName(null);
+        final String result = (String) invocable.invokeFunction("getSourceInfoName", document);
+        assertThat(result, is(nullValue()));
+
+        document.getTask().getService(WorkerTaskData.class).getSourceInfo().setName("");
+        final String result2 = (String) invocable.invokeFunction("getSourceInfoName", document);
+        assertThat(result2, is(""));
+    }
+
+    @Test
+    public void getSourceInfoVersionTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
+    {
+        final Invocable invocable = createInvocableNashornEngine();
+
+        final Document builderDoc = DocumentBuilder.configure().withFields()
+            .addFieldValues("CAF_WORKFLOW_ACTION", "elastic")
+            .addFieldValue("CAF_WORKFLOW_NAME", "example_workflow")
+            .addFieldValue("FAILURES", "")
+            .addFieldValue("example", "value from field")
+            .addFieldValue("fieldHasValue", "This value")
+            .documentBuilder()
+            .build();
+
+        final Document document = createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null, null,
+                                                 true, true);
+        final String result = (String) invocable.invokeFunction("getSourceInfoVersion", document);
+
+        assertThat(result, is(equalTo(("5"))));
+    }
+
+    @Test
+    public void getSourceInfoVersionEmptyTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
+    {
+        final Invocable invocable = createInvocableNashornEngine();
+
+        final Document builderDoc = DocumentBuilder.configure().withFields()
+            .addFieldValues("CAF_WORKFLOW_ACTION", "elastic")
+            .addFieldValue("CAF_WORKFLOW_NAME", "example_workflow")
+            .addFieldValue("FAILURES", "")
+            .addFieldValue("example", "value from field")
+            .addFieldValue("fieldHasValue", "This value")
+            .documentBuilder()
+            .build();
+
+        final Document document = createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null, null,
+                                                 true, true);
+        document.getTask().getService(WorkerTaskData.class).getSourceInfo().setVersion(null);
+        final String result = (String) invocable.invokeFunction("getSourceInfoVersion", document);
+        assertThat(result, is(nullValue()));
+
+        document.getTask().getService(WorkerTaskData.class).getSourceInfo().setVersion("");
+        final String result2 = (String) invocable.invokeFunction("getSourceInfoVersion", document);
+        assertThat(result2, is(""));
+    }
+
+    @Test
+    public void getPositionInArrayOfCurrentWorkerVersionTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
+    {
+        final Path workflowControl = Paths.get("src", "main", "resources", "workflow-control.js");
+        final Path testScript = Paths.get("src", "test", "resources", "scripts", "script-to-call-getPositionInArrayOfCurrentWorkerVersion.js");
+        final Invocable invocable = WorkflowHelper.createInvocableNashornEngine(null, Arrays.asList(testScript, workflowControl));
+
+        final Double result = (Double) invocable.invokeFunction("callGetPositionInArrayOfCurrentWorkerVersion", "worker-entityextract");
+        assertThat(result, is(equalTo((0.0))));
+        final Double result2 = (Double) invocable.invokeFunction("callGetPositionInArrayOfCurrentWorkerVersion", "worker-familyhashing");
+        assertThat(result2, is(equalTo((1.0))));
+        final Double result3 = (Double) invocable.invokeFunction("callGetPositionInArrayOfCurrentWorkerVersion", "worker-not-there");
+        assertThat(result3, is(equalTo((-1.0))));
+    }
+
+    @Test
+    public void createWorkerVersionObjectTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
+    {
+        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+
+        final ScriptObjectMirror scriptObjectMirror = (ScriptObjectMirror) invocable.invokeFunction("createWorkerVersionObject", "worker-test-1", "2.0.0-SNAPSHOT");
+        assertThat(scriptObjectMirror.getMember("NAME"), is(equalTo(("worker-test-1"))));
+        assertThat(scriptObjectMirror.getMember("VERSION"), is(equalTo(("2.0.0-SNAPSHOT"))));
+    }
+
+    @Test
+    public void createWorkerVersionObjectEmptyTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
+    {
+        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+
+        final ScriptObjectMirror scriptObjectMirror = (ScriptObjectMirror) invocable.invokeFunction("createWorkerVersionObject", null, "2.0.0-SNAPSHOT");
+        assertThat(scriptObjectMirror.getMember("NAME"), is(nullValue()));
+        assertThat(scriptObjectMirror.getMember("VERSION"), is(equalTo(("2.0.0-SNAPSHOT"))));
+
+        final ScriptObjectMirror scriptObjectMirror2 = (ScriptObjectMirror) invocable.invokeFunction("createWorkerVersionObject", "worker-classification", null);
+        assertThat(scriptObjectMirror2.getMember("NAME"), is(equalTo("worker-classification")));
+        assertThat(scriptObjectMirror2.getMember("VERSION"), is(nullValue()));
+
+        final ScriptObjectMirror scriptObjectMirror3 = (ScriptObjectMirror) invocable.invokeFunction("createWorkerVersionObject", null, null);
+        assertThat(scriptObjectMirror3.getMember("NAME"), is(nullValue()));
+        assertThat(scriptObjectMirror3.getMember("VERSION"), is(nullValue()));
+
+        final ScriptObjectMirror scriptObjectMirror4 = (ScriptObjectMirror) invocable.invokeFunction("createWorkerVersionObject", "", "2.0.0-SNAPSHOT");
+        assertThat(scriptObjectMirror4.getMember("NAME"), is(equalTo("")));
+        assertThat(scriptObjectMirror4.getMember("VERSION"), is(equalTo(("2.0.0-SNAPSHOT"))));
+
+        final ScriptObjectMirror scriptObjectMirror5 = (ScriptObjectMirror) invocable.invokeFunction("createWorkerVersionObject", "worker-classification", "");
+        assertThat(scriptObjectMirror5.getMember("NAME"), is(equalTo("worker-classification")));
+        assertThat(scriptObjectMirror5.getMember("VERSION"), is(equalTo("")));
+
+        final ScriptObjectMirror scriptObjectMirror6 = (ScriptObjectMirror) invocable.invokeFunction("createWorkerVersionObject", "", "");
+        assertThat(scriptObjectMirror6.getMember("NAME"), is(equalTo("")));
+        assertThat(scriptObjectMirror6.getMember("VERSION"), is(equalTo("")));
+    }
+
+    @Test
+    public void getAllWorkerVersionsTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
+    {
+        final Invocable invocable = createInvocableNashornEngine();
+
+        final Document builderDoc = DocumentBuilder.fromFile(
+            Paths.get("src", "test", "resources", "input-document-no-subdoc-with-processing-worker-versions-field.json").toString()).build();
+
+        final Document document = createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null, null,
+                                                 true, true);
+        final ScriptObjectMirror scriptObjectMirror = (ScriptObjectMirror) invocable.invokeFunction("getAllWorkerVersions", document.getField("PROCESSING_WORKER_VERSIONS").getStringValues());
+        final List<ScriptObjectMirror> list = new ArrayList<>();
+        for (final Object value : scriptObjectMirror.values()) {
+            list.add((ScriptObjectMirror) value);
+        }
+        assertThat(list, hasSize(2));
+        for (final ScriptObjectMirror sco : list) {
+            assertThat(sco.getMember("NAME"), isIn(Arrays.asList("worker-classification", "worker-entityextract")));
+            assertThat(sco.getMember("VERSION"), isIn(Arrays.asList("3.3.0-SNAPSHOT", "4.1.0-SNAPSHOT")));
+        }
+    }
+
+    @Test
+    public void getAllWorkerVersionsEmptyTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
+    {
+        final Invocable invocable = createInvocableNashornEngine();
+
+        final ScriptObjectMirror scriptObjectMirror = (ScriptObjectMirror) invocable.invokeFunction("getAllWorkerVersions", "");
+        final List<ScriptObjectMirror> list = new ArrayList<>();
+        for (final Object value : scriptObjectMirror.values()) {
+            list.add((ScriptObjectMirror) value);
+        }
+        assertThat(list, hasSize(0));
+
+        final ScriptObjectMirror scriptObjectMirror2 = (ScriptObjectMirror) invocable.invokeFunction("getAllWorkerVersions", null);
+        final List<ScriptObjectMirror> list2 = new ArrayList<>();
+        for (final Object value : scriptObjectMirror2.values()) {
+            list2.add((ScriptObjectMirror) value);
+        }
+        assertThat(list2, hasSize(0));
     }
 
     @Test
