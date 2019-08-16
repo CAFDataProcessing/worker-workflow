@@ -1411,7 +1411,9 @@ public class WorkflowControlTest
             .invokeFunction("getAllWorkerVersions", document.getField("PROCESSING_WORKER_VERSIONS").getStringValues());
         final List<ScriptObjectMirror> list = new ArrayList<>();
         for (final Object value : scriptObjectMirror.values()) {
-            list.add((ScriptObjectMirror) value);
+            for (final Object som : ((ScriptObjectMirror) value).values()) {
+                list.add((ScriptObjectMirror) som);
+            }
         }
         assertThat(list, hasSize(2));
         for (final ScriptObjectMirror sco : list) {
@@ -1434,7 +1436,9 @@ public class WorkflowControlTest
             .invokeFunction("getAllWorkerVersions", document.getField("PROCESSING_WORKER_VERSIONS").getStringValues());
         final List<ScriptObjectMirror> list = new ArrayList<>();
         for (final Object value : scriptObjectMirror.values()) {
-            list.add((ScriptObjectMirror) value);
+            for (final Object som : ((ScriptObjectMirror) value).values()) {
+                list.add((ScriptObjectMirror) som);
+            }
         }
         assertThat(list, hasSize(1));
         for (final ScriptObjectMirror sco : list) {
