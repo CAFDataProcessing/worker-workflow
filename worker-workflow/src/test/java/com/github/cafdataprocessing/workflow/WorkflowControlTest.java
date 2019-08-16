@@ -20,8 +20,11 @@ import com.github.cafdataprocessing.workflow.testing.models.NewFailure;
 import com.github.cafdataprocessing.workflow.testing.models.ProcessingWorkerVersion;
 import com.github.cafdataprocessing.workflow.testing.models.SubdocumentsMock;
 import com.github.cafdataprocessing.workflow.testing.utils.WorkflowHelper;
+import com.hpe.caf.api.ConfigurationException;
+import com.hpe.caf.api.ConfigurationSource;
 import com.hpe.caf.api.worker.WorkerException;
 import com.hpe.caf.api.worker.WorkerTaskData;
+import com.hpe.caf.worker.document.config.DocumentWorkerConfiguration;
 import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.model.Failure;
 import com.hpe.caf.worker.document.model.Failures;
@@ -1418,23 +1421,40 @@ public class WorkflowControlTest
     }
 
     @Test
-    public void getAllWorkerVersionsEmptyTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
+    public void getAllWorkerVersionsSingleTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
         final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+        final Document builderDoc = DocumentBuilder.fromFile(
+            Paths.get("src", "test", "resources",
+                      "input-document-no-subdoc-with-processing-worker-versions-field-5.json").toString()).build();
 
-        final ScriptObjectMirror scriptObjectMirror = (ScriptObjectMirror) invocable.invokeFunction("getAllWorkerVersions", "");
+        final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null,
+                                                                null, true, true);
+        final ScriptObjectMirror scriptObjectMirror = (ScriptObjectMirror) invocable
+            .invokeFunction("getAllWorkerVersions", document.getField("PROCESSING_WORKER_VERSIONS").getStringValues());
         final List<ScriptObjectMirror> list = new ArrayList<>();
         for (final Object value : scriptObjectMirror.values()) {
             list.add((ScriptObjectMirror) value);
         }
-        assertThat(list, hasSize(0));
-
-        final ScriptObjectMirror scriptObjectMirror2 = (ScriptObjectMirror) invocable.invokeFunction("getAllWorkerVersions", null);
-        final List<ScriptObjectMirror> list2 = new ArrayList<>();
-        for (final Object value : scriptObjectMirror2.values()) {
-            list2.add((ScriptObjectMirror) value);
+        assertThat(list, hasSize(1));
+        for (final ScriptObjectMirror sco : list) {
+            assertThat(sco.getMember("NAME"), is(equalTo("worker-classification")));
+            assertThat(sco.getMember("VERSION"), is(equalTo("3.3.0-SNAPSHOT")));
         }
-        assertThat(list2, hasSize(0));
+    }
+
+    @Test(expected = ScriptException.class)
+    public void getAllWorkerVersionsEmptyTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
+    {
+        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+        invocable.invokeFunction("getAllWorkerVersions", "");
+    }
+
+    @Test(expected = ScriptException.class)
+    public void getAllWorkerVersionsNullTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
+    {
+        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+        invocable.invokeFunction("getAllWorkerVersions", null);
     }
 
     @Test
@@ -1456,33 +1476,25 @@ public class WorkflowControlTest
             .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((1L))));
 
         final ObjectMapper mapper = new ObjectMapper();
-        final List<ProcessingWorkerVersion> processingWorkerVersions = Arrays.asList(mapper.readValue(
-            document.getField("PROCESSING_WORKER_VERSIONS").getValues()
-                .stream()
-                .filter(x -> !x.getStringValue().isEmpty())
-                .findFirst()
-                .get()
-                .getStringValue(), ProcessingWorkerVersion[].class));
-        assertThat(processingWorkerVersions.size(), is(equalTo(3)));
+        final String arrayExtracted = "[" + document.getField("PROCESSING_WORKER_VERSIONS").getStringValues().get(0) + "]";
+        final ProcessingWorkerVersion[] arrayDeserialized = mapper.readValue(arrayExtracted, ProcessingWorkerVersion[].class);
+        assertThat(arrayDeserialized.length, is(equalTo(3)));
 
-        final ProcessingWorkerVersion versionAdded = processingWorkerVersions
-            .stream()
-            .filter(p -> p.getName().equals("source_name"))
+        final ProcessingWorkerVersion versionAdded = Arrays.stream(arrayDeserialized)
+            .filter(p -> p.getName().equals("worker-base"))
             .findFirst()
             .get();
-        assertThat(versionAdded.getName(), is(equalTo("source_name")));
-        assertThat(versionAdded.getVersion(), is(equalTo("5")));
+        assertThat(versionAdded.getName(), is(equalTo("worker-base")));
+        assertThat(versionAdded.getVersion(), is(equalTo("1.0.0-SNAPSHOT")));
 
-        final ProcessingWorkerVersion versionClassification = processingWorkerVersions
-            .stream()
+        final ProcessingWorkerVersion versionClassification = Arrays.stream(arrayDeserialized)
             .filter(p -> p.getName().equals("worker-classification"))
             .findFirst()
             .get();
         assertThat(versionClassification.getName(), is(equalTo("worker-classification")));
         assertThat(versionClassification.getVersion(), is(equalTo("3.3.0-SNAPSHOT")));
 
-        final ProcessingWorkerVersion versionEntityExtract = processingWorkerVersions
-            .stream()
+        final ProcessingWorkerVersion versionEntityExtract = Arrays.stream(arrayDeserialized)
             .filter(p -> p.getName().equals("worker-entityextract"))
             .findFirst()
             .get();
@@ -1513,16 +1525,16 @@ public class WorkflowControlTest
                 .filter(x -> !x.getStringValue().isEmpty())
                 .findFirst()
                 .get()
-                .getStringValue(), ProcessingWorkerVersion[].class));
+                .getStringValue(), ProcessingWorkerVersion.class));
         assertThat(processingWorkerVersions.size(), is(equalTo(1)));
 
         final ProcessingWorkerVersion versionAdded = processingWorkerVersions
             .stream()
-            .filter(p -> p.getName().equals("source_name"))
+            .filter(p -> p.getName().equals("worker-base"))
             .findFirst()
             .get();
-        assertThat(versionAdded.getName(), is(equalTo("source_name")));
-        assertThat(versionAdded.getVersion(), is(equalTo("5")));
+        assertThat(versionAdded.getName(), is(equalTo("worker-base")));
+        assertThat(versionAdded.getVersion(), is(equalTo("1.0.0-SNAPSHOT")));
     }
 
     @Test
@@ -1551,16 +1563,80 @@ public class WorkflowControlTest
                 .filter(x -> !x.getStringValue().isEmpty())
                 .findFirst()
                 .get()
-                .getStringValue(), ProcessingWorkerVersion[].class));
+                .getStringValue(), ProcessingWorkerVersion.class));
         assertThat(processingWorkerVersions.size(), is(equalTo(1)));
 
         final ProcessingWorkerVersion versionAdded = processingWorkerVersions
             .stream()
-            .filter(p -> p.getName().equals("source_name"))
+            .filter(p -> p.getName().equals("worker-base"))
             .findFirst()
             .get();
-        assertThat(versionAdded.getName(), is(equalTo("source_name")));
-        assertThat(versionAdded.getVersion(), is(equalTo("5")));
+        assertThat(versionAdded.getName(), is(equalTo("worker-base")));
+        assertThat(versionAdded.getVersion(), is(equalTo("1.0.0-SNAPSHOT")));
+    }
+
+    @Test
+    public void processWorkersVersionsNoFieldMultipleTest() throws IOException, ScriptException, WorkerException, NoSuchMethodException,
+                                                                   ConfigurationException
+    {
+        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+        final Document builderDoc = DocumentBuilder.fromFile(
+            Paths.get("src", "test", "resources", "input-document-no-subdoc-with-processing-worker-versions-field-4.json")
+                .toString()).build();
+        final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null,
+                                                                builderDoc, true, false);
+
+        assertThat(document.getField("PROCESSING_WORKER_VERSIONS").getValues()
+            .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((0L))));
+
+        invocable.invokeFunction("processWorkersVersions", document);
+
+        assertThat(document.getField("PROCESSING_WORKER_VERSIONS").getValues()
+            .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((1L))));
+
+        final ObjectMapper mapper = new ObjectMapper();
+        final List<ProcessingWorkerVersion> processingWorkerVersions = Arrays.asList(mapper.readValue(
+            document.getField("PROCESSING_WORKER_VERSIONS").getValues()
+                .stream()
+                .filter(x -> !x.getStringValue().isEmpty())
+                .findFirst()
+                .get()
+                .getStringValue(), ProcessingWorkerVersion.class));
+        assertThat(processingWorkerVersions.size(), is(equalTo(1)));
+
+        final ProcessingWorkerVersion versionAdded = processingWorkerVersions
+            .stream()
+            .filter(p -> p.getName().equals("worker-base"))
+            .findFirst()
+            .get();
+        assertThat(versionAdded.getName(), is(equalTo("worker-base")));
+        assertThat(versionAdded.getVersion(), is(equalTo("1.0.0-SNAPSHOT")));
+
+        document.getApplication().getService(ConfigurationSource.class)
+            .getConfiguration(DocumentWorkerConfiguration.class).setWorkerName("worker-added");
+        document.getApplication().getService(ConfigurationSource.class)
+            .getConfiguration(DocumentWorkerConfiguration.class).setWorkerVersion("5.6.2-SNAPSHOT");
+
+        invocable.invokeFunction("processWorkersVersions", document);
+
+        assertThat(document.getField("PROCESSING_WORKER_VERSIONS").getValues()
+            .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((1L))));
+
+        final String arrayExtracted = "[" + document.getField("PROCESSING_WORKER_VERSIONS").getStringValues().get(0) + "]";
+        final ProcessingWorkerVersion[] arrayDeserialized = mapper.readValue(arrayExtracted, ProcessingWorkerVersion[].class);
+        assertThat(arrayDeserialized.length, is(equalTo(2)));
+
+        final ProcessingWorkerVersion firstAddedWorkerVersion = Arrays.stream(arrayDeserialized)
+            .filter(e -> e.getName().equalsIgnoreCase("worker-base"))
+            .findFirst()
+            .get();
+        assertThat(firstAddedWorkerVersion.getVersion(), is(equalTo("1.0.0-SNAPSHOT")));
+
+        final ProcessingWorkerVersion secondAddedWorkerVersion = Arrays.stream(arrayDeserialized)
+            .filter(e -> e.getName().equalsIgnoreCase("worker-added"))
+            .findFirst()
+            .get();
+        assertThat(secondAddedWorkerVersion.getVersion(), is(equalTo("5.6.2-SNAPSHOT")));
     }
 
     @Test
@@ -1580,25 +1656,18 @@ public class WorkflowControlTest
             .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((1L))));
 
         final ObjectMapper mapper = new ObjectMapper();
-        final List<ProcessingWorkerVersion> processingWorkerVersions = Arrays.asList(mapper.readValue(
-            document.getField("PROCESSING_WORKER_VERSIONS").getValues()
-                .stream()
-                .filter(x -> !x.getStringValue().isEmpty())
-                .findFirst()
-                .get()
-                .getStringValue(), ProcessingWorkerVersion[].class));
-        assertThat(processingWorkerVersions.size(), is(equalTo(2)));
+        final String arrayExtracted = "[" + document.getField("PROCESSING_WORKER_VERSIONS").getStringValues().get(0) + "]";
+        final ProcessingWorkerVersion[] arrayDeserialized = mapper.readValue(arrayExtracted, ProcessingWorkerVersion[].class);
+        assertThat(arrayDeserialized.length, is(equalTo(2)));
 
-        final ProcessingWorkerVersion versionAdded = processingWorkerVersions
-            .stream()
-            .filter(p -> p.getName().equals("source_name"))
+        final ProcessingWorkerVersion versionAdded = Arrays.stream(arrayDeserialized)
+            .filter(p -> p.getName().equals("worker-base"))
             .findFirst()
             .get();
-        assertThat(versionAdded.getName(), is(equalTo("source_name")));
-        assertThat(versionAdded.getVersion(), is(equalTo("5")));
+        assertThat(versionAdded.getName(), is(equalTo("worker-base")));
+        assertThat(versionAdded.getVersion(), is(equalTo("1.0.0-SNAPSHOT")));
 
-        final ProcessingWorkerVersion versionEntityExtract = processingWorkerVersions
-            .stream()
+        final ProcessingWorkerVersion versionEntityExtract = Arrays.stream(arrayDeserialized)
             .filter(p -> p.getName().equals("worker-entityextract"))
             .findFirst()
             .get();
@@ -1607,7 +1676,8 @@ public class WorkflowControlTest
     }
 
     @Test
-    public void onProcessDocumentTest() throws IOException, ScriptException, WorkerException, NoSuchMethodException
+    public void onProcessDocumentTest() throws IOException, ScriptException, WorkerException, NoSuchMethodException,
+                                               ConfigurationException
     {
         // test addition of a worker version when the field was empty
         final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
@@ -1617,10 +1687,12 @@ public class WorkflowControlTest
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null,
                                                                 builderDoc, true, false);
 
+        final DocumentEventObject documentEventObject = new DocumentEventObject(document);
+
         assertThat(document.getField("PROCESSING_WORKER_VERSIONS").getValues()
             .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((0L))));
 
-        invocable.invokeFunction("onProcessDocument", document);
+        invocable.invokeFunction("onProcessDocument", documentEventObject);
 
         assertThat(document.getField("PROCESSING_WORKER_VERSIONS").getValues()
             .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((1L))));
@@ -1632,15 +1704,109 @@ public class WorkflowControlTest
                 .filter(x -> !x.getStringValue().isEmpty())
                 .findFirst()
                 .get()
-                .getStringValue(), ProcessingWorkerVersion[].class));
+                .getStringValue(), ProcessingWorkerVersion.class));
         assertThat(processingWorkerVersions.size(), is(equalTo(1)));
 
         final ProcessingWorkerVersion versionAdded = processingWorkerVersions
             .stream()
-            .filter(p -> p.getName().equals("source_name"))
+            .filter(p -> p.getName().equals("worker-base"))
             .findFirst()
             .get();
-        assertThat(versionAdded.getName(), is(equalTo("source_name")));
-        assertThat(versionAdded.getVersion(), is(equalTo("5")));
+        assertThat(versionAdded.getName(), is(equalTo("worker-base")));
+        assertThat(versionAdded.getVersion(), is(equalTo("1.0.0-SNAPSHOT")));
+    }
+
+    @Test
+    public void getCurrentWorkerNameTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException,
+                                                  ConfigurationException
+    {
+        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+        final Document builderDoc = DocumentBuilder.fromFile(
+            Paths.get("src", "test", "resources", "input-document-no-subdoc-with-processing-worker-versions-field-4.json")
+                .toString()).build();
+        final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null,
+                                                                builderDoc, true, false);
+
+        final String result = (String) invocable.invokeFunction("getCurrentWorkerName", document);
+        assertThat(result, is(equalTo(("worker-base"))));
+
+        final Document document2 = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null,
+                                                                 builderDoc, true, false);
+        document2.getApplication().getService(ConfigurationSource.class)
+            .getConfiguration(DocumentWorkerConfiguration.class).setWorkerName("worker-added");
+
+        final String result2 = (String) invocable.invokeFunction("getCurrentWorkerName", document2);
+        assertThat(result2, is(equalTo(("worker-added"))));
+    }
+
+    @Test
+    public void getCurrentWorkerVersionTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException,
+                                                     ConfigurationException
+    {
+        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+        final Document builderDoc = DocumentBuilder.fromFile(
+            Paths.get("src", "test", "resources", "input-document-no-subdoc-with-processing-worker-versions-field-4.json")
+                .toString()).build();
+        final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null,
+                                                                builderDoc, true, false);
+
+        final String result = (String) invocable.invokeFunction("getCurrentWorkerVersion", document);
+        assertThat(result, is(equalTo(("1.0.0-SNAPSHOT"))));
+
+        final Document document2 = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null,
+                                                                 builderDoc, true, false);
+        document2.getApplication().getService(ConfigurationSource.class)
+            .getConfiguration(DocumentWorkerConfiguration.class).setWorkerVersion("5.6.2-SNAPSHOT");
+
+        final String result2 = (String) invocable.invokeFunction("getCurrentWorkerVersion", document2);
+        assertThat(result2, is(equalTo(("5.6.2-SNAPSHOT"))));
+    }
+
+    @Test
+    public void buildStringifiedContentFromArrayForFieldTest() throws ScriptException, NoSuchMethodException, WorkerException,
+                                                                      IOException, ConfigurationException
+    {
+        final Path workflowControl = Paths.get("src", "main", "resources", "workflow-control.js");
+        final Path testScript = Paths.get("src", "test", "resources", "scripts",
+                                          "script-to-call-buildStringifiedContentFromArrayForField.js");
+        final Invocable invocable = WorkflowHelper.createInvocableNashornEngine(null, Arrays.asList(testScript, workflowControl));
+        final String result = (String) invocable.invokeFunction("callBuildStringifiedContentFromArrayForField");
+        assertThat(result, is(equalTo(("{\"NAME\":\"worker-entityextract\",\"VERSION\":\"1.0.0-SNASHOT\"},"
+                   + "{\"NAME\":\"worker-familyhashing\",\"VERSION\":\"2.4.0-SNASHOT\"}"))));
+    }
+
+    @Test
+    public void buildStringifiedContentFromArrayForFieldSingleTest() throws ScriptException, NoSuchMethodException, WorkerException,
+                                                                            IOException, ConfigurationException
+    {
+        final Path workflowControl = Paths.get("src", "main", "resources", "workflow-control.js");
+        final Path testScript = Paths.get("src", "test", "resources", "scripts",
+                                          "script-to-call-buildStringifiedContentFromArrayForField.js");
+        final Invocable invocable = WorkflowHelper.createInvocableNashornEngine(null, Arrays.asList(testScript, workflowControl));
+        final String result = (String) invocable.invokeFunction("callBuildStringifiedContentFromArrayForFieldSingle");
+        assertThat(result, is(equalTo(("{\"NAME\":\"worker-entityextract\",\"VERSION\":\"1.0.0-SNASHOT\"}"))));
+    }
+
+    @Test
+    public void buildStringifiedContentFromArrayForFieldEmptyTest() throws ScriptException, NoSuchMethodException, WorkerException,
+                                                                           IOException, ConfigurationException
+    {
+        final Path workflowControl = Paths.get("src", "main", "resources", "workflow-control.js");
+        final Path testScript = Paths.get("src", "test", "resources", "scripts",
+                                          "script-to-call-buildStringifiedContentFromArrayForField.js");
+        final Invocable invocable = WorkflowHelper.createInvocableNashornEngine(null, Arrays.asList(testScript, workflowControl));
+        final String result = (String) invocable.invokeFunction("callBuildStringifiedContentFromArrayForFieldEmpty");
+        assertThat(result, is(equalTo((""))));
+    }
+
+    @Test(expected = ScriptException.class)
+    public void buildStringifiedContentFromArrayForFieldNullTest() throws ScriptException, NoSuchMethodException, WorkerException,
+                                                                          IOException, ConfigurationException
+    {
+        final Path workflowControl = Paths.get("src", "main", "resources", "workflow-control.js");
+        final Path testScript = Paths.get("src", "test", "resources", "scripts",
+                                          "script-to-call-buildStringifiedContentFromArrayForField.js");
+        final Invocable invocable = WorkflowHelper.createInvocableNashornEngine(null, Arrays.asList(testScript, workflowControl));
+        invocable.invokeFunction("callBuildStringifiedContentFromArrayForFieldNull");
     }
 }

@@ -267,12 +267,13 @@ function onProcessDocument(e) {
 
 function processWorkersVersions(document) {
     var arrayOfWorkersVersions = [];
-    var currentSourceInfoWorkerName = getSourceInfoName(document);
-    var currentSourceInfoWorkerVersion = getSourceInfoVersion(document);
+    var currentSourceInfoWorkerName = getCurrentWorkerName(document);
+    var currentSourceInfoWorkerVersion = getCurrentWorkerVersion(document);
 
     if (fieldExists(document, "PROCESSING_WORKER_VERSIONS")) {
-        arrayOfWorkersVersions = getAllWorkerVersions(document.getField("PROCESSING_WORKER_VERSIONS").getStringValues());
-        var positionInArrayOfCurrentWorkerVersion = getPositionInArrayOfCurrentWorkerVersion(arrayOfWorkersVersions, currentSourceInfoWorkerName);
+        var arrayOfWorkersVersions = getAllWorkerVersions(document.getField("PROCESSING_WORKER_VERSIONS").getStringValues());
+        var positionInArrayOfCurrentWorkerVersion = 
+                getPositionInArrayOfCurrentWorkerVersion(arrayOfWorkersVersions, currentSourceInfoWorkerName);
         if (positionInArrayOfCurrentWorkerVersion === -1) {
             var workerVersion = createWorkerVersionObject(currentSourceInfoWorkerName, currentSourceInfoWorkerVersion);
             arrayOfWorkersVersions.push(workerVersion);
@@ -287,7 +288,7 @@ function processWorkersVersions(document) {
         var workerVersion = createWorkerVersionObject(currentSourceInfoWorkerName, currentSourceInfoWorkerVersion);
         arrayOfWorkersVersions = [workerVersion];
     }
-    document.getField("PROCESSING_WORKER_VERSIONS").set(JSON.stringify(arrayOfWorkersVersions));
+    document.getField("PROCESSING_WORKER_VERSIONS").set(buildStringifiedContentFromArrayForField(arrayOfWorkersVersions));
 }
 
 function getSourceInfoName(document) {
@@ -296,6 +297,16 @@ function getSourceInfoName(document) {
 
 function getSourceInfoVersion(document) {
     return document.getTask().getService(com.hpe.caf.api.worker.WorkerTaskData.class).getSourceInfo().getVersion();
+}
+
+function getCurrentWorkerName(document) {
+    return document.getApplication().getService(com.hpe.caf.api.ConfigurationSource.class)
+            .getConfiguration(com.hpe.caf.worker.document.config.DocumentWorkerConfiguration.class).getWorkerName();
+}
+
+function getCurrentWorkerVersion(document) {
+    return document.getApplication().getService(com.hpe.caf.api.ConfigurationSource.class)
+            .getConfiguration(com.hpe.caf.worker.document.config.DocumentWorkerConfiguration.class).getWorkerVersion();
 }
 
 function getPositionInArrayOfCurrentWorkerVersion(arrayOfWorkersVersions, name) {
@@ -316,10 +327,28 @@ function createWorkerVersionObject(name, version) {
 
 function getAllWorkerVersions(fieldStringValues) {
     var arrayOfWorkersVersions = [];
-    for each (var workerVersion in fieldStringValues) {
-        arrayOfWorkersVersions.push(JSON.parse(workerVersion));
-    }
+    fieldStringValues.stream().forEach(function (version) {
+        var parsed = JSON.parse(version);
+        if (Array.isArray(parsed)) {
+            for (var i = 0; i < parsed.length; i++) {
+                arrayOfWorkersVersions.push(parsed[i]);
+            }
+        } else {
+            arrayOfWorkersVersions.push(parsed);
+        }
+    });
     return arrayOfWorkersVersions;
+}
+
+function buildStringifiedContentFromArrayForField(arrayToBeProcessed) {
+    var output = "";
+    for (var i = 0; i < arrayToBeProcessed.length; i++) {
+        output = output + JSON.stringify(arrayToBeProcessed[i]);
+        if ((i + 1) !== arrayToBeProcessed.length) {
+            output = output + ",";
+        }
+    }
+    return output;
 }
 
 //Field Conditions
