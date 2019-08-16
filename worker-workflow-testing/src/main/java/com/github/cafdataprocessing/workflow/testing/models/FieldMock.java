@@ -128,7 +128,7 @@ public class FieldMock implements Field
     @Override
     public void set(byte[] data)
     {
-        throw new UnsupportedOperationException("Not supported yet.");
+        this.set(new String(data));
     }
 
     @Override

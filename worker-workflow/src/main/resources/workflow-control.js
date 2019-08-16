@@ -339,13 +339,14 @@ function getAllWorkerVersions(fieldStringValues) {
 }
 
 function buildStringifiedContentFromArrayForField(arrayToBeProcessed) {
-    var output = "";
+    var output = "[";
     for (var i = 0; i < arrayToBeProcessed.length; i++) {
         output = output + JSON.stringify(arrayToBeProcessed[i]);
         if ((i + 1) !== arrayToBeProcessed.length) {
             output = output + ",";
         }
     }
+    output = output + "]";
     return output;
 }
 

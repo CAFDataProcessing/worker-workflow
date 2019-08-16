@@ -1480,7 +1480,7 @@ public class WorkflowControlTest
             .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((1L))));
 
         final ObjectMapper mapper = new ObjectMapper();
-        final String arrayExtracted = "[" + document.getField("PROCESSING_WORKER_VERSIONS").getStringValues().get(0) + "]";
+        final String arrayExtracted = document.getField("PROCESSING_WORKER_VERSIONS").getStringValues().get(0);
         final ProcessingWorkerVersion[] arrayDeserialized = mapper.readValue(arrayExtracted, ProcessingWorkerVersion[].class);
         assertThat(arrayDeserialized.length, is(equalTo(3)));
 
@@ -1529,7 +1529,7 @@ public class WorkflowControlTest
                 .filter(x -> !x.getStringValue().isEmpty())
                 .findFirst()
                 .get()
-                .getStringValue(), ProcessingWorkerVersion.class));
+                .getStringValue(), ProcessingWorkerVersion[].class));
         assertThat(processingWorkerVersions.size(), is(equalTo(1)));
 
         final ProcessingWorkerVersion versionAdded = processingWorkerVersions
@@ -1567,7 +1567,7 @@ public class WorkflowControlTest
                 .filter(x -> !x.getStringValue().isEmpty())
                 .findFirst()
                 .get()
-                .getStringValue(), ProcessingWorkerVersion.class));
+                .getStringValue(), ProcessingWorkerVersion[].class));
         assertThat(processingWorkerVersions.size(), is(equalTo(1)));
 
         final ProcessingWorkerVersion versionAdded = processingWorkerVersions
@@ -1592,7 +1592,6 @@ public class WorkflowControlTest
 
         assertThat(document.getField("PROCESSING_WORKER_VERSIONS").getValues()
             .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((0L))));
-
         invocable.invokeFunction("processWorkersVersions", document);
 
         assertThat(document.getField("PROCESSING_WORKER_VERSIONS").getValues()
@@ -1605,7 +1604,7 @@ public class WorkflowControlTest
                 .filter(x -> !x.getStringValue().isEmpty())
                 .findFirst()
                 .get()
-                .getStringValue(), ProcessingWorkerVersion.class));
+                .getStringValue(), ProcessingWorkerVersion[].class));
         assertThat(processingWorkerVersions.size(), is(equalTo(1)));
 
         final ProcessingWorkerVersion versionAdded = processingWorkerVersions
@@ -1626,7 +1625,7 @@ public class WorkflowControlTest
         assertThat(document.getField("PROCESSING_WORKER_VERSIONS").getValues()
             .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((1L))));
 
-        final String arrayExtracted = "[" + document.getField("PROCESSING_WORKER_VERSIONS").getStringValues().get(0) + "]";
+        final String arrayExtracted = document.getField("PROCESSING_WORKER_VERSIONS").getStringValues().get(0);
         final ProcessingWorkerVersion[] arrayDeserialized = mapper.readValue(arrayExtracted, ProcessingWorkerVersion[].class);
         assertThat(arrayDeserialized.length, is(equalTo(2)));
 
@@ -1660,7 +1659,7 @@ public class WorkflowControlTest
             .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((1L))));
 
         final ObjectMapper mapper = new ObjectMapper();
-        final String arrayExtracted = "[" + document.getField("PROCESSING_WORKER_VERSIONS").getStringValues().get(0) + "]";
+        final String arrayExtracted = document.getField("PROCESSING_WORKER_VERSIONS").getStringValues().get(0);
         final ProcessingWorkerVersion[] arrayDeserialized = mapper.readValue(arrayExtracted, ProcessingWorkerVersion[].class);
         assertThat(arrayDeserialized.length, is(equalTo(2)));
 
@@ -1708,7 +1707,7 @@ public class WorkflowControlTest
                 .filter(x -> !x.getStringValue().isEmpty())
                 .findFirst()
                 .get()
-                .getStringValue(), ProcessingWorkerVersion.class));
+                .getStringValue(), ProcessingWorkerVersion[].class));
         assertThat(processingWorkerVersions.size(), is(equalTo(1)));
 
         final ProcessingWorkerVersion versionAdded = processingWorkerVersions
@@ -1775,8 +1774,8 @@ public class WorkflowControlTest
                                           "script-to-call-buildStringifiedContentFromArrayForField.js");
         final Invocable invocable = WorkflowHelper.createInvocableNashornEngine(null, Arrays.asList(testScript, workflowControl));
         final String result = (String) invocable.invokeFunction("callBuildStringifiedContentFromArrayForField");
-        assertThat(result, is(equalTo(("{\"NAME\":\"worker-entityextract\",\"VERSION\":\"1.0.0-SNASHOT\"},"
-                   + "{\"NAME\":\"worker-familyhashing\",\"VERSION\":\"2.4.0-SNASHOT\"}"))));
+        assertThat(result, is(equalTo(("[{\"NAME\":\"worker-entityextract\",\"VERSION\":\"1.0.0-SNASHOT\"},"
+                   + "{\"NAME\":\"worker-familyhashing\",\"VERSION\":\"2.4.0-SNASHOT\"}]"))));
     }
 
     @Test
@@ -1788,7 +1787,7 @@ public class WorkflowControlTest
                                           "script-to-call-buildStringifiedContentFromArrayForField.js");
         final Invocable invocable = WorkflowHelper.createInvocableNashornEngine(null, Arrays.asList(testScript, workflowControl));
         final String result = (String) invocable.invokeFunction("callBuildStringifiedContentFromArrayForFieldSingle");
-        assertThat(result, is(equalTo(("{\"NAME\":\"worker-entityextract\",\"VERSION\":\"1.0.0-SNASHOT\"}"))));
+        assertThat(result, is(equalTo(("[{\"NAME\":\"worker-entityextract\",\"VERSION\":\"1.0.0-SNASHOT\"}]"))));
     }
 
     @Test
@@ -1800,7 +1799,7 @@ public class WorkflowControlTest
                                           "script-to-call-buildStringifiedContentFromArrayForField.js");
         final Invocable invocable = WorkflowHelper.createInvocableNashornEngine(null, Arrays.asList(testScript, workflowControl));
         final String result = (String) invocable.invokeFunction("callBuildStringifiedContentFromArrayForFieldEmpty");
-        assertThat(result, is(equalTo((""))));
+        assertThat(result, is(equalTo(("[]"))));
     }
 
     @Test(expected = ScriptException.class)
