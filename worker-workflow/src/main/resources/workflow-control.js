@@ -271,7 +271,7 @@ function processWorkersVersions(document) {
     var currentSourceInfoWorkerVersion = getCurrentWorkerVersion(document);
 
     if (fieldExists(document, "PROCESSING_WORKER_VERSIONS")) {
-        var arrayOfWorkersVersions = getAllWorkerVersions(document.getField("PROCESSING_WORKER_VERSIONS").getStringValues());
+        var arrayOfWorkersVersions = getAllWorkerVersions(Java.from(document.getField("PROCESSING_WORKER_VERSIONS").getStringValues()));
         var positionInArrayOfCurrentWorkerVersion = 
                 getPositionInArrayOfCurrentWorkerVersion(arrayOfWorkersVersions, currentSourceInfoWorkerName);
         if (positionInArrayOfCurrentWorkerVersion === -1) {
@@ -327,16 +327,14 @@ function createWorkerVersionObject(name, version) {
 
 function getAllWorkerVersions(fieldStringValues) {
     var arrayOfWorkersVersions = [];
-    fieldStringValues.stream().forEach(function (version) {
-        var parsed = JSON.parse(version);
-        if (Array.isArray(parsed)) {
-            for (var i = 0; i < parsed.length; i++) {
-                arrayOfWorkersVersions.push(parsed[i]);
-            }
-        } else {
-            arrayOfWorkersVersions.push(parsed);
+    var parsed = JSON.parse(fieldStringValues);
+    if (Array.isArray(parsed)) {
+        for (var i = 0; i < parsed.length; i++) {
+            arrayOfWorkersVersions.push(parsed[i]);
         }
-    });
+    } else {
+        arrayOfWorkersVersions.push(parsed);
+    }
     return arrayOfWorkersVersions;
 }
 
