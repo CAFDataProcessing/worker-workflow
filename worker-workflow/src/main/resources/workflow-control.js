@@ -236,7 +236,7 @@ function processFailures(document) {
                     STACK: f.getFailureStack() || undefined,
                     WORKFLOW_ACTION: document.getRootDocument().getField("CAF_WORKFLOW_ACTION").getStringValues().get(0),
                     VERSION: source.trim() + " " + numericVersion.trim(),
-                    WORKFLOW_NAME: document.getField("CAF_WORKFLOW_NAME").getStringValues().get(0),
+                    WORKFLOW_NAME: document.getRootDocument().getField("CAF_WORKFLOW_NAME").getStringValues().get(0),
                     MESSAGE: f.getFailureMessage(),
                     DATE: new Date().toISOString()
                 };
