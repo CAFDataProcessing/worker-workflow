@@ -229,8 +229,8 @@ function processFailures(document) {
 
         for each (var f in listOfFailures) {
             if (!isFailureInOriginal(listOfOriginalFailures, f)) {
-                var source = getSourceInfoName(document);
-                var numericVersion = getSourceInfoVersion(document);
+                var source = getCurrentWorkerName(document);
+                var numericVersion = getCurrentWorkerVersion(document);
                 var message = {
                     ID: f.getFailureId(),
                     STACK: f.getFailureStack() || undefined,
@@ -289,14 +289,6 @@ function processWorkersVersions(document) {
         arrayOfWorkersVersions = [workerVersion];
     }
     document.getField("PROCESSING_WORKER_VERSIONS").set(buildStringifiedContentFromArrayForField(arrayOfWorkersVersions));
-}
-
-function getSourceInfoName(document) {
-    return document.getTask().getService(com.hpe.caf.api.worker.WorkerTaskData.class).getSourceInfo().getName();
-}
-
-function getSourceInfoVersion(document) {
-    return document.getTask().getService(com.hpe.caf.api.worker.WorkerTaskData.class).getSourceInfo().getVersion();
 }
 
 function getCurrentWorkerName(document) {

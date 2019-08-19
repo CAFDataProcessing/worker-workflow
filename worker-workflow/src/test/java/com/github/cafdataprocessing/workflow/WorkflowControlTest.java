@@ -86,7 +86,7 @@ public class WorkflowControlTest
 
         // create the various mocked objects to create the document that will be processed
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null,
-                                                                null, builderDoc, false, false);
+                                                                null, builderDoc, true, false);
 
         invocable.invokeFunction("processFailures", document);
 
@@ -109,7 +109,7 @@ public class WorkflowControlTest
         assertThat(mainFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
         assertThat(mainFailure,
-                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("source_name 5")))));
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("worker-base 1.0.0-SNAPSHOT")))));
         assertThat(mainFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
         assertThat(mainFailure,
@@ -141,7 +141,7 @@ public class WorkflowControlTest
         builderDoc.addFailure("error_id_2", "message 2");
 
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null,
-                                                                builderDoc, builderDoc, false, true);
+                                                                builderDoc, builderDoc, true, true);
 
         invocable.invokeFunction("processFailures", document);
 
@@ -164,7 +164,7 @@ public class WorkflowControlTest
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
         assertThat(firstFailure,
-                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("source_name 5")))));
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("worker-base 1.0.0-SNAPSHOT")))));
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
         assertThat(firstFailure,
@@ -186,7 +186,7 @@ public class WorkflowControlTest
         assertThat(secondFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
         assertThat(secondFailure,
-                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("source_name 5")))));
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("worker-base 1.0.0-SNAPSHOT")))));
         assertThat(secondFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
         assertThat(secondFailure,
@@ -215,7 +215,7 @@ public class WorkflowControlTest
         builderDoc.addFailure("error_id_2", "message 2");
 
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null,
-                                                                builderDoc, builderDoc, false, true);
+                                                                builderDoc, builderDoc, true, true);
 
         invocable.invokeFunction("processFailures", document);
 
@@ -237,7 +237,7 @@ public class WorkflowControlTest
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
         assertThat(firstFailure,
-                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("source_name 5")))));
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("worker-base 1.0.0-SNAPSHOT")))));
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
         assertThat(firstFailure,
@@ -258,7 +258,7 @@ public class WorkflowControlTest
         assertThat(secondFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
         assertThat(secondFailure,
-                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("source_name 5")))));
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("worker-base 1.0.0-SNAPSHOT")))));
         assertThat(secondFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
         assertThat(secondFailure,
@@ -287,7 +287,7 @@ public class WorkflowControlTest
         builderDoc.addFailure("error_id_2", "message 2");
 
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null,
-                                                                builderDoc, builderDoc, false, true);
+                                                                builderDoc, builderDoc, true, true);
 
         invocable.invokeFunction("processFailures", document);
     }
@@ -312,7 +312,7 @@ public class WorkflowControlTest
         builderDoc.addFailure("error_id_2", "message 2");
 
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null,
-                                                                builderDoc, builderDoc, false, true);
+                                                                builderDoc, builderDoc, true, true);
 
         invocable.invokeFunction("processFailures", document);
     }
@@ -337,7 +337,7 @@ public class WorkflowControlTest
         builderDoc.addFailure(null, "message 1");
 
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null,
-                                                                builderDoc, builderDoc, false, true);
+                                                                builderDoc, builderDoc, true, true);
 
         invocable.invokeFunction("processFailures", document);
         assertThat(document.getFailures().size(), is(equalTo((0))));
@@ -359,7 +359,7 @@ public class WorkflowControlTest
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
         assertThat(firstFailure,
-                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("source_name 5")))));
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("worker-base 1.0.0-SNAPSHOT")))));
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
         assertThat(firstFailure,
@@ -388,7 +388,7 @@ public class WorkflowControlTest
         builderDoc.addFailure("error_id_1", null);
 
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null,
-                                                                builderDoc, builderDoc, false, true);
+                                                                builderDoc, builderDoc, true, true);
 
         invocable.invokeFunction("processFailures", document);
         assertThat(document.getFailures().size(), is(equalTo((0))));
@@ -410,35 +410,13 @@ public class WorkflowControlTest
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
         assertThat(firstFailure,
-                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("source_name 5")))));
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("worker-base 1.0.0-SNAPSHOT")))));
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("MESSAGE", is(jsonNull()))));
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("DATE", is(not(jsonNull())))));
-    }
-
-    @Test(expected = javax.script.ScriptException.class)
-    public void failuresNegativeNoSourceNameTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
-    {
-        // this method fails because there is not a SOURCE NAME in the document
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
-
-        final Document builderDoc = DocumentBuilder.configure().withFields()
-            .addFieldValues("CAF_WORKFLOW_ACTION", "family_hashing")
-            .addFieldValue("CAF_WORKFLOW_NAME", "example_workflow")
-            .addFieldValue("FAILURES", "")
-            .addFieldValue("example", "value from field")
-            .addFieldValue("fieldHasValue", "This value")
-            .documentBuilder()
-            .withSubDocuments(DocumentBuilder.configure().withFields()
-                .addFieldValue("field-should-exist", "action 2 requires this field to be present")
-                .documentBuilder())
-            .build();
-        builderDoc.addFailure("error_id_1", "message 1");
-
-        invocable.invokeFunction("processFailures", builderDoc);
     }
 
     @Test
@@ -628,7 +606,7 @@ public class WorkflowControlTest
         assertThat(failureMessage.getFailureId(), is(equalTo("error_id_1")));
         assertThat(failureMessage.getStack(), is(nullValue()));
         assertThat(failureMessage.getMessage(), is(equalTo("message 1")));
-        assertThat(failureMessage.getVersion(), is(equalTo("source_name 5")));
+        assertThat(failureMessage.getVersion(), is(equalTo("worker-base 1.0.0-SNAPSHOT")));
         assertThat(failureMessage.getWorkflowName(), is(equalTo("example_workflow")));
         assertThat(failureMessage.getWorkflowAction(), is(equalTo("family_hashing")));
         assertThat(failureMessage.getDate(), is(not(isEmptyString())));
@@ -678,7 +656,7 @@ public class WorkflowControlTest
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
         assertThat(firstFailure,
-                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("source_name 5")))));
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("worker-base 1.0.0-SNAPSHOT")))));
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
         assertThat(firstFailure,
@@ -729,7 +707,7 @@ public class WorkflowControlTest
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
         assertThat(firstFailure,
-                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("source_name 5")))));
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("worker-base 1.0.0-SNAPSHOT")))));
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
         assertThat(firstFailure,
@@ -823,7 +801,7 @@ public class WorkflowControlTest
         assertThat(mainFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
         assertThat(mainFailure,
-                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("source_name 5")))));
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("worker-base 1.0.0-SNAPSHOT")))));
         assertThat(mainFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
         assertThat(mainFailure,
@@ -975,7 +953,7 @@ public class WorkflowControlTest
         assertThat(mainFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
         assertThat(mainFailure,
-                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("source_name 5")))));
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("worker-base 1.0.0-SNAPSHOT")))));
         assertThat(mainFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
         assertThat(mainFailure,
@@ -1013,7 +991,7 @@ public class WorkflowControlTest
         assertThat(secondFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
         assertThat(secondFailure,
-                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("source_name 5")))));
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("worker-base 1.0.0-SNAPSHOT")))));
         assertThat(secondFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
         assertThat(secondFailure,
@@ -1050,7 +1028,7 @@ public class WorkflowControlTest
         assertThat(thirdFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
         assertThat(thirdFailure,
-                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("source_name 5")))));
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("worker-base 1.0.0-SNAPSHOT")))));
         assertThat(thirdFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
         assertThat(thirdFailure,
@@ -1109,7 +1087,7 @@ public class WorkflowControlTest
         assertThat(mainFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
         assertThat(mainFailure,
-                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("source_name 5")))));
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("worker-base 1.0.0-SNAPSHOT")))));
         assertThat(mainFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
         assertThat(mainFailure,
@@ -1239,98 +1217,6 @@ public class WorkflowControlTest
 
         assertThat(document.getField("FAILURES").getValues()
             .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((0L))));
-    }
-
-    @Test
-    public void getSourceInfoNameTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
-    {
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
-
-        final Document builderDoc = DocumentBuilder.configure().withFields()
-            .addFieldValues("CAF_WORKFLOW_ACTION", "elastic")
-            .addFieldValue("CAF_WORKFLOW_NAME", "example_workflow")
-            .addFieldValue("FAILURES", "")
-            .addFieldValue("example", "value from field")
-            .addFieldValue("fieldHasValue", "This value")
-            .documentBuilder()
-            .build();
-
-        final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null,
-                                                                null, true, true);
-        final String result = (String) invocable.invokeFunction("getSourceInfoName", document);
-
-        assertThat(result, is(equalTo(("source_name"))));
-    }
-
-    @Test
-    public void getSourceInfoNameEmptyTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
-    {
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
-
-        final Document builderDoc = DocumentBuilder.configure().withFields()
-            .addFieldValues("CAF_WORKFLOW_ACTION", "elastic")
-            .addFieldValue("CAF_WORKFLOW_NAME", "example_workflow")
-            .addFieldValue("FAILURES", "")
-            .addFieldValue("example", "value from field")
-            .addFieldValue("fieldHasValue", "This value")
-            .documentBuilder()
-            .build();
-
-        final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null,
-                                                                null, true, true);
-        document.getTask().getService(WorkerTaskData.class).getSourceInfo().setName(null);
-        final String result = (String) invocable.invokeFunction("getSourceInfoName", document);
-        assertThat(result, is(nullValue()));
-
-        document.getTask().getService(WorkerTaskData.class).getSourceInfo().setName("");
-        final String result2 = (String) invocable.invokeFunction("getSourceInfoName", document);
-        assertThat(result2, is(""));
-    }
-
-    @Test
-    public void getSourceInfoVersionTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
-    {
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
-
-        final Document builderDoc = DocumentBuilder.configure().withFields()
-            .addFieldValues("CAF_WORKFLOW_ACTION", "elastic")
-            .addFieldValue("CAF_WORKFLOW_NAME", "example_workflow")
-            .addFieldValue("FAILURES", "")
-            .addFieldValue("example", "value from field")
-            .addFieldValue("fieldHasValue", "This value")
-            .documentBuilder()
-            .build();
-
-        final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null,
-                                                                null, true, true);
-        final String result = (String) invocable.invokeFunction("getSourceInfoVersion", document);
-
-        assertThat(result, is(equalTo(("5"))));
-    }
-
-    @Test
-    public void getSourceInfoVersionEmptyTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
-    {
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
-
-        final Document builderDoc = DocumentBuilder.configure().withFields()
-            .addFieldValues("CAF_WORKFLOW_ACTION", "elastic")
-            .addFieldValue("CAF_WORKFLOW_NAME", "example_workflow")
-            .addFieldValue("FAILURES", "")
-            .addFieldValue("example", "value from field")
-            .addFieldValue("fieldHasValue", "This value")
-            .documentBuilder()
-            .build();
-
-        final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null,
-                                                                null, true, true);
-        document.getTask().getService(WorkerTaskData.class).getSourceInfo().setVersion(null);
-        final String result = (String) invocable.invokeFunction("getSourceInfoVersion", document);
-        assertThat(result, is(nullValue()));
-
-        document.getTask().getService(WorkerTaskData.class).getSourceInfo().setVersion("");
-        final String result2 = (String) invocable.invokeFunction("getSourceInfoVersion", document);
-        assertThat(result2, is(""));
     }
 
     @Test
