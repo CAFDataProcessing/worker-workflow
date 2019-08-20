@@ -36,24 +36,19 @@ import static com.spotify.hamcrest.jackson.IsJsonObject.jsonObject;
 import static com.spotify.hamcrest.jackson.IsJsonStringMatching.isJsonStringMatching;
 import static com.spotify.hamcrest.jackson.IsJsonText.jsonText;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import static java.util.stream.Collectors.toList;
 import javax.script.Invocable;
 import javax.script.ScriptException;
-import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItems;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.isEmptyString;
-import static org.hamcrest.Matchers.isIn;
 import static org.hamcrest.core.IsNull.nullValue;
 import org.junit.Test;
 
@@ -1223,7 +1218,7 @@ public class WorkflowControlTest
     {
         final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
         final Document builderDoc = DocumentBuilder.fromFile(
-            Paths.get("src", "test", "resources", "input-document-no-subdoc-with-processing-worker-versions-field-4.json")
+            Paths.get("src", "test", "resources", "input-document-no-subdoc.json")
                 .toString()).build();
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null,
                                                                 builderDoc, true, false);
@@ -1246,7 +1241,7 @@ public class WorkflowControlTest
     {
         final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
         final Document builderDoc = DocumentBuilder.fromFile(
-            Paths.get("src", "test", "resources", "input-document-no-subdoc-with-processing-worker-versions-field-4.json")
+            Paths.get("src", "test", "resources", "input-document-no-subdoc.json")
                 .toString()).build();
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null,
                                                                 builderDoc, true, false);
