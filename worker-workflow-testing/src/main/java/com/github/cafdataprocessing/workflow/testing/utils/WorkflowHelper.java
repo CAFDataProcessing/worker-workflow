@@ -16,7 +16,9 @@
 package com.github.cafdataprocessing.workflow.testing.utils;
 
 import com.github.cafdataprocessing.workflow.testing.models.ApplicationMock;
+import com.github.cafdataprocessing.workflow.testing.models.ConfigurationSourceMock;
 import com.github.cafdataprocessing.workflow.testing.models.DocumentMock;
+import com.github.cafdataprocessing.workflow.testing.models.FieldsMock;
 import com.github.cafdataprocessing.workflow.testing.models.InputMessageProcessorMock;
 import com.github.cafdataprocessing.workflow.testing.models.SubdocumentMock;
 import com.github.cafdataprocessing.workflow.testing.models.TaskMock;
@@ -24,6 +26,7 @@ import com.github.cafdataprocessing.workflow.testing.models.WorkerTaskDataMock;
 import com.hpe.caf.api.worker.TaskSourceInfo;
 import com.hpe.caf.api.worker.TaskStatus;
 import com.hpe.caf.api.worker.WorkerTaskData;
+import com.hpe.caf.worker.document.config.DocumentWorkerConfiguration;
 import com.hpe.caf.worker.document.model.Application;
 import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.model.Failures;
@@ -117,17 +120,26 @@ public class WorkflowHelper
         final TaskSourceInfo tsi = new TaskSourceInfo("source_name", "5");
         final WorkerTaskData wtd = new WorkerTaskDataMock("classifier", 2, TaskStatus.RESULT_SUCCESS, new byte[0], new byte[0], null,
                                                           "to", tsi);
+        final DocumentWorkerConfiguration dwc = new DocumentWorkerConfiguration();
+        dwc.setWorkerName("worker-base");
+        dwc.setWorkerVersion("1.0.0-SNAPSHOT");
+        final ConfigurationSourceMock csm = new ConfigurationSourceMock(dwc);
         final TaskMock task;
+        final Application application;
         if (!includeApplication) {
             task = new TaskMock(new HashMap<>(), rootDoc, null, wtd, null, null);
+            application = null;
         } else {
             final InputMessageProcessor inputMessageProcessorTest = new InputMessageProcessorMock(inputMessageProcessor);
-            final Application application = new ApplicationMock(inputMessageProcessorTest);
+            application = new ApplicationMock(inputMessageProcessorTest, csm);
             task = new TaskMock(new HashMap<>(), rootDoc, null, wtd, null, application);
         }
-        final Document temp
-            = new DocumentMock(reference, fields, task, new HashMap<>(), failures, subdocuments, null, parentDoc, rootDoc);
+        final DocumentMock temp
+            = new DocumentMock(reference, fields, task, new HashMap<>(), failures, subdocuments, application, parentDoc, rootDoc);
         task.setDocument(temp);
+        final Fields mockedFields = new FieldsMock(fields, null, temp);
+        temp.setFields(mockedFields);
+        temp.setRootDocument(temp);
         return temp;
     }
 
@@ -153,6 +165,10 @@ public class WorkflowHelper
         final TaskSourceInfo tsi = new TaskSourceInfo("source_name", "5");
         final WorkerTaskData wtd = new WorkerTaskDataMock("classifier", 2, TaskStatus.RESULT_SUCCESS, new byte[0], new byte[0], null,
                                                           "to", tsi);
+        final DocumentWorkerConfiguration dwc = new DocumentWorkerConfiguration();
+        dwc.setWorkerName("worker-base");
+        dwc.setWorkerVersion("1.0.0-SNAPSHOT");
+        final ConfigurationSourceMock csm = new ConfigurationSourceMock(dwc);
         final TaskMock task;
         final Application application;
         if (!includeApplication) {
@@ -160,7 +176,7 @@ public class WorkflowHelper
             application = null;
         } else {
             final InputMessageProcessor inputMessageProcessorTest = new InputMessageProcessorMock(inputMessageProcessor);
-            application = new ApplicationMock(inputMessageProcessorTest);
+            application = new ApplicationMock(inputMessageProcessorTest, csm);
             task = new TaskMock(new HashMap<>(), rootDoc, null, wtd, null, application);
         }
         final Subdocument temp

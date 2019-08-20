@@ -15,6 +15,7 @@
  */
 package com.github.cafdataprocessing.workflow.testing.models;
 
+import com.hpe.caf.api.ConfigurationSource;
 import com.hpe.caf.worker.document.model.Application;
 import com.hpe.caf.worker.document.model.BatchSizeController;
 import com.hpe.caf.worker.document.model.InputMessageProcessor;
@@ -23,10 +24,12 @@ import com.hpe.caf.worker.document.model.ServiceLocator;
 public class ApplicationMock implements Application
 {
     private final InputMessageProcessor inputMessageProcessor;
+    private final ConfigurationSource configurationSource;
 
-    public ApplicationMock(final InputMessageProcessor inputMessageProcessor)
+    public ApplicationMock(final InputMessageProcessor inputMessageProcessor, final ConfigurationSource configurationSource)
     {
         this.inputMessageProcessor = inputMessageProcessor;
+        this.configurationSource = configurationSource;
     }
 
     @Override
@@ -44,7 +47,7 @@ public class ApplicationMock implements Application
     @Override
     public <S> S getService(Class<S> service)
     {
-        return null;
+        return (S) configurationSource;
     }
 
     @Override
@@ -57,6 +60,11 @@ public class ApplicationMock implements Application
     public Application getApplication()
     {
         return null;
+    }
+
+    public ConfigurationSource getConfigurationSource()
+    {
+        return configurationSource;
     }
 
 }

@@ -229,8 +229,8 @@ function processFailures(document) {
 
         for each (var f in listOfFailures) {
             if (!isFailureInOriginal(listOfOriginalFailures, f)) {
-                var source = document.getTask().getService(com.hpe.caf.api.worker.WorkerTaskData.class).getSourceInfo().getName();
-                var numericVersion = document.getTask().getService(com.hpe.caf.api.worker.WorkerTaskData.class).getSourceInfo().getVersion();
+                var source = getCurrentWorkerName(document);
+                var numericVersion = getCurrentWorkerVersion(document);
                 var message = {
                     ID: f.getFailureId(),
                     STACK: f.getFailureStack() || undefined,
@@ -259,6 +259,16 @@ function isFailureInOriginal(listOfOriginalFailures, newFailure) {
 
 function isLastAction(action) {
     return ACTIONS[ACTIONS.length - 1 ].name === action;
+}
+
+function getCurrentWorkerName(document) {
+    return document.getApplication().getService(com.hpe.caf.api.ConfigurationSource.class)
+            .getConfiguration(com.hpe.caf.worker.document.config.DocumentWorkerConfiguration.class).getWorkerName();
+}
+
+function getCurrentWorkerVersion(document) {
+    return document.getApplication().getService(com.hpe.caf.api.ConfigurationSource.class)
+            .getConfiguration(com.hpe.caf.worker.document.config.DocumentWorkerConfiguration.class).getWorkerVersion();
 }
 
 //Field Conditions
