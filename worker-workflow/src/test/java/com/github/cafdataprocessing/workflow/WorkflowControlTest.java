@@ -1408,15 +1408,9 @@ public class WorkflowControlTest
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null,
                                                                 null, true, true);
         final ScriptObjectMirror scriptObjectMirror = (ScriptObjectMirror) invocable
-            .invokeFunction("getAllWorkerVersions", document.getField("PROCESSING_WORKER_VERSIONS").getStringValues());
-        final List<ScriptObjectMirror> list = new ArrayList<>();
+            .invokeFunction("getAllWorkerVersions", document.getField("PROCESSING_WORKER_VERSIONS").getValues());
         for (final Object value : scriptObjectMirror.values()) {
-            for (final Object som : ((ScriptObjectMirror) value).values()) {
-                list.add((ScriptObjectMirror) som);
-            }
-        }
-        assertThat(list, hasSize(2));
-        for (final ScriptObjectMirror sco : list) {
+            final ScriptObjectMirror sco = (ScriptObjectMirror) value;
             assertThat(sco.getMember("NAME"), isIn(Arrays.asList("worker-classification", "worker-entityextract")));
             assertThat(sco.getMember("VERSION"), isIn(Arrays.asList("3.3.0-SNAPSHOT", "4.1.0-SNAPSHOT")));
         }
@@ -1433,32 +1427,40 @@ public class WorkflowControlTest
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null,
                                                                 null, true, true);
         final ScriptObjectMirror scriptObjectMirror = (ScriptObjectMirror) invocable
-            .invokeFunction("getAllWorkerVersions", document.getField("PROCESSING_WORKER_VERSIONS").getStringValues());
+            .invokeFunction("getAllWorkerVersions", document.getField("PROCESSING_WORKER_VERSIONS").getValues());
+        for (final Object value : scriptObjectMirror.values()) {
+            final ScriptObjectMirror sco = (ScriptObjectMirror) value;
+            assertThat(sco.getMember("NAME"), is(equalTo("worker-classification")));
+            assertThat(sco.getMember("VERSION"), is(equalTo("3.3.0-SNAPSHOT")));
+        }
+    }
+
+    @Test
+    public void getAllWorkerVersionsEmptyTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
+    {
+        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+        final ScriptObjectMirror scriptObjectMirror = (ScriptObjectMirror) invocable.invokeFunction("getAllWorkerVersions", "");
         final List<ScriptObjectMirror> list = new ArrayList<>();
         for (final Object value : scriptObjectMirror.values()) {
             for (final Object som : ((ScriptObjectMirror) value).values()) {
                 list.add((ScriptObjectMirror) som);
             }
         }
-        assertThat(list, hasSize(1));
-        for (final ScriptObjectMirror sco : list) {
-            assertThat(sco.getMember("NAME"), is(equalTo("worker-classification")));
-            assertThat(sco.getMember("VERSION"), is(equalTo("3.3.0-SNAPSHOT")));
-        }
+        assertThat(list, hasSize(0));
     }
 
-    @Test(expected = ScriptException.class)
-    public void getAllWorkerVersionsEmptyTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
-    {
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
-        invocable.invokeFunction("getAllWorkerVersions", "");
-    }
-
-    @Test(expected = ScriptException.class)
+    @Test
     public void getAllWorkerVersionsNullTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
         final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
-        invocable.invokeFunction("getAllWorkerVersions", null);
+        final ScriptObjectMirror scriptObjectMirror = (ScriptObjectMirror) invocable.invokeFunction("getAllWorkerVersions", null);
+        final List<ScriptObjectMirror> list = new ArrayList<>();
+        for (final Object value : scriptObjectMirror.values()) {
+            for (final Object som : ((ScriptObjectMirror) value).values()) {
+                list.add((ScriptObjectMirror) som);
+            }
+        }
+        assertThat(list, hasSize(0));
     }
 
     @Test
@@ -1652,9 +1654,7 @@ public class WorkflowControlTest
                 .toString()).build();
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null,
                                                                 builderDoc, true, false);
-
         invocable.invokeFunction("processWorkersVersions", document);
-
         assertThat(document.getField("PROCESSING_WORKER_VERSIONS").getValues()
             .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((1L))));
 
@@ -1763,53 +1763,5 @@ public class WorkflowControlTest
 
         final String result2 = (String) invocable.invokeFunction("getCurrentWorkerVersion", document2);
         assertThat(result2, is(equalTo(("5.6.2-SNAPSHOT"))));
-    }
-
-    @Test
-    public void buildStringifiedContentFromArrayForFieldTest() throws ScriptException, NoSuchMethodException, WorkerException,
-                                                                      IOException, ConfigurationException
-    {
-        final Path workflowControl = Paths.get("src", "main", "resources", "workflow-control.js");
-        final Path testScript = Paths.get("src", "test", "resources", "scripts",
-                                          "script-to-call-buildStringifiedContentFromArrayForField.js");
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngine(null, Arrays.asList(testScript, workflowControl));
-        final String result = (String) invocable.invokeFunction("callBuildStringifiedContentFromArrayForField");
-        assertThat(result, is(equalTo(("[{\"NAME\":\"worker-entityextract\",\"VERSION\":\"1.0.0-SNASHOT\"},"
-                   + "{\"NAME\":\"worker-familyhashing\",\"VERSION\":\"2.4.0-SNASHOT\"}]"))));
-    }
-
-    @Test
-    public void buildStringifiedContentFromArrayForFieldSingleTest() throws ScriptException, NoSuchMethodException, WorkerException,
-                                                                            IOException, ConfigurationException
-    {
-        final Path workflowControl = Paths.get("src", "main", "resources", "workflow-control.js");
-        final Path testScript = Paths.get("src", "test", "resources", "scripts",
-                                          "script-to-call-buildStringifiedContentFromArrayForField.js");
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngine(null, Arrays.asList(testScript, workflowControl));
-        final String result = (String) invocable.invokeFunction("callBuildStringifiedContentFromArrayForFieldSingle");
-        assertThat(result, is(equalTo(("[{\"NAME\":\"worker-entityextract\",\"VERSION\":\"1.0.0-SNASHOT\"}]"))));
-    }
-
-    @Test
-    public void buildStringifiedContentFromArrayForFieldEmptyTest() throws ScriptException, NoSuchMethodException, WorkerException,
-                                                                           IOException, ConfigurationException
-    {
-        final Path workflowControl = Paths.get("src", "main", "resources", "workflow-control.js");
-        final Path testScript = Paths.get("src", "test", "resources", "scripts",
-                                          "script-to-call-buildStringifiedContentFromArrayForField.js");
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngine(null, Arrays.asList(testScript, workflowControl));
-        final String result = (String) invocable.invokeFunction("callBuildStringifiedContentFromArrayForFieldEmpty");
-        assertThat(result, is(equalTo(("[]"))));
-    }
-
-    @Test(expected = ScriptException.class)
-    public void buildStringifiedContentFromArrayForFieldNullTest() throws ScriptException, NoSuchMethodException, WorkerException,
-                                                                          IOException, ConfigurationException
-    {
-        final Path workflowControl = Paths.get("src", "main", "resources", "workflow-control.js");
-        final Path testScript = Paths.get("src", "test", "resources", "scripts",
-                                          "script-to-call-buildStringifiedContentFromArrayForField.js");
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngine(null, Arrays.asList(testScript, workflowControl));
-        invocable.invokeFunction("callBuildStringifiedContentFromArrayForFieldNull");
     }
 }

@@ -271,7 +271,7 @@ function processWorkersVersions(document) {
     var currentSourceInfoWorkerVersion = getCurrentWorkerVersion(document);
 
     if (fieldExists(document, "PROCESSING_WORKER_VERSIONS")) {
-        var arrayOfWorkersVersions = getAllWorkerVersions(Java.from(document.getField("PROCESSING_WORKER_VERSIONS").getStringValues()));
+        var arrayOfWorkersVersions = getAllWorkerVersions(document.getField("PROCESSING_WORKER_VERSIONS").getValues());
         var positionInArrayOfCurrentWorkerVersion = 
                 getPositionInArrayOfCurrentWorkerVersion(arrayOfWorkersVersions, currentSourceInfoWorkerName);
         if (positionInArrayOfCurrentWorkerVersion === -1) {
@@ -288,7 +288,8 @@ function processWorkersVersions(document) {
         var workerVersion = createWorkerVersionObject(currentSourceInfoWorkerName, currentSourceInfoWorkerVersion);
         arrayOfWorkersVersions = [workerVersion];
     }
-    document.getField("PROCESSING_WORKER_VERSIONS").set(buildStringifiedContentFromArrayForField(arrayOfWorkersVersions));
+    print(JSON.stringify(arrayOfWorkersVersions));
+    document.getField("PROCESSING_WORKER_VERSIONS").set(JSON.stringify(arrayOfWorkersVersions));
 }
 
 function getSourceInfoName(document) {
@@ -325,29 +326,24 @@ function createWorkerVersionObject(name, version) {
     };
 }
 
-function getAllWorkerVersions(fieldStringValues) {
+function getAllWorkerVersions(fieldValues) {
     var arrayOfWorkersVersions = [];
-    var parsed = JSON.parse(fieldStringValues);
-    if (Array.isArray(parsed)) {
-        for (var i = 0; i < parsed.length; i++) {
-            arrayOfWorkersVersions.push(parsed[i]);
+    for each (var fieldValue in fieldValues) {
+        print(fieldValue);
+        print(fieldValue.getStringValue());
+        var parsed = JSON.parse(fieldValue.getStringValue());
+        if (Array.isArray(parsed)) {
+            for (var i = 0; i < parsed.length; i++) {
+                print(JSON.stringify(parsed[i]));
+                arrayOfWorkersVersions.push(parsed[i]);
+            }
+        } else {
+            print(JSON.stringify(parsed));
+            arrayOfWorkersVersions.push(parsed);
         }
-    } else {
-        arrayOfWorkersVersions.push(parsed);
     }
+    print(JSON.stringify(arrayOfWorkersVersions));
     return arrayOfWorkersVersions;
-}
-
-function buildStringifiedContentFromArrayForField(arrayToBeProcessed) {
-    var output = "[";
-    for (var i = 0; i < arrayToBeProcessed.length; i++) {
-        output = output + JSON.stringify(arrayToBeProcessed[i]);
-        if ((i + 1) !== arrayToBeProcessed.length) {
-            output = output + ",";
-        }
-    }
-    output = output + "]";
-    return output;
 }
 
 //Field Conditions
