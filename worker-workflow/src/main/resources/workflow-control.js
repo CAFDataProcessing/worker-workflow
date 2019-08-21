@@ -289,7 +289,7 @@ function processWorkersVersions(document) {
         arrayOfWorkersVersions = [workerVersion];
     }
     print(JSON.stringify(arrayOfWorkersVersions));
-    document.getField("PROCESSING_WORKER_VERSIONS").set(JSON.stringify(arrayOfWorkersVersions));
+    setFieldUsingAnArray(document, arrayOfWorkersVersions);
 }
 
 function getSourceInfoName(document) {
@@ -344,6 +344,13 @@ function getAllWorkerVersions(fieldValues) {
     }
     print(JSON.stringify(arrayOfWorkersVersions));
     return arrayOfWorkersVersions;
+}
+
+function setFieldUsingAnArray(document, arrayOfValues) {
+    document.getField("PROCESSING_WORKER_VERSIONS").clear();
+    for (var i = 0; i < arrayOfValues.length; i++) {
+        document.getField("PROCESSING_WORKER_VERSIONS").add(arrayOfValues[i]);
+    }
 }
 
 //Field Conditions
