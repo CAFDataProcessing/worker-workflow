@@ -17,7 +17,6 @@ package com.github.cafdataprocessing.workflow;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.cafdataprocessing.workflow.testing.models.NewFailure;
-import com.github.cafdataprocessing.workflow.testing.models.ProcessingWorkerVersion;
 import com.github.cafdataprocessing.workflow.testing.models.SubdocumentsMock;
 import com.github.cafdataprocessing.workflow.testing.utils.WorkflowHelper;
 import com.hpe.caf.api.ConfigurationException;
@@ -1481,31 +1480,41 @@ public class WorkflowControlTest
         assertThat(document.getField("PROCESSING_WORKER_VERSIONS").getValues()
             .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((3L))));
 
-//        final ObjectMapper mapper = new ObjectMapper();
-//        final String arrayExtracted = document.getField("PROCESSING_WORKER_VERSIONS").getStringValues().get(0);
-//        final ProcessingWorkerVersion[] arrayDeserialized = mapper.readValue(arrayExtracted, ProcessingWorkerVersion[].class);
-//        assertThat(arrayDeserialized.length, is(equalTo(3)));
-//
-//        final ProcessingWorkerVersion versionAdded = Arrays.stream(arrayDeserialized)
-//            .filter(p -> p.getName().equals("worker-base"))
-//            .findFirst()
-//            .get();
-//        assertThat(versionAdded.getName(), is(equalTo("worker-base")));
-//        assertThat(versionAdded.getVersion(), is(equalTo("1.0.0-SNAPSHOT")));
-//
-//        final ProcessingWorkerVersion versionClassification = Arrays.stream(arrayDeserialized)
-//            .filter(p -> p.getName().equals("worker-classification"))
-//            .findFirst()
-//            .get();
-//        assertThat(versionClassification.getName(), is(equalTo("worker-classification")));
-//        assertThat(versionClassification.getVersion(), is(equalTo("3.3.0-SNAPSHOT")));
-//
-//        final ProcessingWorkerVersion versionEntityExtract = Arrays.stream(arrayDeserialized)
-//            .filter(p -> p.getName().equals("worker-entityextract"))
-//            .findFirst()
-//            .get();
-//        assertThat(versionEntityExtract.getName(), is(equalTo("worker-entityextract")));
-//        assertThat(versionEntityExtract.getVersion(), is(equalTo("4.1.0-SNAPSHOT")));
+        final String firstVersion = document.getField("PROCESSING_WORKER_VERSIONS").getValues()
+            .stream()
+            .filter(v -> !v.getStringValue().isEmpty() && v.getStringValue().contains("worker-base"))
+            .map(v -> v.getStringValue())
+            .findFirst()
+            .get();
+
+        assertThat(firstVersion,
+                   isJsonStringMatching(jsonObject().where("NAME", is(jsonText("worker-base")))));
+        assertThat(firstVersion,
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("1.0.0-SNAPSHOT")))));
+
+        final String secondVersion = document.getField("PROCESSING_WORKER_VERSIONS").getValues()
+            .stream()
+            .filter(v -> !v.getStringValue().isEmpty() && v.getStringValue().contains("worker-classification"))
+            .map(v -> v.getStringValue())
+            .findFirst()
+            .get();
+
+        assertThat(secondVersion,
+                   isJsonStringMatching(jsonObject().where("NAME", is(jsonText("worker-classification")))));
+        assertThat(secondVersion,
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("3.3.0-SNAPSHOT")))));
+
+        final String thirdVersion = document.getField("PROCESSING_WORKER_VERSIONS").getValues()
+            .stream()
+            .filter(v -> !v.getStringValue().isEmpty() && v.getStringValue().contains("worker-entityextract"))
+            .map(v -> v.getStringValue())
+            .findFirst()
+            .get();
+
+        assertThat(thirdVersion,
+                   isJsonStringMatching(jsonObject().where("NAME", is(jsonText("worker-entityextract")))));
+        assertThat(thirdVersion,
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("4.1.0-SNAPSHOT")))));
     }
 
     @Test
@@ -1524,23 +1533,17 @@ public class WorkflowControlTest
         assertThat(document.getField("PROCESSING_WORKER_VERSIONS").getValues()
             .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((1L))));
 
-//        final ObjectMapper mapper = new ObjectMapper();
-//        final List<ProcessingWorkerVersion> processingWorkerVersions = Arrays.asList(mapper.readValue(
-//            document.getField("PROCESSING_WORKER_VERSIONS").getValues()
-//                .stream()
-//                .filter(x -> !x.getStringValue().isEmpty())
-//                .findFirst()
-//                .get()
-//                .getStringValue(), ProcessingWorkerVersion[].class));
-//        assertThat(processingWorkerVersions.size(), is(equalTo(1)));
-//
-//        final ProcessingWorkerVersion versionAdded = processingWorkerVersions
-//            .stream()
-//            .filter(p -> p.getName().equals("worker-base"))
-//            .findFirst()
-//            .get();
-//        assertThat(versionAdded.getName(), is(equalTo("worker-base")));
-//        assertThat(versionAdded.getVersion(), is(equalTo("1.0.0-SNAPSHOT")));
+        final String firstVersion = document.getField("PROCESSING_WORKER_VERSIONS").getValues()
+            .stream()
+            .filter(v -> !v.getStringValue().isEmpty() && v.getStringValue().contains("worker-base"))
+            .map(v -> v.getStringValue())
+            .findFirst()
+            .get();
+
+        assertThat(firstVersion,
+                   isJsonStringMatching(jsonObject().where("NAME", is(jsonText("worker-base")))));
+        assertThat(firstVersion,
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("1.0.0-SNAPSHOT")))));
     }
 
     @Test
@@ -1562,23 +1565,17 @@ public class WorkflowControlTest
         assertThat(document.getField("PROCESSING_WORKER_VERSIONS").getValues()
             .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((1L))));
 
-//        final ObjectMapper mapper = new ObjectMapper();
-//        final List<ProcessingWorkerVersion> processingWorkerVersions = Arrays.asList(mapper.readValue(
-//            document.getField("PROCESSING_WORKER_VERSIONS").getValues()
-//                .stream()
-//                .filter(x -> !x.getStringValue().isEmpty())
-//                .findFirst()
-//                .get()
-//                .getStringValue(), ProcessingWorkerVersion[].class));
-//        assertThat(processingWorkerVersions.size(), is(equalTo(1)));
-//
-//        final ProcessingWorkerVersion versionAdded = processingWorkerVersions
-//            .stream()
-//            .filter(p -> p.getName().equals("worker-base"))
-//            .findFirst()
-//            .get();
-//        assertThat(versionAdded.getName(), is(equalTo("worker-base")));
-//        assertThat(versionAdded.getVersion(), is(equalTo("1.0.0-SNAPSHOT")));
+        final String firstVersion = document.getField("PROCESSING_WORKER_VERSIONS").getValues()
+            .stream()
+            .filter(v -> !v.getStringValue().isEmpty() && v.getStringValue().contains("worker-base"))
+            .map(v -> v.getStringValue())
+            .findFirst()
+            .get();
+
+        assertThat(firstVersion,
+                   isJsonStringMatching(jsonObject().where("NAME", is(jsonText("worker-base")))));
+        assertThat(firstVersion,
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("1.0.0-SNAPSHOT")))));
     }
 
     @Test
@@ -1599,49 +1596,51 @@ public class WorkflowControlTest
         assertThat(document.getField("PROCESSING_WORKER_VERSIONS").getValues()
             .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((1L))));
 
-//        final ObjectMapper mapper = new ObjectMapper();
-//        final List<ProcessingWorkerVersion> processingWorkerVersions = Arrays.asList(mapper.readValue(
-//            document.getField("PROCESSING_WORKER_VERSIONS").getValues()
-//                .stream()
-//                .filter(x -> !x.getStringValue().isEmpty())
-//                .findFirst()
-//                .get()
-//                .getStringValue(), ProcessingWorkerVersion[].class));
-//        assertThat(processingWorkerVersions.size(), is(equalTo(1)));
-//
-//        final ProcessingWorkerVersion versionAdded = processingWorkerVersions
-//            .stream()
-//            .filter(p -> p.getName().equals("worker-base"))
-//            .findFirst()
-//            .get();
-//        assertThat(versionAdded.getName(), is(equalTo("worker-base")));
-//        assertThat(versionAdded.getVersion(), is(equalTo("1.0.0-SNAPSHOT")));
-//
-//        document.getApplication().getService(ConfigurationSource.class)
-//            .getConfiguration(DocumentWorkerConfiguration.class).setWorkerName("worker-added");
-//        document.getApplication().getService(ConfigurationSource.class)
-//            .getConfiguration(DocumentWorkerConfiguration.class).setWorkerVersion("5.6.2-SNAPSHOT");
-//
-//        invocable.invokeFunction("processWorkersVersions", document);
-//
-//        assertThat(document.getField("PROCESSING_WORKER_VERSIONS").getValues()
-//            .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((1L))));
-//
-//        final String arrayExtracted = document.getField("PROCESSING_WORKER_VERSIONS").getStringValues().get(0);
-//        final ProcessingWorkerVersion[] arrayDeserialized = mapper.readValue(arrayExtracted, ProcessingWorkerVersion[].class);
-//        assertThat(arrayDeserialized.length, is(equalTo(2)));
-//
-//        final ProcessingWorkerVersion firstAddedWorkerVersion = Arrays.stream(arrayDeserialized)
-//            .filter(e -> e.getName().equalsIgnoreCase("worker-base"))
-//            .findFirst()
-//            .get();
-//        assertThat(firstAddedWorkerVersion.getVersion(), is(equalTo("1.0.0-SNAPSHOT")));
-//
-//        final ProcessingWorkerVersion secondAddedWorkerVersion = Arrays.stream(arrayDeserialized)
-//            .filter(e -> e.getName().equalsIgnoreCase("worker-added"))
-//            .findFirst()
-//            .get();
-//        assertThat(secondAddedWorkerVersion.getVersion(), is(equalTo("5.6.2-SNAPSHOT")));
+        final String firstVersion = document.getField("PROCESSING_WORKER_VERSIONS").getValues()
+            .stream()
+            .filter(v -> !v.getStringValue().isEmpty() && v.getStringValue().contains("worker-base"))
+            .map(v -> v.getStringValue())
+            .findFirst()
+            .get();
+
+        assertThat(firstVersion,
+                   isJsonStringMatching(jsonObject().where("NAME", is(jsonText("worker-base")))));
+        assertThat(firstVersion,
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("1.0.0-SNAPSHOT")))));
+
+        document.getApplication().getService(ConfigurationSource.class)
+            .getConfiguration(DocumentWorkerConfiguration.class).setWorkerName("worker-added");
+        document.getApplication().getService(ConfigurationSource.class)
+            .getConfiguration(DocumentWorkerConfiguration.class).setWorkerVersion("5.6.2-SNAPSHOT");
+
+        invocable.invokeFunction("processWorkersVersions", document);
+
+        assertThat(document.getField("PROCESSING_WORKER_VERSIONS").getValues()
+            .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((2L))));
+
+        final String firstVersionAgain = document.getField("PROCESSING_WORKER_VERSIONS").getValues()
+            .stream()
+            .filter(v -> !v.getStringValue().isEmpty() && v.getStringValue().contains("worker-base"))
+            .map(v -> v.getStringValue())
+            .findFirst()
+            .get();
+
+        assertThat(firstVersionAgain,
+                   isJsonStringMatching(jsonObject().where("NAME", is(jsonText("worker-base")))));
+        assertThat(firstVersionAgain,
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("1.0.0-SNAPSHOT")))));
+
+        final String secondVersion = document.getField("PROCESSING_WORKER_VERSIONS").getValues()
+            .stream()
+            .filter(v -> !v.getStringValue().isEmpty() && v.getStringValue().contains("worker-added"))
+            .map(v -> v.getStringValue())
+            .findFirst()
+            .get();
+
+        assertThat(secondVersion,
+                   isJsonStringMatching(jsonObject().where("NAME", is(jsonText("worker-added")))));
+        assertThat(secondVersion,
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("5.6.2-SNAPSHOT")))));
     }
 
     @Test
@@ -1658,24 +1657,29 @@ public class WorkflowControlTest
         assertThat(document.getField("PROCESSING_WORKER_VERSIONS").getValues()
             .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((2L))));
 
-//        final ObjectMapper mapper = new ObjectMapper();
-//        final String arrayExtracted = document.getField("PROCESSING_WORKER_VERSIONS").getStringValues().get(0);
-//        final ProcessingWorkerVersion[] arrayDeserialized = mapper.readValue(arrayExtracted, ProcessingWorkerVersion[].class);
-//        assertThat(arrayDeserialized.length, is(equalTo(2)));
-//
-//        final ProcessingWorkerVersion versionAdded = Arrays.stream(arrayDeserialized)
-//            .filter(p -> p.getName().equals("worker-base"))
-//            .findFirst()
-//            .get();
-//        assertThat(versionAdded.getName(), is(equalTo("worker-base")));
-//        assertThat(versionAdded.getVersion(), is(equalTo("1.0.0-SNAPSHOT")));
-//
-//        final ProcessingWorkerVersion versionEntityExtract = Arrays.stream(arrayDeserialized)
-//            .filter(p -> p.getName().equals("worker-entityextract"))
-//            .findFirst()
-//            .get();
-//        assertThat(versionEntityExtract.getName(), is(equalTo("worker-entityextract")));
-//        assertThat(versionEntityExtract.getVersion(), is(equalTo("4.1.0-SNAPSHOT")));
+        final String firstVersion = document.getField("PROCESSING_WORKER_VERSIONS").getValues()
+            .stream()
+            .filter(v -> !v.getStringValue().isEmpty() && v.getStringValue().contains("worker-base"))
+            .map(v -> v.getStringValue())
+            .findFirst()
+            .get();
+
+        assertThat(firstVersion,
+                   isJsonStringMatching(jsonObject().where("NAME", is(jsonText("worker-base")))));
+        assertThat(firstVersion,
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("1.0.0-SNAPSHOT")))));
+
+        final String secondVersion = document.getField("PROCESSING_WORKER_VERSIONS").getValues()
+            .stream()
+            .filter(v -> !v.getStringValue().isEmpty() && v.getStringValue().contains("worker-entityextract"))
+            .map(v -> v.getStringValue())
+            .findFirst()
+            .get();
+
+        assertThat(secondVersion,
+                   isJsonStringMatching(jsonObject().where("NAME", is(jsonText("worker-entityextract")))));
+        assertThat(secondVersion,
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("4.1.0-SNAPSHOT")))));
     }
 
     @Test
@@ -1700,23 +1704,17 @@ public class WorkflowControlTest
         assertThat(document.getField("PROCESSING_WORKER_VERSIONS").getValues()
             .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((1L))));
 
-//        final ObjectMapper mapper = new ObjectMapper();
-//        final List<ProcessingWorkerVersion> processingWorkerVersions = Arrays.asList(mapper.readValue(
-//            document.getField("PROCESSING_WORKER_VERSIONS").getValues()
-//                .stream()
-//                .filter(x -> !x.getStringValue().isEmpty())
-//                .findFirst()
-//                .get()
-//                .getStringValue(), ProcessingWorkerVersion[].class));
-//        assertThat(processingWorkerVersions.size(), is(equalTo(1)));
-//
-//        final ProcessingWorkerVersion versionAdded = processingWorkerVersions
-//            .stream()
-//            .filter(p -> p.getName().equals("worker-base"))
-//            .findFirst()
-//            .get();
-//        assertThat(versionAdded.getName(), is(equalTo("worker-base")));
-//        assertThat(versionAdded.getVersion(), is(equalTo("1.0.0-SNAPSHOT")));
+        final String firstVersion = document.getField("PROCESSING_WORKER_VERSIONS").getValues()
+            .stream()
+            .filter(v -> !v.getStringValue().isEmpty() && v.getStringValue().contains("worker-base"))
+            .map(v -> v.getStringValue())
+            .findFirst()
+            .get();
+
+        assertThat(firstVersion,
+                   isJsonStringMatching(jsonObject().where("NAME", is(jsonText("worker-base")))));
+        assertThat(firstVersion,
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("1.0.0-SNAPSHOT")))));
     }
 
     @Test

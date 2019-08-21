@@ -349,7 +349,7 @@ function getAllWorkerVersions(fieldValues) {
 function setFieldUsingAnArray(document, arrayOfValues) {
     document.getField("PROCESSING_WORKER_VERSIONS").clear();
     for (var i = 0; i < arrayOfValues.length; i++) {
-        document.getField("PROCESSING_WORKER_VERSIONS").add(arrayOfValues[i]);
+        document.getField("PROCESSING_WORKER_VERSIONS").add(JSON.stringify(arrayOfValues[i]));
     }
 }
 
