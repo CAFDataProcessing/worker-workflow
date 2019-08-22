@@ -1242,7 +1242,7 @@ public class WorkflowControlTest
         final ScriptObjectMirror scriptObjectMirror = (ScriptObjectMirror) invocable.invokeFunction("createWorkerVersionObject",
                                                                                                     "worker-test-1", "2.0.0-SNAPSHOT");
         assertThat(scriptObjectMirror.getMember("NAME"), is(equalTo(("worker-test-1"))));
-        assertThat(scriptObjectMirror.getMember("VERSION"), is(equalTo(("2.0.0-SNAPSHOT"))));
+        assertThat(scriptObjectMirror.getMember("VERSION"), is(equalTo(("worker-test-1 2.0.0-SNAPSHOT"))));
     }
 
     @Test
@@ -1253,12 +1253,12 @@ public class WorkflowControlTest
         final ScriptObjectMirror scriptObjectMirror = (ScriptObjectMirror) invocable.invokeFunction("createWorkerVersionObject",
                                                                                                     null, "2.0.0-SNAPSHOT");
         assertThat(scriptObjectMirror.getMember("NAME"), is(nullValue()));
-        assertThat(scriptObjectMirror.getMember("VERSION"), is(equalTo(("2.0.0-SNAPSHOT"))));
+        assertThat(scriptObjectMirror.getMember("VERSION"), is(equalTo(("null 2.0.0-SNAPSHOT"))));
 
         final ScriptObjectMirror scriptObjectMirror2 = (ScriptObjectMirror) invocable.invokeFunction("createWorkerVersionObject",
                                                                                                      "worker-classification", null);
         assertThat(scriptObjectMirror2.getMember("NAME"), is(equalTo("worker-classification")));
-        assertThat(scriptObjectMirror2.getMember("VERSION"), is(nullValue()));
+        assertThat(scriptObjectMirror2.getMember("VERSION"), is("worker-classification null"));
 
         final ScriptObjectMirror scriptObjectMirror3 = (ScriptObjectMirror) invocable.invokeFunction("createWorkerVersionObject",
                                                                                                      null, null);
@@ -1268,17 +1268,17 @@ public class WorkflowControlTest
         final ScriptObjectMirror scriptObjectMirror4 = (ScriptObjectMirror) invocable.invokeFunction("createWorkerVersionObject",
                                                                                                      "", "2.0.0-SNAPSHOT");
         assertThat(scriptObjectMirror4.getMember("NAME"), is(equalTo("")));
-        assertThat(scriptObjectMirror4.getMember("VERSION"), is(equalTo(("2.0.0-SNAPSHOT"))));
+        assertThat(scriptObjectMirror4.getMember("VERSION"), is(equalTo((" 2.0.0-SNAPSHOT"))));
 
         final ScriptObjectMirror scriptObjectMirror5 = (ScriptObjectMirror) invocable.invokeFunction("createWorkerVersionObject",
                                                                                                      "worker-classification", "");
         assertThat(scriptObjectMirror5.getMember("NAME"), is(equalTo("worker-classification")));
-        assertThat(scriptObjectMirror5.getMember("VERSION"), is(equalTo("")));
+        assertThat(scriptObjectMirror5.getMember("VERSION"), is(equalTo("worker-classification ")));
 
         final ScriptObjectMirror scriptObjectMirror6 = (ScriptObjectMirror) invocable.invokeFunction("createWorkerVersionObject",
                                                                                                      "", "");
         assertThat(scriptObjectMirror6.getMember("NAME"), is(equalTo("")));
-        assertThat(scriptObjectMirror6.getMember("VERSION"), is(equalTo("")));
+        assertThat(scriptObjectMirror6.getMember("VERSION"), is(nullValue()));
     }
 
     @Test
@@ -1297,7 +1297,8 @@ public class WorkflowControlTest
         for (final Object value : scriptObjectMirror.values()) {
             final ScriptObjectMirror sco = (ScriptObjectMirror) value;
             assertThat(sco.getMember("NAME"), isIn(Arrays.asList("worker-classification", "worker-entityextract")));
-            assertThat(sco.getMember("VERSION"), isIn(Arrays.asList("3.3.0-SNAPSHOT", "4.1.0-SNAPSHOT")));
+            assertThat(sco.getMember("VERSION"), isIn(Arrays.asList("worker-classification 3.3.0-SNAPSHOT",
+                                                                    "worker-entityextract 4.1.0-SNAPSHOT")));
         }
     }
 
@@ -1316,7 +1317,7 @@ public class WorkflowControlTest
         for (final Object value : scriptObjectMirror.values()) {
             final ScriptObjectMirror sco = (ScriptObjectMirror) value;
             assertThat(sco.getMember("NAME"), is(equalTo("worker-classification")));
-            assertThat(sco.getMember("VERSION"), is(equalTo("3.3.0-SNAPSHOT")));
+            assertThat(sco.getMember("VERSION"), is(equalTo("worker-classification 3.3.0-SNAPSHOT")));
         }
     }
 
@@ -1376,7 +1377,7 @@ public class WorkflowControlTest
         assertThat(firstVersion,
                    isJsonStringMatching(jsonObject().where("NAME", is(jsonText("worker-base")))));
         assertThat(firstVersion,
-                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("1.0.0-SNAPSHOT")))));
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("worker-base 1.0.0-SNAPSHOT")))));
 
         final String secondVersion = document.getField("PROCESSING_WORKER_VERSIONS").getValues()
             .stream()
@@ -1388,7 +1389,7 @@ public class WorkflowControlTest
         assertThat(secondVersion,
                    isJsonStringMatching(jsonObject().where("NAME", is(jsonText("worker-classification")))));
         assertThat(secondVersion,
-                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("3.3.0-SNAPSHOT")))));
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("worker-classification 3.3.0-SNAPSHOT")))));
 
         final String thirdVersion = document.getField("PROCESSING_WORKER_VERSIONS").getValues()
             .stream()
@@ -1400,7 +1401,7 @@ public class WorkflowControlTest
         assertThat(thirdVersion,
                    isJsonStringMatching(jsonObject().where("NAME", is(jsonText("worker-entityextract")))));
         assertThat(thirdVersion,
-                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("4.1.0-SNAPSHOT")))));
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("worker-entityextract 4.1.0-SNAPSHOT")))));
     }
 
     @Test
@@ -1429,7 +1430,7 @@ public class WorkflowControlTest
         assertThat(firstVersion,
                    isJsonStringMatching(jsonObject().where("NAME", is(jsonText("worker-base")))));
         assertThat(firstVersion,
-                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("1.0.0-SNAPSHOT")))));
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("worker-base 1.0.0-SNAPSHOT")))));
     }
 
     @Test
@@ -1461,7 +1462,7 @@ public class WorkflowControlTest
         assertThat(firstVersion,
                    isJsonStringMatching(jsonObject().where("NAME", is(jsonText("worker-base")))));
         assertThat(firstVersion,
-                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("1.0.0-SNAPSHOT")))));
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("worker-base 1.0.0-SNAPSHOT")))));
     }
 
     @Test
@@ -1492,7 +1493,7 @@ public class WorkflowControlTest
         assertThat(firstVersion,
                    isJsonStringMatching(jsonObject().where("NAME", is(jsonText("worker-base")))));
         assertThat(firstVersion,
-                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("1.0.0-SNAPSHOT")))));
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("worker-base 1.0.0-SNAPSHOT")))));
 
         document.getApplication().getService(ConfigurationSource.class)
             .getConfiguration(DocumentWorkerConfiguration.class).setWorkerName("worker-added");
@@ -1514,7 +1515,7 @@ public class WorkflowControlTest
         assertThat(firstVersionAgain,
                    isJsonStringMatching(jsonObject().where("NAME", is(jsonText("worker-base")))));
         assertThat(firstVersionAgain,
-                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("1.0.0-SNAPSHOT")))));
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("worker-base 1.0.0-SNAPSHOT")))));
 
         final String secondVersion = document.getField("PROCESSING_WORKER_VERSIONS").getValues()
             .stream()
@@ -1526,7 +1527,7 @@ public class WorkflowControlTest
         assertThat(secondVersion,
                    isJsonStringMatching(jsonObject().where("NAME", is(jsonText("worker-added")))));
         assertThat(secondVersion,
-                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("5.6.2-SNAPSHOT")))));
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("worker-added 5.6.2-SNAPSHOT")))));
     }
 
     @Test
@@ -1553,7 +1554,7 @@ public class WorkflowControlTest
         assertThat(firstVersion,
                    isJsonStringMatching(jsonObject().where("NAME", is(jsonText("worker-base")))));
         assertThat(firstVersion,
-                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("1.0.0-SNAPSHOT")))));
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("worker-base 1.0.0-SNAPSHOT")))));
 
         final String secondVersion = document.getField("PROCESSING_WORKER_VERSIONS").getValues()
             .stream()
@@ -1565,7 +1566,7 @@ public class WorkflowControlTest
         assertThat(secondVersion,
                    isJsonStringMatching(jsonObject().where("NAME", is(jsonText("worker-entityextract")))));
         assertThat(secondVersion,
-                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("4.1.0-SNAPSHOT")))));
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("worker-entityextract 4.1.0-SNAPSHOT")))));
     }
 
     @Test
@@ -1600,7 +1601,7 @@ public class WorkflowControlTest
         assertThat(firstVersion,
                    isJsonStringMatching(jsonObject().where("NAME", is(jsonText("worker-base")))));
         assertThat(firstVersion,
-                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("1.0.0-SNAPSHOT")))));
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("worker-base 1.0.0-SNAPSHOT")))));
     }
 
     @Test

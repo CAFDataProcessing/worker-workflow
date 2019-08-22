@@ -279,7 +279,8 @@ function processWorkersVersions(document) {
             arrayOfWorkersVersions.push(workerVersion);
         } else {
             var workerVersionRetrieved = arrayOfWorkersVersions[positionInArrayOfCurrentWorkerVersion];
-            if (workerVersionRetrieved.VERSION !== currentSourceInfoWorkerVersion) {
+            var currentVersion = currentSourceInfoWorkerName + " " + currentSourceInfoWorkerVersion;
+            if (workerVersionRetrieved.VERSION !== currentVersion) {
                 workerVersionRetrieved = createWorkerVersionObject(workerVersionRetrieved.NAME, currentSourceInfoWorkerVersion);
             }
             arrayOfWorkersVersions[positionInArrayOfCurrentWorkerVersion] = workerVersionRetrieved;
@@ -311,10 +312,17 @@ function getPositionInArrayOfCurrentWorkerVersion(arrayOfWorkersVersions, name) 
 }
 
 function createWorkerVersionObject(name, version) {
-    return {
+    var versionString;
+    if (!name && !version) {
+        versionString = null;
+    } else {
+        versionString = name + " " + version;
+    }
+    var versionObject = {
         NAME: name,
-        VERSION: version
+        VERSION: versionString
     };
+    return versionObject;
 }
 
 function getAllWorkerVersions(fieldValues) {
