@@ -288,7 +288,6 @@ function processWorkersVersions(document) {
         var workerVersion = createWorkerVersionObject(currentSourceInfoWorkerName, currentSourceInfoWorkerVersion);
         arrayOfWorkersVersions = [workerVersion];
     }
-    print(JSON.stringify(arrayOfWorkersVersions));
     setFieldUsingAnArray(document, arrayOfWorkersVersions);
 }
 
@@ -329,20 +328,15 @@ function createWorkerVersionObject(name, version) {
 function getAllWorkerVersions(fieldValues) {
     var arrayOfWorkersVersions = [];
     for each (var fieldValue in fieldValues) {
-        print(fieldValue);
-        print(fieldValue.getStringValue());
         var parsed = JSON.parse(fieldValue.getStringValue());
         if (Array.isArray(parsed)) {
             for (var i = 0; i < parsed.length; i++) {
-                print(JSON.stringify(parsed[i]));
                 arrayOfWorkersVersions.push(parsed[i]);
             }
         } else {
-            print(JSON.stringify(parsed));
             arrayOfWorkersVersions.push(parsed);
         }
     }
-    print(JSON.stringify(arrayOfWorkersVersions));
     return arrayOfWorkersVersions;
 }
 
