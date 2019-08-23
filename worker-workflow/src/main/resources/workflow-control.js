@@ -262,7 +262,18 @@ function isLastAction(action) {
 }
 
 function onProcessDocument(e) {
-    processWorkersVersions(e.rootDocument);
+    if (!e.application.getInputMessageProcessor().getProcessSubdocumentsSeparately()) {
+        traverseDocumentForWorkerVersions(e.document);
+    } else {
+        processWorkersVersions(e.document);
+    }
+}
+
+function traverseDocumentForWorkerVersions(document) {
+    processWorkersVersions(document);
+    for each(var subdoc in document.getSubdocuments()) {
+        processWorkersVersions(subdoc);
+    }
 }
 
 function processWorkersVersions(document) {
@@ -272,7 +283,7 @@ function processWorkersVersions(document) {
 
     if (fieldExists(document, "PROCESSING_WORKER_VERSIONS")) {
         var arrayOfWorkersVersions = getAllWorkerVersions(document.getField("PROCESSING_WORKER_VERSIONS").getValues());
-        var positionInArrayOfCurrentWorkerVersion = 
+        var positionInArrayOfCurrentWorkerVersion =
                 getPositionInArrayOfCurrentWorkerVersion(arrayOfWorkersVersions, currentSourceInfoWorkerName);
         if (positionInArrayOfCurrentWorkerVersion === -1) {
             var workerVersion = createWorkerVersionObject(currentSourceInfoWorkerName, currentSourceInfoWorkerVersion);
@@ -282,8 +293,10 @@ function processWorkersVersions(document) {
             var currentVersion = currentSourceInfoWorkerName + " " + currentSourceInfoWorkerVersion;
             if (workerVersionRetrieved.VERSION !== currentVersion) {
                 workerVersionRetrieved = createWorkerVersionObject(workerVersionRetrieved.NAME, currentSourceInfoWorkerVersion);
+                arrayOfWorkersVersions[positionInArrayOfCurrentWorkerVersion] = workerVersionRetrieved;
+            } else {
+                return;
             }
-            arrayOfWorkersVersions[positionInArrayOfCurrentWorkerVersion] = workerVersionRetrieved;
         }
     } else {
         var workerVersion = createWorkerVersionObject(currentSourceInfoWorkerName, currentSourceInfoWorkerVersion);
@@ -329,13 +342,7 @@ function getAllWorkerVersions(fieldValues) {
     var arrayOfWorkersVersions = [];
     for each (var fieldValue in fieldValues) {
         var parsed = JSON.parse(fieldValue.getStringValue());
-        if (Array.isArray(parsed)) {
-            for (var i = 0; i < parsed.length; i++) {
-                arrayOfWorkersVersions.push(parsed[i]);
-            }
-        } else {
-            arrayOfWorkersVersions.push(parsed);
-        }
+        arrayOfWorkersVersions.push(parsed);
     }
     return arrayOfWorkersVersions;
 }

@@ -22,7 +22,6 @@ import com.github.cafdataprocessing.workflow.testing.utils.WorkflowHelper;
 import com.hpe.caf.api.ConfigurationException;
 import com.hpe.caf.api.ConfigurationSource;
 import com.hpe.caf.api.worker.WorkerException;
-import com.hpe.caf.api.worker.WorkerTaskData;
 import com.hpe.caf.worker.document.config.DocumentWorkerConfiguration;
 import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.model.Failure;
@@ -1041,6 +1040,180 @@ public class WorkflowControlTest
         final int sumField = document.getField("FAILURES").getValues().size()
             + document.getSubdocuments().stream().mapToInt(s -> s.getField("FAILURES").getValues().size()).sum();
         assertThat(sumField, is(equalTo(3)));
+    }
+
+    @Test
+    public void onProcessDocumentSubDocNotProcessedSeparatelyTest() throws ScriptException, NoSuchMethodException,
+                                                                           WorkerException, IOException
+    {
+        // test onProcessDocument() with a document with subdocuments, it WILL call traverseDocumentForWorkerVersions,
+        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+
+        final Document builderDoc = DocumentBuilder.fromFile(
+            Paths.get("src", "test", "resources", "input-document-with-subdoc-with-processing-worker-versions-field.json")
+                .toString()).build();
+
+        final Document builderForFailuresOne = DocumentBuilder.fromFile(
+            Paths.get("src", "test", "resources", "input-subdocument-no-subdoc-with-processing-worker-versions.json").toString()).build();
+
+        // create the subdocuments
+        final Subdocument subdocOne = WorkflowHelper.createSubdocument("subd_ref_1", builderForFailuresOne.getFields(),
+                                                                       builderForFailuresOne.getFailures(), null,
+                                                                       null, builderDoc, true, false);
+
+        final Subdocuments subdocuments = new SubdocumentsMock(Arrays.asList(subdocOne));
+
+        // create the test document that will contain subdocuments
+        final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(),
+                                                                subdocuments, null, builderDoc, true, false);
+
+        final DocumentEventObject documentEventObject = new DocumentEventObject(document);
+        invocable.invokeFunction("onProcessDocument", documentEventObject);
+
+        assertThat(document.getField("PROCESSING_WORKER_VERSIONS").getValues()
+            .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((1L))));
+
+        final String firstVersion = document.getField("PROCESSING_WORKER_VERSIONS").getValues()
+            .stream()
+            .filter(v -> !v.getStringValue().isEmpty() && v.getStringValue().contains("worker-base"))
+            .map(v -> v.getStringValue())
+            .findFirst()
+            .get();
+
+        assertThat(firstVersion,
+                   isJsonStringMatching(jsonObject().where("NAME", is(jsonText("worker-base")))));
+        assertThat(firstVersion,
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("worker-base 1.0.0-SNAPSHOT")))));
+
+        final String secondVersion = document.getSubdocuments().stream().findFirst().get().getField("PROCESSING_WORKER_VERSIONS")
+            .getValues()
+            .stream()
+            .filter(v -> !v.getStringValue().isEmpty() && v.getStringValue().contains("worker-entityextract"))
+            .map(v -> v.getStringValue())
+            .findFirst()
+            .get();
+
+        assertThat(secondVersion,
+                   isJsonStringMatching(jsonObject().where("NAME", is(jsonText("worker-entityextract")))));
+        assertThat(secondVersion,
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("worker-entityextract 4.1.0-SNAPSHOT")))));
+
+        final String thirdVersion = document.getSubdocuments().stream().findFirst().get().getField("PROCESSING_WORKER_VERSIONS")
+            .getValues()
+            .stream()
+            .filter(v -> !v.getStringValue().isEmpty() && v.getStringValue().contains("worker-base"))
+            .map(v -> v.getStringValue())
+            .findFirst()
+            .get();
+
+        assertThat(thirdVersion,
+                   isJsonStringMatching(jsonObject().where("NAME", is(jsonText("worker-base")))));
+        assertThat(thirdVersion,
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("worker-base 1.0.0-SNAPSHOT")))));
+    }
+
+    @Test
+    public void onProcessDocumentSubDocProcessedSeparatelyTest() throws ScriptException, NoSuchMethodException,
+                                                                        WorkerException, IOException
+    {
+        // test onProcessDocument() with a document with subdocuments, it WILL call traverseDocumentForWorkerVersions,
+        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+
+        final Document builderDoc = DocumentBuilder.fromFile(
+            Paths.get("src", "test", "resources", "input-document-with-subdoc-with-processing-worker-versions-field.json")
+                .toString()).build();
+
+        final Document builderForFailuresOne = DocumentBuilder.fromFile(
+            Paths.get("src", "test", "resources", "input-subdocument-no-subdoc-with-processing-worker-versions.json").toString()).build();
+
+        // create the subdocuments
+        final Subdocument subdocOne = WorkflowHelper.createSubdocument("subd_ref_1", builderForFailuresOne.getFields(),
+                                                                       builderForFailuresOne.getFailures(), null,
+                                                                       null, builderDoc, true, true);
+
+        final Subdocuments subdocuments = new SubdocumentsMock(Arrays.asList(subdocOne));
+
+        // create the test document that wil contain subdocuments
+        final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(),
+                                                                subdocuments, null, builderDoc, true, true);
+
+        final DocumentEventObject documentEventObject = new DocumentEventObject(document);
+        invocable.invokeFunction("onProcessDocument", documentEventObject);
+
+        assertThat(document.getField("PROCESSING_WORKER_VERSIONS").getValues()
+            .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((1L))));
+
+        final String firstVersion = document.getField("PROCESSING_WORKER_VERSIONS").getValues()
+            .stream()
+            .filter(v -> !v.getStringValue().isEmpty() && v.getStringValue().contains("worker-base"))
+            .map(v -> v.getStringValue())
+            .findFirst()
+            .get();
+
+        assertThat(firstVersion,
+                   isJsonStringMatching(jsonObject().where("NAME", is(jsonText("worker-base")))));
+        assertThat(firstVersion,
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("worker-base 1.0.0-SNAPSHOT")))));
+
+        final String secondVersion = document.getSubdocuments().stream().findFirst().get().getField("PROCESSING_WORKER_VERSIONS")
+            .getValues()
+            .stream()
+            .filter(v -> !v.getStringValue().isEmpty() && v.getStringValue().contains("worker-entityextract"))
+            .map(v -> v.getStringValue())
+            .findFirst()
+            .get();
+
+        assertThat(secondVersion,
+                   isJsonStringMatching(jsonObject().where("NAME", is(jsonText("worker-entityextract")))));
+        assertThat(secondVersion,
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("worker-entityextract 4.1.0-SNAPSHOT")))));
+
+        final String thirdVersion = document.getSubdocuments().stream().findFirst().get().getField("PROCESSING_WORKER_VERSIONS")
+            .getValues()
+            .stream()
+            .filter(v -> !v.getStringValue().isEmpty() && v.getStringValue().contains("worker-base"))
+            .map(v -> v.getStringValue())
+            .findFirst()
+            .get();
+
+        assertThat(thirdVersion,
+                   isJsonStringMatching(jsonObject().where("NAME", is(jsonText("worker-base")))));
+        assertThat(thirdVersion,
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("worker-base 3.3.0-SNAPSHOT")))));
+    }
+
+    @Test
+    public void onProcessDocumentWithoutAnythingAddedToChangeLogTest() throws ScriptException, NoSuchMethodException,
+                                                                              WorkerException, IOException
+    {
+        // test onProcessDocument() with a document with subdocuments, it WILL call traverseDocumentForWorkerVersions,
+        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+
+        final Document builderDoc = DocumentBuilder.fromFile(
+            Paths.get("src", "test", "resources", "input-document-no-subdoc-with-processing-worker-versions-field-6.json")
+                .toString()).build();
+
+        // create the test document that wil contain subdocuments
+        final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(),
+                                                                null, null, builderDoc, true, false);
+
+        final DocumentEventObject documentEventObject = new DocumentEventObject(document);
+        invocable.invokeFunction("onProcessDocument", documentEventObject);
+
+        assertThat(document.getField("PROCESSING_WORKER_VERSIONS").getValues()
+            .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((1L))));
+
+        final String firstVersion = document.getField("PROCESSING_WORKER_VERSIONS").getValues()
+            .stream()
+            .filter(v -> !v.getStringValue().isEmpty() && v.getStringValue().contains("worker-base"))
+            .map(v -> v.getStringValue())
+            .findFirst()
+            .get();
+
+        assertThat(firstVersion,
+                   isJsonStringMatching(jsonObject().where("NAME", is(jsonText("worker-base")))));
+        assertThat(firstVersion,
+                   isJsonStringMatching(jsonObject().where("VERSION", is(jsonText("worker-base 1.0.0-SNAPSHOT")))));
     }
 
     @Test
