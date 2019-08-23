@@ -11,7 +11,15 @@
                     "encoding": "utf8"
                 }
             ],
-            "FAILURES": []
+            "FAILURES": [],
+            "PROCESSING_WORKER_VERSIONS": [
+                {
+                    "data": "{\"NAME\":\"worker-base\", \"VERSION\":\"worker-base 3.3.0-SNAPSHOT\"}"
+                },
+                {
+                    "data": "{\"NAME\":\"worker-entityextract\", \"VERSION\":\"worker-entityextract 4.1.0-SNAPSHOT\"}"
+                }
+            ]
         },
         "failures": [{
                 "failureId": "original_fail_id_2_sub",

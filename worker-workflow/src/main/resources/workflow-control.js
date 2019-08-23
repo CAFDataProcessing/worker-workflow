@@ -261,6 +261,50 @@ function isLastAction(action) {
     return ACTIONS[ACTIONS.length - 1 ].name === action;
 }
 
+function onProcessDocument(e) {
+    if (!e.application.getInputMessageProcessor().getProcessSubdocumentsSeparately()) {
+        traverseDocumentForWorkerVersions(e.document);
+    } else {
+        processWorkersVersions(e.document);
+    }
+}
+
+function traverseDocumentForWorkerVersions(document) {
+    processWorkersVersions(document);
+    for each(var subdoc in document.getSubdocuments()) {
+        processWorkersVersions(subdoc);
+    }
+}
+
+function processWorkersVersions(document) {
+    var arrayOfWorkersVersions = [];
+    var currentSourceInfoWorkerName = getCurrentWorkerName(document);
+    var currentSourceInfoWorkerVersion = getCurrentWorkerVersion(document);
+
+    if (fieldExists(document, "PROCESSING_WORKER_VERSIONS")) {
+        var arrayOfWorkersVersions = getAllWorkerVersions(document.getField("PROCESSING_WORKER_VERSIONS").getValues());
+        var positionInArrayOfCurrentWorkerVersion =
+                getPositionInArrayOfCurrentWorkerVersion(arrayOfWorkersVersions, currentSourceInfoWorkerName);
+        if (positionInArrayOfCurrentWorkerVersion === -1) {
+            var workerVersion = createWorkerVersionObject(currentSourceInfoWorkerName, currentSourceInfoWorkerVersion);
+            arrayOfWorkersVersions.push(workerVersion);
+        } else {
+            var workerVersionRetrieved = arrayOfWorkersVersions[positionInArrayOfCurrentWorkerVersion];
+            var currentVersion = currentSourceInfoWorkerName + " " + currentSourceInfoWorkerVersion;
+            if (workerVersionRetrieved.VERSION !== currentVersion) {
+                workerVersionRetrieved = createWorkerVersionObject(workerVersionRetrieved.NAME, currentSourceInfoWorkerVersion);
+                arrayOfWorkersVersions[positionInArrayOfCurrentWorkerVersion] = workerVersionRetrieved;
+            } else {
+                return;
+            }
+        }
+    } else {
+        var workerVersion = createWorkerVersionObject(currentSourceInfoWorkerName, currentSourceInfoWorkerVersion);
+        arrayOfWorkersVersions = [workerVersion];
+    }
+    setFieldUsingAnArray(document, arrayOfWorkersVersions);
+}
+
 function getCurrentWorkerName(document) {
     return document.getApplication().getService(com.hpe.caf.api.ConfigurationSource.class)
             .getConfiguration(com.hpe.caf.worker.document.config.DocumentWorkerConfiguration.class).getWorkerName();
@@ -269,6 +313,45 @@ function getCurrentWorkerName(document) {
 function getCurrentWorkerVersion(document) {
     return document.getApplication().getService(com.hpe.caf.api.ConfigurationSource.class)
             .getConfiguration(com.hpe.caf.worker.document.config.DocumentWorkerConfiguration.class).getWorkerVersion();
+}
+
+function getPositionInArrayOfCurrentWorkerVersion(arrayOfWorkersVersions, name) {
+    for (var i = 0; i < arrayOfWorkersVersions.length; i++) {
+        if (arrayOfWorkersVersions[i].NAME === name) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+function createWorkerVersionObject(name, version) {
+    var versionString;
+    if (!name && !version) {
+        versionString = null;
+    } else {
+        versionString = name + " " + version;
+    }
+    var versionObject = {
+        NAME: name,
+        VERSION: versionString
+    };
+    return versionObject;
+}
+
+function getAllWorkerVersions(fieldValues) {
+    var arrayOfWorkersVersions = [];
+    for each (var fieldValue in fieldValues) {
+        var parsed = JSON.parse(fieldValue.getStringValue());
+        arrayOfWorkersVersions.push(parsed);
+    }
+    return arrayOfWorkersVersions;
+}
+
+function setFieldUsingAnArray(document, arrayOfValues) {
+    document.getField("PROCESSING_WORKER_VERSIONS").clear();
+    for (var i = 0; i < arrayOfValues.length; i++) {
+        document.getField("PROCESSING_WORKER_VERSIONS").add(JSON.stringify(arrayOfValues[i]));
+    }
 }
 
 //Field Conditions

@@ -1,6 +1,6 @@
 {
     "document": {
-        "reference": "ref_2_sub",
+        "reference": "ref_1_file",
         "fields": {
             "CAF_WORKFLOW_ACTION": [{
                     "data": "family_hashing"
@@ -11,12 +11,17 @@
                     "encoding": "utf8"
                 }
             ],
-            "FAILURES": []
+            "FAILURES": [],
+            "PROCESSING_WORKER_VERSIONS": [
+                {
+                    "data": "{\"NAME\":\"worker-classification\", \"VERSION\":\"worker-classification 3.3.0-SNAPSHOT\"}"
+                }
+            ]
         },
         "failures": [{
-                "failureId": "original_fail_id_2_sub",
-                "failureMessage": "original message 2",
-                "failureStack": "super stack"
+                "failureId": "original_fail_id_1",
+                "failureMessage": "original message 1",
+                "failureStack": null
             }]
     },
     "customData": {
