@@ -28,14 +28,14 @@ import java.util.Map;
 public class SubdocumentMock implements Subdocument
 {
     private String reference;
-    private Fields fields;
+    private final Fields fields;
     private final Task task;
     private final Map<String, String> customData;
     private final Failures failures;
     private final Subdocuments subdocuments;
     private final Application application;
     private final Document parentDocument;
-    private Document rootDocument;
+    private final Document rootDocument;
 
     public SubdocumentMock(final String reference, final Fields fields, final Task task, final Map<String, String> customData,
                            final Failures failures, final Subdocuments subdocuments, final Application application,
@@ -85,12 +85,7 @@ public class SubdocumentMock implements Subdocument
     @Override
     public Field getField(final String fieldName)
     {
-        return fields.stream().filter(f -> f.getName().equals(fieldName)).findFirst().orElseGet(() -> {
-            final Field fieldMocked = new FieldMock(this, fieldName, application);
-            final FieldsMock fields = (FieldsMock) this.fields;
-            fields.addField(fieldMocked);
-            return fieldMocked;
-        });
+        return fields.stream().filter(f -> f.getName().equals(fieldName)).findFirst().get();
     }
 
     @Override
@@ -166,16 +161,6 @@ public class SubdocumentMock implements Subdocument
     public boolean isDeleted()
     {
         return false;
-    }
-
-    public void setFields(final Fields fields)
-    {
-        this.fields = fields;
-    }
-
-    public void setRootDocument(Document rootDocument)
-    {
-        this.rootDocument = rootDocument;
     }
 
 }

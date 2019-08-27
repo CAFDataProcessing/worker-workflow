@@ -179,12 +179,9 @@ public class WorkflowHelper
             application = new ApplicationMock(inputMessageProcessorTest, csm);
             task = new TaskMock(new HashMap<>(), rootDoc, null, wtd, null, application);
         }
-        final SubdocumentMock temp
+        final Subdocument temp
             = new SubdocumentMock(reference, fields, task, new HashMap<>(), failures, subdocuments, application, parentDoc, rootDoc);
         task.setDocument(temp);
-        final Fields mockedFields = new FieldsMock(fields, null, temp);
-        temp.setFields(mockedFields);
-        temp.setRootDocument(temp);
         return temp;
     }
 }

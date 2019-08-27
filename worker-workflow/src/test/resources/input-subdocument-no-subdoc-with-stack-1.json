@@ -14,10 +14,10 @@
             "FAILURES": []
         },
         "failures": [{
-                "failureId": "original_fail_id_2_sub",
-                "failureMessage": "original message 2",
-                "failureStack": "super stack"
-            }]
+            "failureId": "original_fail_id_2_sub",
+            "failureMessage": "original message 2",
+            "failureStack": "super stack"
+        }]
     },
     "customData": {
         "tenantId": "tenant1"
