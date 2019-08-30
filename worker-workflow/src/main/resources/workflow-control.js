@@ -48,16 +48,16 @@ function onBeforeProcessDocument(e) {
 }
 
 function onProcessDocument(e) {
-    if (!e.application.getInputMessageProcessor().getProcessSubdocumentsSeparately()) {
-        traverseDocumentForSettingWorkerVersion(e.document);
-    } else {
+    if (e.application.inputMessageProcessor.processSubdocumentsSeparately) {
         setWorkerVersion(e.document);
+    } else {
+        traverseDocumentForSettingWorkerVersion(e.document);
     }
 }
 
 function traverseDocumentForSettingWorkerVersion(document) {
     setWorkerVersion(document);
-    for each(var subdoc in document.getSubdocuments()) {
+    for each(var subdoc in document.subdocuments) {
         traverseDocumentForSettingWorkerVersion(subdoc);
     }
 }
