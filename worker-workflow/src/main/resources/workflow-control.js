@@ -47,6 +47,26 @@ function onBeforeProcessDocument(e) {
     e.cancel = ! eval(action.conditionFunction)(e.document, arguments);
 }
 
+function onProcessDocument(e) {
+    if (e.application.inputMessageProcessor.processSubdocumentsSeparately) {
+        setWorkerVersion(e.document);
+    } else {
+        traverseDocumentForSettingWorkerVersion(e.document);
+    }
+}
+
+function traverseDocumentForSettingWorkerVersion(document) {
+    setWorkerVersion(document);
+    for each(var subdoc in document.subdocuments) {
+        traverseDocumentForSettingWorkerVersion(subdoc);
+    }
+}
+
+function setWorkerVersion(document) {
+    var versionFieldName = "PROCESSING_" + getCurrentWorkerName(document).toUpperCase() + "_VERSION";
+    document.getField(versionFieldName).set(getCurrentWorkerVersion(document));
+}
+
 function onError(errorEventObj) {
     // We will not mark the error as handled here. This will allow the document-worker framework to add the failure
     // itself rather than us duplicating the format of the failure value it constructs for non-script failure responses
