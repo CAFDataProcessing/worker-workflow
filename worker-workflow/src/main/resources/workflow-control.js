@@ -58,12 +58,12 @@ function onProcessDocument(e) {
 function traverseDocumentForSettingWorkerVersion(document) {
     setWorkerVersion(document);
     for each(var subdoc in document.getSubdocuments()) {
-        setWorkerVersion(subdoc);
+        traverseDocumentForSettingWorkerVersion(subdoc);
     }
 }
 
 function setWorkerVersion(document) {
-    var versionFieldName = "PROCESSING_" + getCurrentWorkerName(document) + "_VERSION";
+    var versionFieldName = "PROCESSING_" + getCurrentWorkerName(document).toUpperCase() + "_VERSION";
     document.getField(versionFieldName).set(getCurrentWorkerVersion(document));
 }
 
