@@ -26,8 +26,8 @@ public class NewFailure
     private String message;
     @JsonProperty("STACK")
     private String stack;
-    @JsonProperty("VERSION")
-    private String version;
+    @JsonProperty("COMPONENT")
+    private String component;
     @JsonProperty("WORKFLOW_NAME")
     private String workflowName;
     @JsonProperty("WORKFLOW_ACTION")
@@ -55,9 +55,9 @@ public class NewFailure
         return message;
     }
 
-    public String getVersion()
+    public String getComponent()
     {
-        return version;
+        return component;
     }
 
     public String getWorkflowName()
