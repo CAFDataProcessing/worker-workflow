@@ -15,7 +15,9 @@
  */
 package com.github.cafdataprocessing.workflow;
 
+import com.github.cafdataprocessing.workflow.exceptions.UnexpectedCafWorkflowSettingException;
 import com.github.cafdataprocessing.workflow.model.ArgumentDefinition;
+import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.hpe.caf.worker.document.model.Document;
@@ -27,14 +29,20 @@ import org.junit.Test;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import org.junit.Rule;
+import org.junit.rules.ExpectedException;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class ArgumentsManagerTest {
+    
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void argumentFromFieldTest() throws Exception {
@@ -177,6 +185,121 @@ public class ArgumentsManagerTest {
                 document.getTask().getResponse().getCustomData().get("CAF_WORKFLOW_SETTINGS"), type);
 
         assertEquals("valueFromSettingsService", arguments.get("example"));
+    }
+    
+    @Test
+    public void existingCafWorkflowSettingsTest() throws Exception {
+        
+        // If the document already has values for the CAF_WORKFLOW_SETTINGS field, it means
+        // that the workflow worker has already resolved the arguments and added them to
+        // the document.
+        //
+        // This scenario can occur whenever a downstream worker sends a poison message back to
+        // the workflow worker.
+        //
+        // In this case, the ArgumentsManager should not try to re-resolve the arguments again, 
+        // but instead we just copy the value from CAF_WORKFLOW_SETTINGS from the document field 
+        // into the custom data of the document task response, and return.
+        
+        // This test:
+        //
+        // 1. Uses a document with CAF_WORKFLOW_SETTINGS = {"example" => "valueFromCafWorkflowSettings"}
+        // 
+        // 2. Mocks up the settings service to resolve the "example" argument to a 
+        //    different value: "valueFromSettingsService"
+        //
+        // 3. Checks that the "example" argument's resolved value is it's original value from 
+        //    CAF_WORKFLOW_SETTINGS (in both the document field, and the document task responses's 
+        //    custom data), meaning the  ArgumentsManager did not try to re-resolve the argument
+        //    from the settings service.
+
+        final List<ArgumentDefinition> argumentDefinitions = getArgumentDefinitions();
+
+        final SettingsApi settingsApi = mock(SettingsApi.class);
+        
+        final ResolvedSetting resolvedSetting = new ResolvedSetting();
+        resolvedSetting.setValue("valueFromSettingsService");
+        when(settingsApi.getResolvedSetting("exampleSetting", "repository-rId,tenantId-tId-some-suffix"))
+                .thenReturn(resolvedSetting);
+
+        final Gson gson = new Gson();
+        
+        final Map<String, String> alreadyResolvedArguments = 
+            Collections.singletonMap("example", "valueFromCafWorkflowSettings");
+        
+        final String alreadyResolvedArgumentsJson = gson.toJson(alreadyResolvedArguments);
+
+        final Document document = DocumentBuilder.configure().withServices(TestServices.createDefault())
+                .withCustomData()
+                .add("tenantId", "tId")
+                .documentBuilder()
+                .withFields()
+                .addFieldValue("repositoryId", "rId")
+                .addFieldValue("CAF_WORKFLOW_SETTINGS", alreadyResolvedArgumentsJson)
+                .documentBuilder()
+                .build();
+
+        final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, "");
+        argumentsManager.addArgumentsToDocument(argumentDefinitions, document);
+  
+        final Type type = new TypeToken<Map<String, String>>() {}.getType();
+        final Map<String, String> arguments = gson.fromJson(
+                document.getTask().getResponse().getCustomData().get("CAF_WORKFLOW_SETTINGS"), type);
+        final Map<String, String> cafWorkflowSettings = gson.fromJson(
+            document.getField("CAF_WORKFLOW_SETTINGS").getStringValues().get(0), type);
+
+        assertEquals("valueFromCafWorkflowSettings", arguments.get("example"));
+        assertEquals("valueFromCafWorkflowSettings", cafWorkflowSettings.get("example"));
+    }
+    
+    @Test
+    public void existingCafWorkflowSettingsContainsUnexpectedSettingTest() throws Exception {
+        
+        // If the document already has values for the CAF_WORKFLOW_SETTINGS field, it means
+        // that the workflow worker has already resolved the arguments and added them to
+        // the document.
+        //
+        // This scenario can occur whenever a downstream worker sends a poison message back to
+        // the workflow worker.
+        //
+        // In this case, the ArgumentsManager should not try to re-resolve the arguments again, 
+        // but instead we just copy the value from CAF_WORKFLOW_SETTINGS from the document field 
+        // into the custom data of the document task response, and return.
+        //
+        // However, before we do this, we want to validate that any settings defined on the
+        // existing CAF_WORKFLOW_SETTINGS also exist on the workflow arguments.
+        //
+        // This guards against processing a document that contains unexpected settings 
+        // inside an existing CAF_WORKFLOW_SETTINGS.
+        //
+        // This test verifies that an appropriate exception and message are thrown in this case.
+        
+        thrown.expect(UnexpectedCafWorkflowSettingException.class);
+        thrown.expectMessage("Document contains an unexpected setting inside the CAF_WORKFLOW_SETTINGS field: unexpected. "
+            + "Valid settings are: example, shouldDefault");
+
+        final List<ArgumentDefinition> argumentDefinitions = getArgumentDefinitions();
+
+        final SettingsApi settingsApi = mock(SettingsApi.class);
+
+        final Gson gson = new Gson();
+        
+        final Map<String, String> alreadyResolvedArguments = ImmutableMap.of(
+            "example", "valueFromCafWorkflowSettings",
+            "unexpected", "unexpectedValue");
+        
+        final String alreadyResolvedArgumentsJson = gson.toJson(alreadyResolvedArguments);
+
+        final Document document = DocumentBuilder.configure().withServices(TestServices.createDefault())
+                .withCustomData()
+                .documentBuilder()
+                .withFields()
+                .addFieldValue("CAF_WORKFLOW_SETTINGS", alreadyResolvedArgumentsJson)
+                .documentBuilder()
+                .build();
+
+        final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, "");
+        argumentsManager.addArgumentsToDocument(argumentDefinitions, document);
     }
 
     private List<ArgumentDefinition> getArgumentDefinitions() {

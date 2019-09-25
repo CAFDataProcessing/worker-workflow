@@ -15,14 +15,17 @@
  */
 package com.github.cafdataprocessing.workflow;
 
+import com.github.cafdataprocessing.workflow.exceptions.UnexpectedCafWorkflowSettingException;
 import com.github.cafdataprocessing.workflow.model.ArgumentDefinition;
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.hpe.caf.worker.document.exceptions.DocumentWorkerTransientException;
 import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.model.Field;
 import com.microfocus.darwin.settings.client.*;
 import com.squareup.okhttp.*;
+import java.lang.reflect.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +33,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 
 public class ArgumentsManager {
@@ -68,7 +72,29 @@ public class ArgumentsManager {
     }
 
     public void addArgumentsToDocument(final List<ArgumentDefinition> argumentDefinitions, final Document document)
-            throws DocumentWorkerTransientException {
+            throws DocumentWorkerTransientException, UnexpectedCafWorkflowSettingException {
+        
+        // If the document already has values for the CAF_WORKFLOW_SETTINGS field, it means
+        // that the workflow worker has already resolved the arguments and added them to
+        // the document, i.e. we've been through this method before.
+        //
+        // This scenario can occur whenever a downstream worker sends a poison message back to
+        // the workflow worker.
+        //
+        // In this case, the ArgumentsManager should not try to re-resolve the arguments again, 
+        // but instead just copy the value from CAF_WORKFLOW_SETTINGS from the document field 
+        // into the custom data of the document task response, and return.
+        //
+        // Validation is also performed here to guard against unexpected settings
+        // present in CAF_WORKFLOW_SETTINGS, but not present in the workflow arguments 
+        // (the argumentDefinitions parameter).
+        if (document.getField("CAF_WORKFLOW_SETTINGS").hasValues()) {
+            final String cafWorkflowSettingsJson = document.getField("CAF_WORKFLOW_SETTINGS").getStringValues().get(0);
+            validateExistingCafWorkflowSettings(cafWorkflowSettingsJson, argumentDefinitions);
+            document.getTask().getResponse().getCustomData().put("CAF_WORKFLOW_SETTINGS", cafWorkflowSettingsJson);
+            
+            return;
+        }
 
         final Map<String, String> arguments = new HashMap<>();
 
@@ -178,4 +204,28 @@ public class ArgumentsManager {
         }
     }
 
+    private void validateExistingCafWorkflowSettings(final String cafWorkflowSettingsJson,
+                                                     final List<ArgumentDefinition> argumentDefinitions)
+        throws UnexpectedCafWorkflowSettingException
+    {
+        // Extract the name of each setting from the existing CAF_WORKFLOW_SETTINGS.
+        final Type type = new TypeToken<Map<String, String>>() {}.getType();
+        final Map<String, String> cafWorkflowSettings = gson.fromJson(cafWorkflowSettingsJson, type);
+        final Set<String> cafWorkflowSettingsNames = cafWorkflowSettings.keySet();
+        
+        // Extract the name of each argument from the workflow arguments.
+        final List<String> argumentDefintionNames = argumentDefinitions
+            .stream()
+            .map(argumentDefintion -> argumentDefintion.getName())
+            .collect(Collectors.toList());
+        
+        // Ensure that each setting that exists in the existing CAF_WORKFLOW_SETTINGS
+        // also exists in the workflow arguments; this guards against processing a 
+        // document that contains unexpected settings.
+        for (final String cafWorkflowSettingName : cafWorkflowSettingsNames) {
+            if (!argumentDefintionNames.contains(cafWorkflowSettingName)) {
+                throw new UnexpectedCafWorkflowSettingException(cafWorkflowSettingName, argumentDefintionNames);
+            }
+        }
+    }   
 }
