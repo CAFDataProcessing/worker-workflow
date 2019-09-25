@@ -186,7 +186,7 @@ public class WorkflowHelper
         task.setDocument(temp);
         return temp;
     }
-       
+
     /**
      *
      * @param id
@@ -199,7 +199,6 @@ public class WorkflowHelper
                                                        final DocumentBuilder... documentBuilders)
     {
         final DocumentBuilder builder = DocumentBuilder.configure();
-
         if (id != null) {
             builder.withReference(id);
         }
@@ -224,7 +223,7 @@ public class WorkflowHelper
      * @param builder
      */
     public static void addField(final String name, final String value, final boolean isStringValue,
-                                                                       final DocumentBuilder builder)
+                                final DocumentBuilder builder)
     {
         builder.withFields().addFieldValue(name, value, (isStringValue ? null : DocumentWorkerFieldEncoding.storage_ref))
             .documentBuilder();

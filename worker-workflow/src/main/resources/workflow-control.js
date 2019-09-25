@@ -283,7 +283,7 @@ function isLastAction(action) {
 
 function getCurrentWorkerName(document) {
     try {
-        return document.getApplication().getClass().getMethod("getName").invoke(document.getApplication());        
+        return document.getApplication().getClass().getMethod("getName").invoke(document.getApplication());
     } catch (e) {
         return document.getApplication().getService(com.hpe.caf.api.ConfigurationSource.class)
                 .getConfiguration(com.hpe.caf.worker.document.config.DocumentWorkerConfiguration.class).getWorkerName();
