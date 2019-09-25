@@ -282,13 +282,21 @@ function isLastAction(action) {
 }
 
 function getCurrentWorkerName(document) {
-    return document.getApplication().getService(com.hpe.caf.api.ConfigurationSource.class)
-            .getConfiguration(com.hpe.caf.worker.document.config.DocumentWorkerConfiguration.class).getWorkerName();
+    try {
+        return document.getApplication().getClass().getMethod("getName").invoke(document.getApplication());        
+    } catch (e) {
+        return document.getApplication().getService(com.hpe.caf.api.ConfigurationSource.class)
+                .getConfiguration(com.hpe.caf.worker.document.config.DocumentWorkerConfiguration.class).getWorkerName();
+    }
 }
 
 function getCurrentWorkerVersion(document) {
-    return document.getApplication().getService(com.hpe.caf.api.ConfigurationSource.class)
-            .getConfiguration(com.hpe.caf.worker.document.config.DocumentWorkerConfiguration.class).getWorkerVersion();
+    try {
+        return document.getApplication().getClass().getMethod("getVersion").invoke(document.getApplication());
+    } catch (e) {
+        return document.getApplication().getService(com.hpe.caf.api.ConfigurationSource.class)
+                .getConfiguration(com.hpe.caf.worker.document.config.DocumentWorkerConfiguration.class).getWorkerVersion();
+    }
 }
 
 //Field Conditions

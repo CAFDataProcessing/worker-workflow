@@ -26,6 +26,7 @@ import com.github.cafdataprocessing.workflow.testing.models.WorkerTaskDataMock;
 import com.hpe.caf.api.worker.TaskSourceInfo;
 import com.hpe.caf.api.worker.TaskStatus;
 import com.hpe.caf.api.worker.WorkerTaskData;
+import com.hpe.caf.worker.document.DocumentWorkerFieldEncoding;
 import com.hpe.caf.worker.document.config.DocumentWorkerConfiguration;
 import com.hpe.caf.worker.document.model.Application;
 import com.hpe.caf.worker.document.model.Document;
@@ -34,6 +35,7 @@ import com.hpe.caf.worker.document.model.Fields;
 import com.hpe.caf.worker.document.model.InputMessageProcessor;
 import com.hpe.caf.worker.document.model.Subdocument;
 import com.hpe.caf.worker.document.model.Subdocuments;
+import com.hpe.caf.worker.document.testing.DocumentBuilder;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -184,4 +186,48 @@ public class WorkflowHelper
         task.setDocument(temp);
         return temp;
     }
+       
+    /**
+     *
+     * @param id
+     * @param withStringContentPrimaryValue
+     * @param documentBuilders
+     * @return
+     */
+    public static DocumentBuilder buildDocumentBuilder(final String id,
+                                                       final boolean withStringContentPrimaryValue,
+                                                       final DocumentBuilder... documentBuilders)
+    {
+        final DocumentBuilder builder = DocumentBuilder.configure();
+
+        if (id != null) {
+            builder.withReference(id);
+        }
+        addField("TITLE", "TITLE" + id, true, builder);
+        if (withStringContentPrimaryValue) {
+            addField("CONTENT_PRIMARY", id, true, builder);
+        } else {
+            addField("CONTENT_PRIMARY", id, false, builder);
+        }
+        if (documentBuilders.length > 0) {
+            addField("HAS_ATTACHMENTS", "true", true, builder);
+            builder.withSubDocuments(documentBuilders);
+        }
+        return builder;
+    }
+
+    /**
+     *
+     * @param name
+     * @param value
+     * @param isStringValue
+     * @param builder
+     */
+    public static void addField(final String name, final String value, final boolean isStringValue,
+                                                                       final DocumentBuilder builder)
+    {
+        builder.withFields().addFieldValue(name, value, (isStringValue ? null : DocumentWorkerFieldEncoding.storage_ref))
+            .documentBuilder();
+    }
+
 }
