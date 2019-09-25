@@ -136,6 +136,7 @@ public final class WorkflowWorker implements DocumentWorker
             LOG.error(String.format("UnexpectedCafWorkflowSettingException for document [%s].\n%s\n", 
                                     document.getReference(), e.toString()));
             document.addFailure("WORKFLOW_UNEXPECTED_CAF_WORKFLOW_SETTING_EXCEPTION", e.getMessage());
+            return;
         }
         
         try {
