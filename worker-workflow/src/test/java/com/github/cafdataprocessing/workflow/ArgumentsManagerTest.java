@@ -188,30 +188,16 @@ public class ArgumentsManagerTest {
     }
     
     @Test
-    public void existingCafWorkflowSettingsTest() throws Exception {
+    public void poisonMessageHandlingTest() throws Exception {
         
-        // If the document already has values for the CAF_WORKFLOW_SETTINGS field, it means
-        // that the workflow worker has already resolved the arguments and added them to
-        // the document.
-        //
-        // This scenario can occur whenever a downstream worker sends a poison message back to
-        // the workflow worker.
-        //
-        // In this case, the ArgumentsManager should not try to re-resolve the arguments again, 
-        // but instead we just copy the value from CAF_WORKFLOW_SETTINGS from the document field 
-        // into the custom data of the document task response, and return.
-        
-        // This test:
-        //
-        // 1. Uses a document with CAF_WORKFLOW_SETTINGS = {"example" => "valueFromCafWorkflowSettings"}
+        // If processing a poison message (a message that a downstream worker has redirected
+        // back to the workflow worker), the ArgumentsManager should not try to re-resolve the 
+        // arguments again, but instead: 
         // 
-        // 2. Mocks up the settings service to resolve the "example" argument to a 
-        //    different value: "valueFromSettingsService"
-        //
-        // 3. Checks that the "example" argument's resolved value is it's original value from 
-        //    CAF_WORKFLOW_SETTINGS (in both the document field, and the document task responses's 
-        //    custom data), meaning the  ArgumentsManager did not try to re-resolve the argument
-        //    from the settings service.
+        // 1. Trust that the CAF_WORKFLOW_SETTINGS on the document field are valid.
+        // 2. Copy the CAF_WORKFLOW_SETTINGS from the document field into the custom data of the 
+        //    document task response.
+        // 3. Return without performing any resolving of arguments
 
         final List<ArgumentDefinition> argumentDefinitions = getArgumentDefinitions();
 
@@ -229,10 +215,12 @@ public class ArgumentsManagerTest {
         
         final String alreadyResolvedArgumentsJson = gson.toJson(alreadyResolvedArguments);
 
+        // This document represents a poison message because it has:
+        //
+        // 1. A non-empty CAF_WORKFLOW_SETTINGS field on the document.
+        //
+        // 2. No 'tenantId' custom data value.
         final Document document = DocumentBuilder.configure().withServices(TestServices.createDefault())
-                .withCustomData()
-                .add("tenantId", "tId")
-                .documentBuilder()
                 .withFields()
                 .addFieldValue("repositoryId", "rId")
                 .addFieldValue("CAF_WORKFLOW_SETTINGS", alreadyResolvedArgumentsJson)
@@ -253,18 +241,17 @@ public class ArgumentsManagerTest {
     }
     
     @Test
-    public void existingCafWorkflowSettingsContainsUnexpectedSettingTest() throws Exception {
+    public void poisonMessageContainingInvalidCafWorkflowSettingHandlingTest() throws Exception {
         
-        // If the document already has values for the CAF_WORKFLOW_SETTINGS field, it means
-        // that the workflow worker has already resolved the arguments and added them to
-        // the document.
-        //
-        // This scenario can occur whenever a downstream worker sends a poison message back to
-        // the workflow worker.
-        //
-        // In this case, the ArgumentsManager should not try to re-resolve the arguments again, 
-        // but instead we just copy the value from CAF_WORKFLOW_SETTINGS from the document field 
-        // into the custom data of the document task response, and return.
+        // If processing a poison message (a message that a downstream worker has redirected
+        // back to the workflow worker), the ArgumentsManager should not try to re-resolve the 
+        // arguments again, but instead: 
+        // 
+        // 1. Trust that the CAF_WORKFLOW_SETTINGS on the document field are valid (after 
+        //    performing some checks).
+        // 2. Copy the CAF_WORKFLOW_SETTINGS from the  document field into the custom data of the 
+        //    document task response.
+        // 3. Return without performing any resolving of arguments
         //
         // However, before we do this, we want to validate that any settings defined on the
         // existing CAF_WORKFLOW_SETTINGS also exist on the workflow arguments.
@@ -290,10 +277,16 @@ public class ArgumentsManagerTest {
         
         final String alreadyResolvedArgumentsJson = gson.toJson(alreadyResolvedArguments);
 
+        // This document represents an INVALID poison message because it has:
+        //
+        // 1. A non-empty CAF_WORKFLOW_SETTINGS field on the document.
+        //
+        // 2. An unexpected setting inside the CAF_WORKFLOW_SETTINGS.
+        //
+        // 2. No 'tenantId' custom data value.
         final Document document = DocumentBuilder.configure().withServices(TestServices.createDefault())
-                .withCustomData()
-                .documentBuilder()
                 .withFields()
+                .addFieldValue("repositoryId", "rId")
                 .addFieldValue("CAF_WORKFLOW_SETTINGS", alreadyResolvedArgumentsJson)
                 .documentBuilder()
                 .build();

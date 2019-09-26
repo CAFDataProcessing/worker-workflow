@@ -73,22 +73,17 @@ public class ArgumentsManager {
 
     public void addArgumentsToDocument(final List<ArgumentDefinition> argumentDefinitions, final Document document)
             throws DocumentWorkerTransientException, UnexpectedCafWorkflowSettingException {
-        
-        // If the document already has values for the CAF_WORKFLOW_SETTINGS field, it means
-        // that the workflow worker has already resolved the arguments and added them to
-        // the document, i.e. we've been through this method before.
-        //
-        // This scenario can occur whenever a downstream worker sends a poison message back to
-        // the workflow worker.
-        //
-        // In this case, the ArgumentsManager should not try to re-resolve the arguments again, 
-        // but instead just copy the value from CAF_WORKFLOW_SETTINGS from the document field 
-        // into the custom data of the document task response, and return.
-        //
-        // Validation is also performed here to guard against unexpected settings
-        // present in CAF_WORKFLOW_SETTINGS, but not present in the workflow arguments 
-        // (the argumentDefinitions parameter).
-        if (document.getField("CAF_WORKFLOW_SETTINGS").hasValues()) {
+          
+        // If processing a poison message (a message that a downstream worker has redirected
+        // back to the workflow worker), the ArgumentsManager should not try to re-resolve the 
+        // arguments again, but instead: 
+        // 
+        // 1. Trust that the CAF_WORKFLOW_SETTINGS on the document field are valid (after 
+        //    performing some checks).
+        // 2. Copy the CAF_WORKFLOW_SETTINGS from the  document field into the custom data of the 
+        //    document task response.
+        // 3. Return without performing any resolving of arguments.
+        if (isPoisonMessage(document)) {
             final String cafWorkflowSettingsJson = document.getField("CAF_WORKFLOW_SETTINGS").getStringValues().get(0);
             validateExistingCafWorkflowSettings(cafWorkflowSettingsJson, argumentDefinitions);
             document.getTask().getResponse().getCustomData().put("CAF_WORKFLOW_SETTINGS", cafWorkflowSettingsJson);
@@ -202,6 +197,28 @@ public class ArgumentsManager {
                 throw new RuntimeException(ex.getMessage(), ex);
             }
         }
+    }
+    
+    private boolean isPoisonMessage(final Document document) {
+        // A poison message is a message that a downstream worker has redirected back
+        // to the workflow worker. A message is considered poison if:
+        //
+        // 1. It has a a non-empty CAF_WORKFLOW_SETTINGS field.
+        //
+        // 2. It does NOT have a 'tenantId' inside it's custom data.
+        //
+        // Point (2) is important, it's not enough to just check for a non-empty 
+        // CAF_WORKFLOW_SETTINGS field, since that makes it possible for a rogue agent to
+        // stage documents that already contain CAF_WORKFLOW_SETTINGS field, which could
+        // possibly be used to write to, or delete from, another tenant's index.
+        //
+        // The tenantId that is passed in custom data cannot be controlled by a rogue agent 
+        // and is therefore trustworthy, so if that is checked as well, it gives some 
+        // confidence that this is really a poison message, and not a document staged by
+        // a rogue agent, and as such we can safely use the CAF_WORKFLOW_SETTINGS present
+        // in the document and trust that they are valid.
+        return document.getField("CAF_WORKFLOW_SETTINGS").hasValues() && 
+            (document.getTask().getCustomData("tenantId") == null);
     }
 
     private void validateExistingCafWorkflowSettings(final String cafWorkflowSettingsJson,
