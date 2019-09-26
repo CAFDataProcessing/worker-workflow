@@ -26,7 +26,6 @@ import com.github.cafdataprocessing.workflow.testing.models.WorkerTaskDataMock;
 import com.hpe.caf.api.worker.TaskSourceInfo;
 import com.hpe.caf.api.worker.TaskStatus;
 import com.hpe.caf.api.worker.WorkerTaskData;
-import com.hpe.caf.worker.document.DocumentWorkerFieldEncoding;
 import com.hpe.caf.worker.document.config.DocumentWorkerConfiguration;
 import com.hpe.caf.worker.document.model.Application;
 import com.hpe.caf.worker.document.model.Document;
@@ -35,7 +34,6 @@ import com.hpe.caf.worker.document.model.Fields;
 import com.hpe.caf.worker.document.model.InputMessageProcessor;
 import com.hpe.caf.worker.document.model.Subdocument;
 import com.hpe.caf.worker.document.model.Subdocuments;
-import com.hpe.caf.worker.document.testing.DocumentBuilder;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -185,6 +183,6 @@ public class WorkflowHelper
             = new SubdocumentMock(reference, fields, task, new HashMap<>(), failures, subdocuments, application, parentDoc, rootDoc);
         task.setDocument(temp);
         return temp;
-    }   
+    }
 
 }

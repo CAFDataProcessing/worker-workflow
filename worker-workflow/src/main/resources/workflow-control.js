@@ -282,21 +282,15 @@ function isLastAction(action) {
 }
 
 function getCurrentWorkerName(document) {
-    if (document.application.name) {
-        return document.application.name;
-    } else {
-        return document.getApplication().getService(com.hpe.caf.api.ConfigurationSource.class)
-                .getConfiguration(com.hpe.caf.worker.document.config.DocumentWorkerConfiguration.class).getWorkerName();
-    }
+    return document.application.name
+            || document.getApplication().getService(com.hpe.caf.api.ConfigurationSource.class)
+            .getConfiguration(com.hpe.caf.worker.document.config.DocumentWorkerConfiguration.class).getWorkerName();
 }
 
 function getCurrentWorkerVersion(document) {
-    if (document.application.version) {
-        return document.application.version;
-    } else {
-        return document.getApplication().getService(com.hpe.caf.api.ConfigurationSource.class)
-                .getConfiguration(com.hpe.caf.worker.document.config.DocumentWorkerConfiguration.class).getWorkerVersion();
-    }
+    return document.application.version
+            || document.getApplication().getService(com.hpe.caf.api.ConfigurationSource.class)
+            .getConfiguration(com.hpe.caf.worker.document.config.DocumentWorkerConfiguration.class).getWorkerVersion();
 }
 
 //Field Conditions
