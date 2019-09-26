@@ -185,48 +185,6 @@ public class WorkflowHelper
             = new SubdocumentMock(reference, fields, task, new HashMap<>(), failures, subdocuments, application, parentDoc, rootDoc);
         task.setDocument(temp);
         return temp;
-    }
-
-    /**
-     *
-     * @param id
-     * @param withStringContentPrimaryValue
-     * @param documentBuilders
-     * @return
-     */
-    public static DocumentBuilder buildDocumentBuilder(final String id,
-                                                       final boolean withStringContentPrimaryValue,
-                                                       final DocumentBuilder... documentBuilders)
-    {
-        final DocumentBuilder builder = DocumentBuilder.configure();
-        if (id != null) {
-            builder.withReference(id);
-        }
-        addField("TITLE", "TITLE" + id, true, builder);
-        if (withStringContentPrimaryValue) {
-            addField("CONTENT_PRIMARY", id, true, builder);
-        } else {
-            addField("CONTENT_PRIMARY", id, false, builder);
-        }
-        if (documentBuilders.length > 0) {
-            addField("HAS_ATTACHMENTS", "true", true, builder);
-            builder.withSubDocuments(documentBuilders);
-        }
-        return builder;
-    }
-
-    /**
-     *
-     * @param name
-     * @param value
-     * @param isStringValue
-     * @param builder
-     */
-    public static void addField(final String name, final String value, final boolean isStringValue,
-                                final DocumentBuilder builder)
-    {
-        builder.withFields().addFieldValue(name, value, (isStringValue ? null : DocumentWorkerFieldEncoding.storage_ref))
-            .documentBuilder();
-    }
+    }   
 
 }

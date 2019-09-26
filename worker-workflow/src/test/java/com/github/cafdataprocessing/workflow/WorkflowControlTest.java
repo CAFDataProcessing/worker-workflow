@@ -1226,7 +1226,12 @@ public class WorkflowControlTest
         final String result = (String) invocable.invokeFunction("getCurrentWorkerName", document);
         assertThat(result, is(equalTo(("application-worker-base"))));
 
-        final Document document2 = WorkflowHelper.buildDocumentBuilder("test", true).build();
+        final DocumentBuilder builder = DocumentBuilder.configure();
+        builder.withReference("test")
+               .withFields()
+               .addFieldValue("CONTENT", "content_value")
+               .documentBuilder();
+        final Document document2 = builder.build();
         document2.getApplication().getService(ConfigurationSource.class)
             .getConfiguration(DocumentWorkerConfiguration.class).setWorkerName("worker-added");
 
@@ -1248,7 +1253,12 @@ public class WorkflowControlTest
         final String result = (String) invocable.invokeFunction("getCurrentWorkerVersion", document);
         assertThat(result, is(equalTo(("1.0.0-SNAPSHOT-APPLICATION"))));
 
-        final Document document2 = WorkflowHelper.buildDocumentBuilder("test", true).build();
+        final DocumentBuilder builder = DocumentBuilder.configure();
+        builder.withReference("test")
+               .withFields()
+               .addFieldValue("CONTENT", "content_value")
+               .documentBuilder();
+        final Document document2 = builder.build();
         document2.getApplication().getService(ConfigurationSource.class)
             .getConfiguration(DocumentWorkerConfiguration.class).setWorkerVersion("5.6.2-SNAPSHOT");
 

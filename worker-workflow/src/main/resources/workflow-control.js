@@ -282,18 +282,18 @@ function isLastAction(action) {
 }
 
 function getCurrentWorkerName(document) {
-    try {
-        return document.getApplication().getClass().getMethod("getName").invoke(document.getApplication());
-    } catch (e) {
+    if (document.application.name) {
+        return document.application.name;
+    } else {
         return document.getApplication().getService(com.hpe.caf.api.ConfigurationSource.class)
                 .getConfiguration(com.hpe.caf.worker.document.config.DocumentWorkerConfiguration.class).getWorkerName();
     }
 }
 
 function getCurrentWorkerVersion(document) {
-    try {
-        return document.getApplication().getClass().getMethod("getVersion").invoke(document.getApplication());
-    } catch (e) {
+    if (document.application.version) {
+        return document.application.version;
+    } else {
         return document.getApplication().getService(com.hpe.caf.api.ConfigurationSource.class)
                 .getConfiguration(com.hpe.caf.worker.document.config.DocumentWorkerConfiguration.class).getWorkerVersion();
     }
