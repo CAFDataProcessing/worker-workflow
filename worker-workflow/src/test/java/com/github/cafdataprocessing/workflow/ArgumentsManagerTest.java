@@ -188,9 +188,9 @@ public class ArgumentsManagerTest {
     }
     
     @Test
-    public void poisonMessageHandlingTest() throws Exception {
+    public void poisonDocumentHandlingTest() throws Exception {
         
-        // If processing a poison message (a message that a downstream worker has redirected
+        // If processing a poison document (a document that a downstream worker has redirected
         // back to the workflow worker), the ArgumentsManager should not try to re-resolve the 
         // arguments again, but instead: 
         // 
@@ -215,7 +215,7 @@ public class ArgumentsManagerTest {
         
         final String alreadyResolvedArgumentsJson = gson.toJson(alreadyResolvedArguments);
 
-        // This document represents a poison message because it has:
+        // This document represents a poison document because it has:
         //
         // 1. A non-empty CAF_WORKFLOW_SETTINGS field on the document.
         //
@@ -241,9 +241,9 @@ public class ArgumentsManagerTest {
     }
     
     @Test
-    public void poisonMessageContainingInvalidCafWorkflowSettingHandlingTest() throws Exception {
+    public void poisonDocumentContainingInvalidCafWorkflowSettingHandlingTest() throws Exception {
         
-        // If processing a poison message (a message that a downstream worker has redirected
+        // If processing a poison document (a document that a downstream worker has redirected
         // back to the workflow worker), the ArgumentsManager should not try to re-resolve the 
         // arguments again, but instead: 
         // 
@@ -277,7 +277,7 @@ public class ArgumentsManagerTest {
         
         final String alreadyResolvedArgumentsJson = gson.toJson(alreadyResolvedArguments);
 
-        // This document represents an INVALID poison message because it has:
+        // This document represents an INVALID poison document because it has:
         //
         // 1. A non-empty CAF_WORKFLOW_SETTINGS field on the document.
         //

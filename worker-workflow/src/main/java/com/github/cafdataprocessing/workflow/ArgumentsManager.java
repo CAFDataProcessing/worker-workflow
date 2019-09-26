@@ -74,7 +74,7 @@ public class ArgumentsManager {
     public void addArgumentsToDocument(final List<ArgumentDefinition> argumentDefinitions, final Document document)
             throws DocumentWorkerTransientException, UnexpectedCafWorkflowSettingException {
           
-        // If processing a poison message (a message that a downstream worker has redirected
+        // If processing a poison document (a document that a downstream worker has redirected
         // back to the workflow worker), the ArgumentsManager should not try to re-resolve the 
         // arguments again, but instead: 
         // 
@@ -83,7 +83,7 @@ public class ArgumentsManager {
         // 2. Copy the CAF_WORKFLOW_SETTINGS from the  document field into the custom data of the 
         //    document task response.
         // 3. Return without performing any resolving of arguments.
-        if (isPoisonMessage(document)) {
+        if (isPoisonDocument(document)) {
             final String cafWorkflowSettingsJson = document.getField("CAF_WORKFLOW_SETTINGS").getStringValues().get(0);
             validateExistingCafWorkflowSettings(cafWorkflowSettingsJson, argumentDefinitions);
             document.getTask().getResponse().getCustomData().put("CAF_WORKFLOW_SETTINGS", cafWorkflowSettingsJson);
@@ -199,9 +199,9 @@ public class ArgumentsManager {
         }
     }
     
-    private boolean isPoisonMessage(final Document document) {
-        // A poison message is a message that a downstream worker has redirected back
-        // to the workflow worker. A message is considered poison if:
+    private boolean isPoisonDocument(final Document document) {
+        // A poison document is a document that a downstream worker has redirected back
+        // to the workflow worker. A document is considered poison if:
         //
         // 1. It has a a non-empty CAF_WORKFLOW_SETTINGS field.
         //
@@ -214,7 +214,7 @@ public class ArgumentsManager {
         //
         // The tenantId that is passed in custom data cannot be controlled by a rogue agent 
         // and is therefore trustworthy, so if that is checked as well, it gives some 
-        // confidence that this is really a poison message, and not a document staged by
+        // confidence that this is really a poison document, and not a document staged by
         // a rogue agent, and as such we can safely use the CAF_WORKFLOW_SETTINGS present
         // in the document and trust that they are valid.
         return document.getField("CAF_WORKFLOW_SETTINGS").hasValues() && 
