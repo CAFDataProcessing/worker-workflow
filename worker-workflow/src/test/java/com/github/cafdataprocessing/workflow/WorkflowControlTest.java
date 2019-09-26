@@ -102,7 +102,7 @@ public class WorkflowControlTest
         assertThat(mainFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
         assertThat(mainFailure,
-                   isJsonStringMatching(jsonObject().where("COMPONENT", is(jsonText("worker-base 1.0.0-SNAPSHOT")))));
+                   isJsonStringMatching(jsonObject().where("COMPONENT", is(jsonText("application-worker-base 1.0.0-SNAPSHOT-APPLICATION")))));
         assertThat(mainFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
         assertThat(mainFailure,
@@ -157,7 +157,7 @@ public class WorkflowControlTest
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
         assertThat(firstFailure,
-                   isJsonStringMatching(jsonObject().where("COMPONENT", is(jsonText("worker-base 1.0.0-SNAPSHOT")))));
+                   isJsonStringMatching(jsonObject().where("COMPONENT", is(jsonText("application-worker-base 1.0.0-SNAPSHOT-APPLICATION")))));
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
         assertThat(firstFailure,
@@ -179,7 +179,7 @@ public class WorkflowControlTest
         assertThat(secondFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
         assertThat(secondFailure,
-                   isJsonStringMatching(jsonObject().where("COMPONENT", is(jsonText("worker-base 1.0.0-SNAPSHOT")))));
+                   isJsonStringMatching(jsonObject().where("COMPONENT", is(jsonText("application-worker-base 1.0.0-SNAPSHOT-APPLICATION")))));
         assertThat(secondFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
         assertThat(secondFailure,
@@ -230,7 +230,7 @@ public class WorkflowControlTest
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
         assertThat(firstFailure,
-                   isJsonStringMatching(jsonObject().where("COMPONENT", is(jsonText("worker-base 1.0.0-SNAPSHOT")))));
+                   isJsonStringMatching(jsonObject().where("COMPONENT", is(jsonText("application-worker-base 1.0.0-SNAPSHOT-APPLICATION")))));
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
         assertThat(firstFailure,
@@ -251,7 +251,7 @@ public class WorkflowControlTest
         assertThat(secondFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
         assertThat(secondFailure,
-                   isJsonStringMatching(jsonObject().where("COMPONENT", is(jsonText("worker-base 1.0.0-SNAPSHOT")))));
+                   isJsonStringMatching(jsonObject().where("COMPONENT", is(jsonText("application-worker-base 1.0.0-SNAPSHOT-APPLICATION")))));
         assertThat(secondFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
         assertThat(secondFailure,
@@ -352,7 +352,7 @@ public class WorkflowControlTest
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
         assertThat(firstFailure,
-                   isJsonStringMatching(jsonObject().where("COMPONENT", is(jsonText("worker-base 1.0.0-SNAPSHOT")))));
+                   isJsonStringMatching(jsonObject().where("COMPONENT", is(jsonText("application-worker-base 1.0.0-SNAPSHOT-APPLICATION")))));
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
         assertThat(firstFailure,
@@ -403,7 +403,7 @@ public class WorkflowControlTest
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
         assertThat(firstFailure,
-                   isJsonStringMatching(jsonObject().where("COMPONENT", is(jsonText("worker-base 1.0.0-SNAPSHOT")))));
+                   isJsonStringMatching(jsonObject().where("COMPONENT", is(jsonText("application-worker-base 1.0.0-SNAPSHOT-APPLICATION")))));
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
         assertThat(firstFailure,
@@ -599,7 +599,7 @@ public class WorkflowControlTest
         assertThat(failureMessage.getFailureId(), is(equalTo("error_id_1")));
         assertThat(failureMessage.getStack(), is(nullValue()));
         assertThat(failureMessage.getMessage(), is(equalTo("message 1")));
-        assertThat(failureMessage.getComponent(), is(equalTo("worker-base 1.0.0-SNAPSHOT")));
+        assertThat(failureMessage.getComponent(), is(equalTo("application-worker-base 1.0.0-SNAPSHOT-APPLICATION")));
         assertThat(failureMessage.getWorkflowName(), is(equalTo("example_workflow")));
         assertThat(failureMessage.getWorkflowAction(), is(equalTo("family_hashing")));
         assertThat(failureMessage.getDate(), is(not(isEmptyString())));
@@ -649,7 +649,7 @@ public class WorkflowControlTest
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
         assertThat(firstFailure,
-                   isJsonStringMatching(jsonObject().where("COMPONENT", is(jsonText("worker-base 1.0.0-SNAPSHOT")))));
+                   isJsonStringMatching(jsonObject().where("COMPONENT", is(jsonText("application-worker-base 1.0.0-SNAPSHOT-APPLICATION")))));
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
         assertThat(firstFailure,
@@ -700,7 +700,7 @@ public class WorkflowControlTest
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
         assertThat(firstFailure,
-                   isJsonStringMatching(jsonObject().where("COMPONENT", is(jsonText("worker-base 1.0.0-SNAPSHOT")))));
+                   isJsonStringMatching(jsonObject().where("COMPONENT", is(jsonText("application-worker-base 1.0.0-SNAPSHOT-APPLICATION")))));
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
         assertThat(firstFailure,
@@ -794,7 +794,7 @@ public class WorkflowControlTest
         assertThat(mainFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
         assertThat(mainFailure,
-                   isJsonStringMatching(jsonObject().where("COMPONENT", is(jsonText("worker-base 1.0.0-SNAPSHOT")))));
+                   isJsonStringMatching(jsonObject().where("COMPONENT", is(jsonText("application-worker-base 1.0.0-SNAPSHOT-APPLICATION")))));
         assertThat(mainFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
         assertThat(mainFailure,
@@ -946,7 +946,7 @@ public class WorkflowControlTest
         assertThat(mainFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
         assertThat(mainFailure,
-                   isJsonStringMatching(jsonObject().where("COMPONENT", is(jsonText("worker-base 1.0.0-SNAPSHOT")))));
+                   isJsonStringMatching(jsonObject().where("COMPONENT", is(jsonText("application-worker-base 1.0.0-SNAPSHOT-APPLICATION")))));
         assertThat(mainFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
         assertThat(mainFailure,
@@ -984,7 +984,7 @@ public class WorkflowControlTest
         assertThat(secondFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
         assertThat(secondFailure,
-                   isJsonStringMatching(jsonObject().where("COMPONENT", is(jsonText("worker-base 1.0.0-SNAPSHOT")))));
+                   isJsonStringMatching(jsonObject().where("COMPONENT", is(jsonText("application-worker-base 1.0.0-SNAPSHOT-APPLICATION")))));
         assertThat(secondFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
         assertThat(secondFailure,
@@ -1021,7 +1021,7 @@ public class WorkflowControlTest
         assertThat(thirdFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
         assertThat(thirdFailure,
-                   isJsonStringMatching(jsonObject().where("COMPONENT", is(jsonText("worker-base 1.0.0-SNAPSHOT")))));
+                   isJsonStringMatching(jsonObject().where("COMPONENT", is(jsonText("application-worker-base 1.0.0-SNAPSHOT-APPLICATION")))));
         assertThat(thirdFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
         assertThat(thirdFailure,
@@ -1080,7 +1080,7 @@ public class WorkflowControlTest
         assertThat(mainFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
         assertThat(mainFailure,
-                   isJsonStringMatching(jsonObject().where("COMPONENT", is(jsonText("worker-base 1.0.0-SNAPSHOT")))));
+                   isJsonStringMatching(jsonObject().where("COMPONENT", is(jsonText("application-worker-base 1.0.0-SNAPSHOT-APPLICATION")))));
         assertThat(mainFailure,
                    isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
         assertThat(mainFailure,
@@ -1224,10 +1224,14 @@ public class WorkflowControlTest
                                                                 builderDoc, true, false);
 
         final String result = (String) invocable.invokeFunction("getCurrentWorkerName", document);
-        assertThat(result, is(equalTo(("worker-base"))));
+        assertThat(result, is(equalTo(("application-worker-base"))));
 
-        final Document document2 = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null,
-                                                                 builderDoc, true, false);
+        final DocumentBuilder builder = DocumentBuilder.configure();
+        builder.withReference("test")
+               .withFields()
+               .addFieldValue("CONTENT", "content_value")
+               .documentBuilder();
+        final Document document2 = builder.build();
         document2.getApplication().getService(ConfigurationSource.class)
             .getConfiguration(DocumentWorkerConfiguration.class).setWorkerName("worker-added");
 
@@ -1247,10 +1251,14 @@ public class WorkflowControlTest
                                                                 builderDoc, true, false);
 
         final String result = (String) invocable.invokeFunction("getCurrentWorkerVersion", document);
-        assertThat(result, is(equalTo(("1.0.0-SNAPSHOT"))));
+        assertThat(result, is(equalTo(("1.0.0-SNAPSHOT-APPLICATION"))));
 
-        final Document document2 = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null,
-                                                                 builderDoc, true, false);
+        final DocumentBuilder builder = DocumentBuilder.configure();
+        builder.withReference("test")
+               .withFields()
+               .addFieldValue("CONTENT", "content_value")
+               .documentBuilder();
+        final Document document2 = builder.build();
         document2.getApplication().getService(ConfigurationSource.class)
             .getConfiguration(DocumentWorkerConfiguration.class).setWorkerVersion("5.6.2-SNAPSHOT");
 
