@@ -32,15 +32,10 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
-import org.junit.Rule;
-import org.junit.rules.ExpectedException;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class ArgumentsManagerTest {
-    
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
 
     @Test
     public void argumentFromFieldTest() throws Exception {
