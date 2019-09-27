@@ -31,6 +31,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+
 public class ArgumentsManager {
 
     private final static Logger LOG = LoggerFactory.getLogger(ArgumentsManager.class);
@@ -191,7 +192,7 @@ public class ArgumentsManager {
             }
         }
     }
-    
+
     private boolean isPoisonDocument(final Document document) {
         // A poison document is a document that a downstream worker has redirected back
         // to the workflow worker. A document is considered poison if:

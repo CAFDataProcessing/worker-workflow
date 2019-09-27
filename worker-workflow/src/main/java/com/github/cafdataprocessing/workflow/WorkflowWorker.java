@@ -128,9 +128,9 @@ public final class WorkflowWorker implements DocumentWorker
             document.addFailure("WORKFLOW_NOT_FOUND", errorMessage);
             return;
         }
-        
+
         argumentsManager.addArgumentsToDocument(workflow.getArguments(), document);
-        
+
         try {
             scriptManager.applyScriptToDocument(workflow, document);
         } catch (final ScriptException e) {

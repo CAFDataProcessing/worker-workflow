@@ -184,7 +184,7 @@ public class ArgumentsManagerTest {
 
         assertEquals("valueFromSettingsService", arguments.get("example"));
     }
-    
+
     @Test
     public void poisonDocumentHandlingTest() throws Exception {
         
