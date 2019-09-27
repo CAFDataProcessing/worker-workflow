@@ -27,6 +27,7 @@ import org.junit.Test;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -45,6 +46,7 @@ public class ArgumentsManagerTest {
 
         final Document document = DocumentBuilder.configure().withServices(TestServices.createDefault())
                 .withCustomData()
+                .add("workflowName", "sample-workflow")
                 .documentBuilder()
                 .withFields()
                     .addFieldValue("exampleField", "value of example field")
@@ -72,7 +74,8 @@ public class ArgumentsManagerTest {
 
         final Document document = DocumentBuilder.configure().withServices(TestServices.createDefault())
                 .withCustomData()
-                    .add("TASK_SETTING_EXAMPLE", "value of task setting example field")
+                .add("workflowName", "sample-workflow")
+                .add("TASK_SETTING_EXAMPLE", "value of task setting example field")
                 .documentBuilder()
                 .withFields()
                 .documentBuilder()
@@ -98,6 +101,7 @@ public class ArgumentsManagerTest {
 
         final Document document = DocumentBuilder.configure().withServices(TestServices.createDefault())
                 .withCustomData()
+                .add("workflowName", "sample-workflow")
                 .add("exampleCustomData", "value of from custom data")
                 .documentBuilder()
                 .withFields()
@@ -129,6 +133,7 @@ public class ArgumentsManagerTest {
 
         final Document document = DocumentBuilder.configure().withServices(TestServices.createDefault())
                 .withCustomData()
+                .add("workflowName", "sample-workflow")
                 .add("repositoryId", "rId")
                 .add("tenantId", "tId")
                 .documentBuilder()
@@ -161,6 +166,7 @@ public class ArgumentsManagerTest {
 
         final Document document = DocumentBuilder.configure().withServices(TestServices.createDefault())
                 .withCustomData()
+                .add("workflowName", "sample-workflow")
                 .add("tenantId", "tId")
                 .documentBuilder()
                 .withFields()
@@ -177,6 +183,59 @@ public class ArgumentsManagerTest {
                 document.getTask().getResponse().getCustomData().get("CAF_WORKFLOW_SETTINGS"), type);
 
         assertEquals("valueFromSettingsService", arguments.get("example"));
+    }
+
+    @Test
+    public void poisonDocumentHandlingTest() throws Exception {
+        
+        // If processing a poison document (a document that a downstream worker has redirected
+        // back to the workflow worker), the ArgumentsManager should not try to re-resolve the 
+        // arguments again, but instead: 
+        // 
+        // 1. Trust that the CAF_WORKFLOW_SETTINGS on the document field are valid.
+        // 2. Copy the CAF_WORKFLOW_SETTINGS from the document field into the custom data of the 
+        //    document task response.
+        // 3. Return without performing any resolving of arguments
+
+        final List<ArgumentDefinition> argumentDefinitions = getArgumentDefinitions();
+
+        final SettingsApi settingsApi = mock(SettingsApi.class);
+        
+        final ResolvedSetting resolvedSetting = new ResolvedSetting();
+        resolvedSetting.setValue("valueFromSettingsService");
+        when(settingsApi.getResolvedSetting("exampleSetting", "repository-rId,tenantId-tId-some-suffix"))
+                .thenReturn(resolvedSetting);
+
+        final Gson gson = new Gson();
+        
+        final Map<String, String> alreadyResolvedArguments = 
+            Collections.singletonMap("example", "valueFromCafWorkflowSettings");
+        
+        final String alreadyResolvedArgumentsJson = gson.toJson(alreadyResolvedArguments);
+
+        // This document represents a poison document because it has:
+        //
+        // 1. A non-empty CAF_WORKFLOW_SETTINGS field on the document.
+        //
+        // 2. No 'workflowName' custom data value.
+        final Document document = DocumentBuilder.configure().withServices(TestServices.createDefault())
+                .withFields()
+                .addFieldValue("repositoryId", "rId")
+                .addFieldValue("CAF_WORKFLOW_SETTINGS", alreadyResolvedArgumentsJson)
+                .documentBuilder()
+                .build();
+
+        final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, "");
+        argumentsManager.addArgumentsToDocument(argumentDefinitions, document);
+  
+        final Type type = new TypeToken<Map<String, String>>() {}.getType();
+        final Map<String, String> arguments = gson.fromJson(
+                document.getTask().getResponse().getCustomData().get("CAF_WORKFLOW_SETTINGS"), type);
+        final Map<String, String> cafWorkflowSettings = gson.fromJson(
+            document.getField("CAF_WORKFLOW_SETTINGS").getStringValues().get(0), type);
+
+        assertEquals("valueFromCafWorkflowSettings", arguments.get("example"));
+        assertEquals("valueFromCafWorkflowSettings", cafWorkflowSettings.get("example"));
     }
 
     private List<ArgumentDefinition> getArgumentDefinitions() {
