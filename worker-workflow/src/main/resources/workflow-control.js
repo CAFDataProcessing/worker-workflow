@@ -282,12 +282,14 @@ function isLastAction(action) {
 }
 
 function getCurrentWorkerName(document) {
-    return document.getApplication().getService(com.hpe.caf.api.ConfigurationSource.class)
+    return document.application.name
+            || document.getApplication().getService(com.hpe.caf.api.ConfigurationSource.class)
             .getConfiguration(com.hpe.caf.worker.document.config.DocumentWorkerConfiguration.class).getWorkerName();
 }
 
 function getCurrentWorkerVersion(document) {
-    return document.getApplication().getService(com.hpe.caf.api.ConfigurationSource.class)
+    return document.application.version
+            || document.getApplication().getService(com.hpe.caf.api.ConfigurationSource.class)
             .getConfiguration(com.hpe.caf.worker.document.config.DocumentWorkerConfiguration.class).getWorkerVersion();
 }
 

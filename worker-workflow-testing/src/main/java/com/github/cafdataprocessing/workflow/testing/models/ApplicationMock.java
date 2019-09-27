@@ -85,4 +85,16 @@ public class ApplicationMock implements Application
         return configurationSource;
     }
 
+    @Override
+    public String getName()
+    {
+        return "application-worker-base";
+    }
+
+    @Override
+    public String getVersion()
+    {
+        return "1.0.0-SNAPSHOT-APPLICATION";
+    }
+
 }
