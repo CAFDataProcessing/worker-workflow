@@ -15,7 +15,6 @@
  */
 package com.github.cafdataprocessing.workflow;
 
-import com.github.cafdataprocessing.workflow.exceptions.UnexpectedCafWorkflowSettingException;
 import com.github.cafdataprocessing.workflow.model.Workflow;
 import com.google.common.base.Strings;
 import com.hpe.caf.api.ConfigurationException;
@@ -129,15 +128,8 @@ public final class WorkflowWorker implements DocumentWorker
             document.addFailure("WORKFLOW_NOT_FOUND", errorMessage);
             return;
         }
-
-        try {
-            argumentsManager.addArgumentsToDocument(workflow.getArguments(), document);
-        } catch (final UnexpectedCafWorkflowSettingException e) {
-            LOG.error(String.format("UnexpectedCafWorkflowSettingException for document [%s].\n%s\n", 
-                                    document.getReference(), e.toString()));
-            document.addFailure("WORKFLOW_UNEXPECTED_CAF_WORKFLOW_SETTING_EXCEPTION", e.getMessage());
-            return;
-        }
+        
+        argumentsManager.addArgumentsToDocument(workflow.getArguments(), document);
         
         try {
             scriptManager.applyScriptToDocument(workflow, document);

@@ -15,9 +15,7 @@
  */
 package com.github.cafdataprocessing.workflow;
 
-import com.github.cafdataprocessing.workflow.exceptions.UnexpectedCafWorkflowSettingException;
 import com.github.cafdataprocessing.workflow.model.ArgumentDefinition;
-import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.hpe.caf.worker.document.model.Document;
@@ -53,6 +51,7 @@ public class ArgumentsManagerTest {
 
         final Document document = DocumentBuilder.configure().withServices(TestServices.createDefault())
                 .withCustomData()
+                .add("workflowName", "sample-workflow")
                 .documentBuilder()
                 .withFields()
                     .addFieldValue("exampleField", "value of example field")
@@ -80,7 +79,8 @@ public class ArgumentsManagerTest {
 
         final Document document = DocumentBuilder.configure().withServices(TestServices.createDefault())
                 .withCustomData()
-                    .add("TASK_SETTING_EXAMPLE", "value of task setting example field")
+                .add("workflowName", "sample-workflow")
+                .add("TASK_SETTING_EXAMPLE", "value of task setting example field")
                 .documentBuilder()
                 .withFields()
                 .documentBuilder()
@@ -106,6 +106,7 @@ public class ArgumentsManagerTest {
 
         final Document document = DocumentBuilder.configure().withServices(TestServices.createDefault())
                 .withCustomData()
+                .add("workflowName", "sample-workflow")
                 .add("exampleCustomData", "value of from custom data")
                 .documentBuilder()
                 .withFields()
@@ -137,6 +138,7 @@ public class ArgumentsManagerTest {
 
         final Document document = DocumentBuilder.configure().withServices(TestServices.createDefault())
                 .withCustomData()
+                .add("workflowName", "sample-workflow")
                 .add("repositoryId", "rId")
                 .add("tenantId", "tId")
                 .documentBuilder()
@@ -169,6 +171,7 @@ public class ArgumentsManagerTest {
 
         final Document document = DocumentBuilder.configure().withServices(TestServices.createDefault())
                 .withCustomData()
+                .add("workflowName", "sample-workflow")
                 .add("tenantId", "tId")
                 .documentBuilder()
                 .withFields()
@@ -219,7 +222,7 @@ public class ArgumentsManagerTest {
         //
         // 1. A non-empty CAF_WORKFLOW_SETTINGS field on the document.
         //
-        // 2. No 'tenantId' custom data value.
+        // 2. No 'workflowName' custom data value.
         final Document document = DocumentBuilder.configure().withServices(TestServices.createDefault())
                 .withFields()
                 .addFieldValue("repositoryId", "rId")
@@ -238,61 +241,6 @@ public class ArgumentsManagerTest {
 
         assertEquals("valueFromCafWorkflowSettings", arguments.get("example"));
         assertEquals("valueFromCafWorkflowSettings", cafWorkflowSettings.get("example"));
-    }
-    
-    @Test
-    public void poisonDocumentContainingInvalidCafWorkflowSettingHandlingTest() throws Exception {
-        
-        // If processing a poison document (a document that a downstream worker has redirected
-        // back to the workflow worker), the ArgumentsManager should not try to re-resolve the 
-        // arguments again, but instead: 
-        // 
-        // 1. Trust that the CAF_WORKFLOW_SETTINGS on the document field are valid (after 
-        //    performing some checks).
-        // 2. Copy the CAF_WORKFLOW_SETTINGS from the  document field into the custom data of the 
-        //    document task response.
-        // 3. Return without performing any resolving of arguments
-        //
-        // However, before we do this, we want to validate that any settings defined on the
-        // existing CAF_WORKFLOW_SETTINGS also exist on the workflow arguments.
-        //
-        // This guards against processing a document that contains unexpected settings 
-        // inside an existing CAF_WORKFLOW_SETTINGS.
-        //
-        // This test verifies that an appropriate exception and message are thrown in this case.
-        
-        thrown.expect(UnexpectedCafWorkflowSettingException.class);
-        thrown.expectMessage("Document contains an unexpected setting inside the CAF_WORKFLOW_SETTINGS field: unexpected. "
-            + "Valid settings are: example, shouldDefault");
-
-        final List<ArgumentDefinition> argumentDefinitions = getArgumentDefinitions();
-
-        final SettingsApi settingsApi = mock(SettingsApi.class);
-
-        final Gson gson = new Gson();
-        
-        final Map<String, String> alreadyResolvedArguments = ImmutableMap.of(
-            "example", "valueFromCafWorkflowSettings",
-            "unexpected", "unexpectedValue");
-        
-        final String alreadyResolvedArgumentsJson = gson.toJson(alreadyResolvedArguments);
-
-        // This document represents an INVALID poison document because it has:
-        //
-        // 1. A non-empty CAF_WORKFLOW_SETTINGS field on the document.
-        //
-        // 2. An unexpected setting inside the CAF_WORKFLOW_SETTINGS.
-        //
-        // 2. No 'tenantId' custom data value.
-        final Document document = DocumentBuilder.configure().withServices(TestServices.createDefault())
-                .withFields()
-                .addFieldValue("repositoryId", "rId")
-                .addFieldValue("CAF_WORKFLOW_SETTINGS", alreadyResolvedArgumentsJson)
-                .documentBuilder()
-                .build();
-
-        final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, "");
-        argumentsManager.addArgumentsToDocument(argumentDefinitions, document);
     }
 
     private List<ArgumentDefinition> getArgumentDefinitions() {

@@ -61,24 +61,6 @@ public class ApplicationMock implements Application
     {
         return null;
     }
-    
-    // FIXME (Rory): Temporarily added to get past build compile error related to these changes: 
-    // https://github.com/CAFDataProcessing/worker-document/commit/afa28689782ff7cb88f599a0c280ea593c4dd490
-    // REMOVE BEFORE MERGING PULL REQUEST
-    @Override
-    public String getName()
-    {
-        return "";
-    }
-    
-    // FIXME (Rory): Temporarily added to get past build compile error related to these changes: 
-    // https://github.com/CAFDataProcessing/worker-document/commit/afa28689782ff7cb88f599a0c280ea593c4dd490
-    // REMOVE BEFORE MERGING PULL REQUEST
-    @Override
-    public String getVersion()
-    {
-        return "";
-    }
 
     public ConfigurationSource getConfigurationSource()
     {
