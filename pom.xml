@@ -24,7 +24,7 @@
     <parent>
         <groupId>com.github.cafapi</groupId>
         <artifactId>caf-common-parent</artifactId>
-        <version>1.1.0-11</version>
+        <version>2.1.0-129</version>
     </parent>
 
     <groupId>com.github.cafdataprocessing</groupId>
@@ -48,11 +48,13 @@
             ${dockerImagePrefix}${dockerHubOrganization}${dockerOrgSeperator}
         </dockerCafDataProcessingOrg>
         <dockerProjectVersion>${dockerVersionSeperator}${project.version}</dockerProjectVersion>
+        <fabric8.docker.maven.version>0.28.0</fabric8.docker.maven.version>
         <processingServiceContainerName>
             cafdataprocessing/processing-service:1
         </processingServiceContainerName>
         <settingsServiceContainerName>cafinternal/settings-service:1</settingsServiceContainerName>
         <gitRepo>https://github.com/CAFDataProcessing/worker-workflow</gitRepo>
+        <enforceBannedDependencies>true</enforceBannedDependencies>
         <enforceCorrectDependencies>true</enforceCorrectDependencies>
     </properties>
 
