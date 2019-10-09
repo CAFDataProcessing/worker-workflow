@@ -41,7 +41,7 @@
         <test.case.generation>false</test.case.generation>
         <test.data>${project.basedir}/test-data/input</test.data>
         <worker-workflow.container.name>${dockerCafDataProcessingOrg}worker-workflow${dockerProjectVersion}</worker-workflow.container.name>
-        <skipTests>false</skipTests>
+        <skipTests>true</skipTests>
     </properties>
 
     <dependencies>
