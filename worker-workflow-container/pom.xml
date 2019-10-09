@@ -41,7 +41,7 @@
         <test.case.generation>false</test.case.generation>
         <test.data>${project.basedir}/test-data/input</test.data>
         <worker-workflow.container.name>${dockerCafDataProcessingOrg}worker-workflow${dockerProjectVersion}</worker-workflow.container.name>
-        <skipTests>true</skipTests>
+        <skipTests>false</skipTests>
     </properties>
 
     <dependencies>
@@ -213,7 +213,6 @@
                 <configuration>
                     <watchInterval>500</watchInterval>
                     <logDate>default</logDate>
-                    <autoPull>always</autoPull>
                     <verbose>true</verbose>
                     <images>
                         <!-- WebDav -->
