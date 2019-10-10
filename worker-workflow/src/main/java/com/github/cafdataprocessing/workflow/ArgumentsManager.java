@@ -205,7 +205,7 @@ public class ArgumentsManager {
         // CAF_WORKFLOW_SETTINGS field, since that makes it possible for a rogue agent to
         // stage documents that already contain CAF_WORKFLOW_SETTINGS field, which could
         // possibly be used to write to, or delete from, another tenant's index (if, for 
-        // exaple, the CAF_WORKFLOW_SETTINGS contained a 'tenantId' that did not belong to
+        // example, the CAF_WORKFLOW_SETTINGS contained a 'tenantId' that did not belong to
         // the rogue agent).
         //
         // Custom data cannot be controlled by a rogue agent, so if we can check that we have
