@@ -235,7 +235,7 @@ function traverseDocumentForFailures(document) {
 function processFailures(document) {
     if (document.getFailures().isChanged()) {
         var arguements = extractArguments(document.getRootDocument());
-        var extraFailureFieldsArray = JSON.parse(arguements["extraFailureSubfields"]);
+        var extraFailureFields = arguements["extraFailureSubfields"];
 
         var listOfFailures = new java.util.ArrayList();
         document.getFailures().stream().forEach(function (failure) {
@@ -262,8 +262,9 @@ function processFailures(document) {
                     MESSAGE: f.getFailureMessage(),
                     DATE: new Date().toISOString()
                 };
-                if(extraFailureFieldsArray){
-                    for each (var field in extraFailureFieldsArray){
+                if (extraFailureFields) {
+                    var extraFailureFieldsArray = JSON.parse(extraFailureFields);
+                    for each (var field in extraFailureFieldsArray) {
                         message[field] = arguements[field];
                     }
                 }
