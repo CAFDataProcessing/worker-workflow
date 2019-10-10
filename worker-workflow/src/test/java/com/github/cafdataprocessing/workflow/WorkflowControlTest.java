@@ -128,7 +128,7 @@ public class WorkflowControlTest
             .addFieldValue("example", "value from field")
             .addFieldValue("fieldHasValue", "This value")
             .addFieldValue("CAF_WORKFLOW_SETTINGS", "{"
-                + "\"extraFailureSubfields\": [\"AJP_JOB_RUN_ID\", \"AJP_WORK_UNIT_ID\"],"
+                + "\"extraFailureSubfields\": \"[\\\"AJP_JOB_RUN_ID\\\", \\\"AJP_WORK_UNIT_ID\\\"]\","
                 + "\"AJP_JOB_RUN_ID\": \"1701\","
                 + "\"AJP_WORK_UNIT_ID\": \"74656\""
                 + "}")
