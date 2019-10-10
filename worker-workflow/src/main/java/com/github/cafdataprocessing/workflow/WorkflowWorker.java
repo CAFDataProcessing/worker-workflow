@@ -129,7 +129,8 @@ public final class WorkflowWorker implements DocumentWorker
             return;
         }
 
-        argumentsManager.addArgumentsToDocument(workflow.getArguments(), document);
+        argumentsManager.addArgumentsToDocument(workflow.getArguments(), document,
+                                                FailureFieldsManager.retrieveExtraFailureSubfields(document));
 
         try {
             scriptManager.applyScriptToDocument(workflow, document);

@@ -30,6 +30,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 
 public class ArgumentsManager {
@@ -68,6 +69,13 @@ public class ArgumentsManager {
     }
 
     public void addArgumentsToDocument(final List<ArgumentDefinition> argumentDefinitions, final Document document)
+        throws DocumentWorkerTransientException
+    {
+        addArgumentsToDocument(argumentDefinitions, document, new HashMap<>());
+    }
+
+    public void addArgumentsToDocument(final List<ArgumentDefinition> argumentDefinitions, final Document document,
+                                       final Map<String, String> failureSubfields)
             throws DocumentWorkerTransientException {
           
         // If processing a poison document (a document that a downstream worker has redirected
@@ -86,7 +94,12 @@ public class ArgumentsManager {
         }
 
         final Map<String, String> arguments = new HashMap<>();
-
+        //Process optional extra failure subfields
+        if (!failureSubfields.isEmpty()) {
+            final List<String> failureFields = failureSubfields.entrySet().stream().map(e -> e.getKey()).collect(Collectors.toList());
+            arguments.putAll(failureSubfields);
+            arguments.put("extraFailureSubfields", gson.toJson(failureFields));
+        }
         for(final ArgumentDefinition argumentDefinition : argumentDefinitions) {
             String value = null;
             if(argumentDefinition.getSources() != null){
