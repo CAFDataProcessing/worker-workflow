@@ -15,7 +15,7 @@
  */
 /* global Java, java, thisScript */
 
-if (!ACTIONS) {
+if(!ACTIONS){
     throw new java.lang.UnsupportedOperationException("Workflow script must define an ACTIONS object.");
 }
 
