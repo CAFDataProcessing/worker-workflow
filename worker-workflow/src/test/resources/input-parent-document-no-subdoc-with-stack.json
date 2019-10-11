@@ -11,10 +11,6 @@
                     "encoding": "utf8"
                 }
             ],
-            "CAF_WORKFLOW_SETTINGS": [{
-                    "data": "{}"
-                }
-            ],
             "FAILURES": []
         },
         "failures": [{

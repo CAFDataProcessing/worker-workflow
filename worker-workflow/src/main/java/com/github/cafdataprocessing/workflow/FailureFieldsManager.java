@@ -15,6 +15,7 @@
  */
 package com.github.cafdataprocessing.workflow;
 
+import com.google.gson.Gson;
 import com.hpe.caf.worker.document.model.Document;
 import java.util.HashMap;
 import java.util.Map;
@@ -24,10 +25,24 @@ import org.slf4j.LoggerFactory;
 public final class FailureFieldsManager
 {
     private static final Logger LOG = LoggerFactory.getLogger(FailureFieldsManager.class);
+    private final Gson gson;
 
-    private FailureFieldsManager(){}
+    public FailureFieldsManager()
+    {
+        this.gson = new Gson();
+    }
 
-    public static Map<String, String> retrieveExtraFailureSubfields(final Document document)
+    public void handleExtraFailureSubFields(final Document document)
+    {
+        if (!document.getField("CAF_EXTRA_FAILURE_SUBFIELDS").hasValues()) {
+            final Map<String, String> extraFailureSubfields = retrieveExtraFailureSubfields(document);
+            if (!extraFailureSubfields.isEmpty()) {
+                preserveExtraFailureSubfields(document, extraFailureSubfields);
+            }
+        }
+    }
+
+    private static Map<String, String> retrieveExtraFailureSubfields(final Document document)
     {
         final Map<String, String> failureSubfields = new HashMap<>();
 
@@ -46,7 +61,11 @@ public final class FailureFieldsManager
             failureSubfields.put(failureSubfieldKey, failureSubfieldValue);
             failureSubfieldCount++;
         }
-
         return failureSubfields;
+    }
+
+    private void preserveExtraFailureSubfields(final Document document, final Map<String, String> extraFailureSubfields)
+    {
+        document.getField("CAF_EXTRA_FAILURE_SUBFIELDS").add(gson.toJson(extraFailureSubfields));
     }
 }

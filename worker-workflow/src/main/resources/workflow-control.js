@@ -15,8 +15,8 @@
  */
 /* global Java, java, thisScript */
 
-if(!ACTIONS){
-    throw new java.lang.UnsupportedOperationException ("Workflow script must define an ACTIONS object.");
+if (!ACTIONS) {
+    throw new java.lang.UnsupportedOperationException("Workflow script must define an ACTIONS object.");
 }
 
 var URL = Java.type("java.net.URL");
@@ -31,11 +31,11 @@ function onAfterProcessTask(eventObj) {
 
 function onBeforeProcessDocument(e) {
     //Get the action from ACTIONS, use the value of CAF_WORKFLOW_ACTION to know the name of the action
-    if(!e.rootDocument.getField("CAF_WORKFLOW_ACTION").hasValues())
+    if (!e.rootDocument.getField("CAF_WORKFLOW_ACTION").hasValues())
         throw new java.lang.UnsupportedOperationException("Document must contain field CAF_WORKFLOW_ACTION.");
     var index = ACTIONS.map(function (x) {
-                return x.name;
-            }).indexOf(e.rootDocument.getField("CAF_WORKFLOW_ACTION").getStringValues().get(0));
+        return x.name;
+    }).indexOf(e.rootDocument.getField("CAF_WORKFLOW_ACTION").getStringValues().get(0));
 
     var action = ACTIONS[index];
     if (!action.conditionFunction) {
@@ -44,7 +44,7 @@ function onBeforeProcessDocument(e) {
 
     var arguments = extractArguments(e.rootDocument);
 
-    e.cancel = ! eval(action.conditionFunction)(e.document, arguments);
+    e.cancel = !eval(action.conditionFunction)(e.document, arguments);
 }
 
 function onProcessDocument(e) {
@@ -81,12 +81,12 @@ function routeTask(rootDocument) {
     var arguments = extractArguments(rootDocument);
 
     var previousAction = markPreviousActionAsCompleted(rootDocument);
-    var terminateOnFailure = getTerminateOnFailure(previousAction);	
+    var terminateOnFailure = getTerminateOnFailure(previousAction);
 
-    for (var index = 0; index < ACTIONS.length; index ++ ) {
+    for (var index = 0; index < ACTIONS.length; index++) {
         var action = ACTIONS[index];
         if (!isActionCompleted(rootDocument, action.name)) {
-            if(!action.conditionFunction || anyDocumentMatches(action.conditionFunction, rootDocument, arguments)) {
+            if (!action.conditionFunction || anyDocumentMatches(action.conditionFunction, rootDocument, arguments)) {
                 var actionDetails = {
                     queueName: action.queueName,
                     scripts: action.scripts,
@@ -112,17 +112,17 @@ function getTerminateOnFailure(previousAction)
     return false;
 }
 
-function extractArguments(document){
+function extractArguments(document) {
 
     var rootDocument = document.getRootDocument();
     var argumentsCustomData = rootDocument.getCustomData("CAF_WORKFLOW_SETTINGS");
     var argumentsField = rootDocument.getField("CAF_WORKFLOW_SETTINGS");
     var argumentsJson = argumentsCustomData
-        ? argumentsCustomData
-        : argumentsField.getStringValues().stream().findFirst()
+            ? argumentsCustomData
+            : argumentsField.getStringValues().stream().findFirst()
             .orElseThrow(function () {
                 throw new java.lang.UnsupportedOperationException
-                ("Document must contain field CAF_WORKFLOW_SETTINGS.");
+                        ("Document must contain field CAF_WORKFLOW_SETTINGS.");
             });
 
     if (argumentsJson === undefined) {
@@ -132,31 +132,42 @@ function extractArguments(document){
     return JSON.parse(argumentsJson);
 }
 
+function extractFailureSubfields(document) {
+
+    var rootDocument = document.getRootDocument();
+    var failureSubfieldsCustomData = rootDocument.getCustomData("CAF_EXTRA_FAILURE_SUBFIELDS");
+    var failureSubfieldsField = rootDocument.getField("CAF_EXTRA_FAILURE_SUBFIELDS");
+    var failureSubfieldsJson = failureSubfieldsCustomData
+            ? failureSubfieldsCustomData
+            : failureSubfieldsField.getStringValues().stream().findFirst()
+            .orElse("{}");
+    return JSON.parse(failureSubfieldsJson);
+}
+
 function anyDocumentMatches(conditionFunction, document, arguments) {
 
-    if (eval(conditionFunction)(document, arguments)){
+    if (eval(conditionFunction)(document, arguments)) {
         return true;
     }
 
     return document.getSubdocuments().stream().anyMatch(
-        function (d) {
-            return anyDocumentMatches(conditionFunction, d, arguments);
-        });
+            function (d) {
+                return anyDocumentMatches(conditionFunction, d, arguments);
+            });
 }
 
-function evalCustomData(arguments, customDataToEval){
+function evalCustomData(arguments, customDataToEval) {
     var regex = /".*"|'.*'/g;
     var customData = {};
     if (!customDataToEval) {
         return customData;
     }
-    for(var customDataField in customDataToEval){
+    for (var customDataField in customDataToEval) {
         var cd = customDataToEval[customDataField];
         if (typeof cd === 'string') {
             if (cd.match(regex)) {
                 customData[customDataField] = eval(cd);
-            }
-            else {
+            } else {
                 customData[customDataField] = arguments[cd];
             }
         }
@@ -187,9 +198,9 @@ function applyActionDetails(document, actionDetails, terminateOnFailure) {
     var queueToSet = actionDetails.queueName;
     var response = document.getTask().getResponse();
     response.successQueue.set(queueToSet);
-    if (!terminateOnFailure){
+    if (!terminateOnFailure) {
         response.failureQueue.set(queueToSet);
-    }   
+    }
     response.customData.putAll(responseCustomData);
 
     // Add any scripts specified on the action
@@ -234,8 +245,7 @@ function traverseDocumentForFailures(document) {
 
 function processFailures(document) {
     if (document.getFailures().isChanged()) {
-        var arguements = extractArguments(document.getRootDocument());
-        var extraFailureFields = arguements["extraFailureSubfields"];
+        var extraFailureFields = extractFailureSubfields(document);
 
         var listOfFailures = new java.util.ArrayList();
         document.getFailures().stream().forEach(function (failure) {
@@ -263,9 +273,8 @@ function processFailures(document) {
                     DATE: new Date().toISOString()
                 };
                 if (extraFailureFields) {
-                    var extraFailureFieldsArray = JSON.parse(extraFailureFields);
-                    for each (var field in extraFailureFieldsArray) {
-                        message[field] = arguements[field];
+                    for each (var key in Object.keys(extraFailureFields)) {
+                        message[key] = extraFailureFields[key];
                     }
                 }
                 document.getField("FAILURES").add(JSON.stringify(message));
@@ -308,9 +317,9 @@ function fieldExists(document, fieldName) {
 }
 
 function isEmptyMap(mapValue) {
-    if(!mapValue)
+    if (!mapValue)
         return true;
-    var jsonString= mapValue.replace(/\s/g, '');    
+    var jsonString = mapValue.replace(/\s/g, '');
     return jsonString === '{}';
 }
 
