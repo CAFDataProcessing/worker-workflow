@@ -16,7 +16,7 @@
 /* global Java, java, thisScript */
 
 if(!ACTIONS){
-    throw new java.lang.UnsupportedOperationException("Workflow script must define an ACTIONS object.");
+    throw new java.lang.UnsupportedOperationException ("Workflow script must define an ACTIONS object.");
 }
 
 var URL = Java.type("java.net.URL");
@@ -151,9 +151,9 @@ function anyDocumentMatches(conditionFunction, document, arguments){
     }
 
     return document.getSubdocuments().stream().anyMatch(
-            function (d) {
-                return anyDocumentMatches(conditionFunction, d, arguments);
-            });
+        function (d) {
+            return anyDocumentMatches(conditionFunction, d, arguments);
+        });
 }
 
 function evalCustomData(arguments, customDataToEval){
