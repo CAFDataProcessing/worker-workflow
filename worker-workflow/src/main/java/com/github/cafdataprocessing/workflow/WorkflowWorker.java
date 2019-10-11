@@ -38,6 +38,7 @@ public final class WorkflowWorker implements DocumentWorker
     private final WorkflowManager workflowManager;
     private final ScriptManager scriptManager;
     private final ArgumentsManager argumentsManager;
+    private final FailureFieldsManager failureFieldsManager;
 
     /**
      * Instantiates a WorkflowWorker instance to process documents, evaluating them against the workflow referred to by
@@ -52,7 +53,8 @@ public final class WorkflowWorker implements DocumentWorker
     public WorkflowWorker(final WorkflowWorkerConfiguration workflowWorkerConfiguration,
                           final WorkflowManager workflowManager,
                           final ScriptManager scriptManager,
-                          final ArgumentsManager argumentsManager
+                          final ArgumentsManager argumentsManager,
+                          final FailureFieldsManager failureFieldsManager
                           )
             throws ConfigurationException
     {
@@ -64,6 +66,7 @@ public final class WorkflowWorker implements DocumentWorker
         this.workflowManager = workflowManager;
         this.scriptManager = scriptManager;
         this.argumentsManager = argumentsManager;
+        this.failureFieldsManager = failureFieldsManager;
     }
 
     /**
@@ -129,7 +132,7 @@ public final class WorkflowWorker implements DocumentWorker
             return;
         }
 
-        
+        failureFieldsManager.handleExtraFailureSubFields(document);
         argumentsManager.addArgumentsToDocument(workflow.getArguments(), document);
 
         try {
