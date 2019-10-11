@@ -30,7 +30,6 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 
 public class ArgumentsManager {
@@ -87,6 +86,7 @@ public class ArgumentsManager {
         }
 
         final Map<String, String> arguments = new HashMap<>();
+
         for(final ArgumentDefinition argumentDefinition : argumentDefinitions) {
             String value = null;
             if(argumentDefinition.getSources() != null){
