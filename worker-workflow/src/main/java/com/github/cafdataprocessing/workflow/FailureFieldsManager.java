@@ -67,6 +67,7 @@ public final class FailureFieldsManager
     private void preserveExtraFailureSubfields(final Document document, final Map<String, String> extraFailureSubfields)
     {
         final String cafWorkflowExtraFailureSubfieldsJson = gson.toJson(extraFailureSubfields);
+        document.getField("CAF_WORKFLOW_EXTRA_FAILURE_SUBFIELDS").clear();
         document.getField("CAF_WORKFLOW_EXTRA_FAILURE_SUBFIELDS").add(cafWorkflowExtraFailureSubfieldsJson);
     }
 }
