@@ -48,6 +48,7 @@ public final class WorkflowWorker implements DocumentWorker
      * @param scriptManager Applies the scripts to the documents task object
      * @param argumentsManager Processes settings definitions and retrieves values from custom data, document fields or
      *                        the settings service
+     * @param failureFieldsManager Processes the extra failure subfields that should be used during the workflow
      * @throws ConfigurationException when workflow directory is not set
      */
     public WorkflowWorker(final WorkflowWorkerConfiguration workflowWorkerConfiguration,
