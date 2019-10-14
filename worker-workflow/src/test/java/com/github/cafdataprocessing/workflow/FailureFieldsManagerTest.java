@@ -42,8 +42,8 @@ public final class FailureFieldsManagerTest
         final String verificationString = "{\"AJP_JOB_RUN_ID\":\"1701\",\"AJP_WORK_UNIT_ID\":\"74656\",\"KEY_THREE\":\"74205\"}";
         failureFieldsManager.handleExtraFailureSubFields(document);
 
-        assertTrue(document.getField("CAF_EXTRA_FAILURE_SUBFIELDS").hasValues());
-        assertTrue(document.getField("CAF_EXTRA_FAILURE_SUBFIELDS")
+        assertTrue(document.getField("CAF_WORKFLOW_EXTRA_FAILURE_SUBFIELDS").hasValues());
+        assertTrue(document.getField("CAF_WORKFLOW_EXTRA_FAILURE_SUBFIELDS")
             .getStringValues().stream().findFirst().get().equals(verificationString));
 
     }
@@ -58,9 +58,13 @@ public final class FailureFieldsManagerTest
             .documentBuilder()
             .build();
         failureFieldsManager.handleExtraFailureSubFields(document);
-        assertFalse(document.getField("CAF_EXTRA_FAILURE_SUBFIELDS").hasValues());
+        assertFalse(document.getField("CAF_WORKFLOW_EXTRA_FAILURE_SUBFIELDS").hasValues());
     }
 
+    /**
+     * Simulating a poison message returning to the workflow worker for a second time due to a failure during processing.
+     * The failure subfields should not be overwritten.
+     */
     @Test
     public void testFailureSubFieldsAlreadyPresent() throws Exception
     {
@@ -74,15 +78,16 @@ public final class FailureFieldsManagerTest
             .add("extraFailuresSubfieldValue2", "72381")
             .documentBuilder()
             .withFields()
-            .addFieldValue("CAF_EXTRA_FAILURE_SUBFIELDS",
+            .addFieldValue("CAF_WORKFLOW_SETTINGS", "Previously added field value")
+            .addFieldValue("CAF_WORKFLOW_EXTRA_FAILURE_SUBFIELDS",
                            "{\"AJP_JOB_RUN_ID\":\"1701\",\"AJP_WORK_UNIT_ID\":\"74656\",\"KEY_THREE\":\"74205\"}")
             .documentBuilder()
             .build();
         failureFieldsManager.handleExtraFailureSubFields(document);
         final String verificationString = "{\"AJP_JOB_RUN_ID\":\"1701\",\"AJP_WORK_UNIT_ID\":\"74656\",\"KEY_THREE\":\"74205\"}";
-        assertTrue(document.getField("CAF_EXTRA_FAILURE_SUBFIELDS").hasValues());
-        assertFalse(document.getField("CAF_EXTRA_FAILURE_SUBFIELDS").hasChanges());
-        assertTrue(document.getField("CAF_EXTRA_FAILURE_SUBFIELDS")
+        assertTrue(document.getField("CAF_WORKFLOW_EXTRA_FAILURE_SUBFIELDS").hasValues());
+        assertFalse(document.getField("CAF_WORKFLOW_EXTRA_FAILURE_SUBFIELDS").hasChanges());
+        assertTrue(document.getField("CAF_WORKFLOW_EXTRA_FAILURE_SUBFIELDS")
             .getStringValues().stream().findFirst().get().equals(verificationString));
     }
 }

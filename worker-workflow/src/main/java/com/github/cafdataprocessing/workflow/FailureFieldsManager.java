@@ -34,7 +34,7 @@ public final class FailureFieldsManager
 
     public void handleExtraFailureSubFields(final Document document)
     {
-        if (!document.getField("CAF_EXTRA_FAILURE_SUBFIELDS").hasValues()) {
+        if (!PoisonMessageDetector.isPoisonDocument(document)) {
             final Map<String, String> extraFailureSubfields = retrieveExtraFailureSubfields(document);
             if (!extraFailureSubfields.isEmpty()) {
                 preserveExtraFailureSubfields(document, extraFailureSubfields);
@@ -66,8 +66,7 @@ public final class FailureFieldsManager
 
     private void preserveExtraFailureSubfields(final Document document, final Map<String, String> extraFailureSubfields)
     {
-        final String CAF_EXTRA_FAILURE_SUBFIELDS = gson.toJson(extraFailureSubfields);
-        document.getField("CAF_EXTRA_FAILURE_SUBFIELDS").add(CAF_EXTRA_FAILURE_SUBFIELDS);
-        document.getTask().getResponse().getCustomData().put("CAF_EXTRA_FAILURE_SUBFIELDS", CAF_EXTRA_FAILURE_SUBFIELDS);
+        final String cafWorkflowExtraFailureSubfieldsJson = gson.toJson(extraFailureSubfields);
+        document.getField("CAF_WORKFLOW_EXTRA_FAILURE_SUBFIELDS").add(cafWorkflowExtraFailureSubfieldsJson);
     }
 }

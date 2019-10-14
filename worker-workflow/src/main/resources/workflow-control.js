@@ -135,11 +135,8 @@ function extractArguments(document){
 function extractFailureSubfields(document) {
 
     var rootDocument = document.getRootDocument();
-    var failureSubfieldsCustomData = rootDocument.getCustomData("CAF_EXTRA_FAILURE_SUBFIELDS");
-    var failureSubfieldsField = rootDocument.getField("CAF_EXTRA_FAILURE_SUBFIELDS");
-    var failureSubfieldsJson = failureSubfieldsCustomData
-            ? failureSubfieldsCustomData
-            : failureSubfieldsField.getStringValues().stream().findFirst()
+    var failureSubfieldsField = rootDocument.getField("CAF_WORKFLOW_EXTRA_FAILURE_SUBFIELDS");
+    var failureSubfieldsJson = failureSubfieldsField.getStringValues().stream().findFirst()
             .orElse("{}");
     return JSON.parse(failureSubfieldsJson);
 }

@@ -126,7 +126,7 @@ public class WorkflowControlTest
             .addFieldValue("FAILURES", "")
             .addFieldValue("example", "value from field")
             .addFieldValue("fieldHasValue", "This value")
-            .addFieldValue("CAF_EXTRA_FAILURE_SUBFIELDS", "{\"AJP_JOB_RUN_ID\": \"1701\",\"AJP_WORK_UNIT_ID\": \"74656\"}")
+            .addFieldValue("CAF_WORKFLOW_EXTRA_FAILURE_SUBFIELDS", "{\"AJP_JOB_RUN_ID\": \"1701\",\"AJP_WORK_UNIT_ID\": \"74656\"}")
             .documentBuilder()
             .withSubDocuments(DocumentBuilder.configure().withFields()
                 .addFieldValue("field-should-exist", "action 2 requires this field to be present")
