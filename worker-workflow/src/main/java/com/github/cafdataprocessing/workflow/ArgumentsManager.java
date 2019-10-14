@@ -79,7 +79,7 @@ public class ArgumentsManager {
         // 2. Copy the CAF_WORKFLOW_SETTINGS from the  document field into the custom data of the 
         //    document task response.
         // 3. Return without performing any resolving of arguments.
-        if (isPoisonDocument(document)) {
+        if (PoisonMessageDetector.isPoisonDocument(document)) {
             final String cafWorkflowSettingsJson = document.getField("CAF_WORKFLOW_SETTINGS").getStringValues().get(0);
             document.getTask().getResponse().getCustomData().put("CAF_WORKFLOW_SETTINGS", cafWorkflowSettingsJson);
             return;
@@ -191,30 +191,5 @@ public class ArgumentsManager {
                 throw new RuntimeException(ex.getMessage(), ex);
             }
         }
-    }
-
-    private boolean isPoisonDocument(final Document document) {
-        // A poison document is a document that a downstream worker has redirected back
-        // to the workflow worker. A document is considered poison if:
-        //
-        // 1. It has a a non-empty CAF_WORKFLOW_SETTINGS field.
-        //
-        // 2. It does NOT have a 'workflowName' inside it's custom data.
-        //
-        // Point (2) is important, it's not enough to just check for a non-empty 
-        // CAF_WORKFLOW_SETTINGS field, since that makes it possible for a rogue agent to
-        // stage documents that already contain CAF_WORKFLOW_SETTINGS field, which could
-        // possibly be used to write to, or delete from, another tenant's index (if, for 
-        // example, the CAF_WORKFLOW_SETTINGS contained a 'tenantId' that did not belong to
-        // the rogue agent).
-        //
-        // Custom data cannot be controlled by a rogue agent, so if we can check that we have
-        // a 'workflowName' inside custom data (which is a field that should always be present
-        // in custom data, 'tenantId' may not be required in some cases), it gives some 
-        // confidence that this is really a poison document, and not a document staged by
-        // a rogue agent, and as such we can safely use the CAF_WORKFLOW_SETTINGS present
-        // in the document and trust that the settings inside it are valid.
-        return document.getField("CAF_WORKFLOW_SETTINGS").hasValues() && 
-            (document.getTask().getCustomData("workflowName") == null);
     }
 }

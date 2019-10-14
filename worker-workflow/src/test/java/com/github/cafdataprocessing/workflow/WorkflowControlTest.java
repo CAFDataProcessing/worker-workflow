@@ -112,6 +112,68 @@ public class WorkflowControlTest
     }
 
     @Test
+    public void processFailuresWithExtraSubfieldsTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
+    {
+        // test the processFailures() function with a single failure and no original ones
+
+        // get an invocable Nashorn engine
+        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+
+        // get a base document used to fill in the basic structure
+        final Document builderDoc = DocumentBuilder.configure().withFields()
+            .addFieldValues("CAF_WORKFLOW_ACTION", "family_hashing")
+            .addFieldValue("CAF_WORKFLOW_NAME", "example_workflow")
+            .addFieldValue("FAILURES", "")
+            .addFieldValue("example", "value from field")
+            .addFieldValue("fieldHasValue", "This value")
+            .addFieldValue("CAF_WORKFLOW_EXTRA_FAILURE_SUBFIELDS", "{\"AJP_JOB_RUN_ID\": \"1701\",\"AJP_WORK_UNIT_ID\": \"74656\"}")
+            .documentBuilder()
+            .withSubDocuments(DocumentBuilder.configure().withFields()
+                .addFieldValue("field-should-exist", "action 2 requires this field to be present")
+                .documentBuilder())
+            .build();
+        // add one failure
+        builderDoc.addFailure("error_id_1", "message 1");
+
+        // create the various mocked objects to create the document that will be processed
+        final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null,
+                                                                null, builderDoc, true, false);
+
+        invocable.invokeFunction("processFailures", document);
+
+        assertThat(document.getFailures().size(), is(equalTo((0))));
+
+        assertThat(document.getField("FAILURES").getValues()
+            .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((1L))));
+
+        final String mainFailure = document.getField("FAILURES").getValues()
+            .stream()
+            .filter(v -> !v.getStringValue().isEmpty())
+            .map(v -> v.getStringValue())
+            .findFirst()
+            .get();
+
+        assertThat(mainFailure,
+                   isJsonStringMatching(jsonObject().where("ID", is(jsonText("error_id_1")))));
+        assertThat(mainFailure,
+                   isJsonStringMatching(jsonObject().where("STACK", is(jsonMissing()))));
+        assertThat(mainFailure,
+                   isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("family_hashing")))));
+        assertThat(mainFailure,
+                   isJsonStringMatching(jsonObject().where("COMPONENT", is(jsonText("application-worker-base 1.0.0-SNAPSHOT-APPLICATION")))));
+        assertThat(mainFailure,
+                   isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
+        assertThat(mainFailure,
+                   isJsonStringMatching(jsonObject().where("MESSAGE", is(jsonText("message 1")))));
+        assertThat(mainFailure,
+                   isJsonStringMatching(jsonObject().where("DATE", is(not(jsonNull())))));
+        assertThat(mainFailure,
+                   isJsonStringMatching(jsonObject().where("AJP_JOB_RUN_ID", is(jsonText("1701")))));
+        assertThat(mainFailure,
+                   isJsonStringMatching(jsonObject().where("AJP_WORK_UNIT_ID", is(jsonText("74656")))));
+    }
+
+    @Test
     public void multipleFailuresPositiveTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
         // test processFailures() function with multiple failures and no original ones

@@ -132,9 +132,18 @@ function extractArguments(document){
     return JSON.parse(argumentsJson);
 }
 
-function anyDocumentMatches(conditionFunction, document, arguments) {
+function extractFailureSubfields(document) {
 
-    if (eval(conditionFunction)(document, arguments)){
+    var rootDocument = document.getRootDocument();
+    var failureSubfieldsField = rootDocument.getField("CAF_WORKFLOW_EXTRA_FAILURE_SUBFIELDS");
+    var failureSubfieldsJson = failureSubfieldsField.getStringValues().stream().findFirst()
+            .orElse("{}");
+    return JSON.parse(failureSubfieldsJson);
+}
+
+function anyDocumentMatches(conditionFunction, document, arguments){
+
+    if (eval(conditionFunction)(document, arguments)) {
         return true;
     }
 
@@ -234,6 +243,7 @@ function traverseDocumentForFailures(document) {
 
 function processFailures(document) {
     if (document.getFailures().isChanged()) {
+        var extraFailureFields = extractFailureSubfields(document);
 
         var listOfFailures = new java.util.ArrayList();
         document.getFailures().stream().forEach(function (failure) {
@@ -260,6 +270,11 @@ function processFailures(document) {
                     MESSAGE: f.getFailureMessage(),
                     DATE: new Date().toISOString()
                 };
+                if (extraFailureFields) {
+                    for each (var key in Object.keys(extraFailureFields)) {
+                        message[key] = extraFailureFields[key];
+                    }
+                }
                 document.getField("FAILURES").add(JSON.stringify(message));
             }
         }

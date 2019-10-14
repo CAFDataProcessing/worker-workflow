@@ -48,14 +48,14 @@ public class WorkflowWorkerTest
 
         final ArgumentsManager argumentsManager = new ArgumentsManager(mock(SettingsApi.class),
                 workflowWorkerConfiguration.getSettingsServiceUrl());
-
         try {
             final Document document = DocumentBuilder.configure().build();
             workflowWorker = new WorkflowWorker(
                     workflowWorkerConfiguration,
                     new WorkflowManager(document.getApplication(), workflowWorkerConfiguration.getWorkflowsDirectory()),
                     new ScriptManager(),
-                    argumentsManager);
+                    argumentsManager,
+                    new FailureFieldsManager());
         } catch (ConfigurationException | WorkerException e) {
             throw new RuntimeException(e);
         }

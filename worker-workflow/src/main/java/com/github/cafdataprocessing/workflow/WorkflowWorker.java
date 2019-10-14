@@ -38,6 +38,7 @@ public final class WorkflowWorker implements DocumentWorker
     private final WorkflowManager workflowManager;
     private final ScriptManager scriptManager;
     private final ArgumentsManager argumentsManager;
+    private final FailureFieldsManager failureFieldsManager;
 
     /**
      * Instantiates a WorkflowWorker instance to process documents, evaluating them against the workflow referred to by
@@ -47,12 +48,14 @@ public final class WorkflowWorker implements DocumentWorker
      * @param scriptManager Applies the scripts to the documents task object
      * @param argumentsManager Processes settings definitions and retrieves values from custom data, document fields or
      *                        the settings service
+     * @param failureFieldsManager Processes the extra failure subfields that should be used during the workflow
      * @throws ConfigurationException when workflow directory is not set
      */
     public WorkflowWorker(final WorkflowWorkerConfiguration workflowWorkerConfiguration,
                           final WorkflowManager workflowManager,
                           final ScriptManager scriptManager,
-                          final ArgumentsManager argumentsManager
+                          final ArgumentsManager argumentsManager,
+                          final FailureFieldsManager failureFieldsManager
                           )
             throws ConfigurationException
     {
@@ -64,6 +67,7 @@ public final class WorkflowWorker implements DocumentWorker
         this.workflowManager = workflowManager;
         this.scriptManager = scriptManager;
         this.argumentsManager = argumentsManager;
+        this.failureFieldsManager = failureFieldsManager;
     }
 
     /**
@@ -129,6 +133,7 @@ public final class WorkflowWorker implements DocumentWorker
             return;
         }
 
+        failureFieldsManager.handleExtraFailureSubFields(document);
         argumentsManager.addArgumentsToDocument(workflow.getArguments(), document);
 
         try {
