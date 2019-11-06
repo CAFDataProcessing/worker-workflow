@@ -24,27 +24,18 @@ var MDC = Java.type("org.slf4j.MDC");
 var UUID = Java.type("java.util.UUID");
 
 function onProcessTask(e) {
-    if (!isWorkerBulkIndexer(e)) {  
-        addMdcData(e);
-    }
+    addMdcLoggingData(e);
     thisScript.install();
 }
 
-function isWorkerBulkIndexer(e) {
-    if (!e.rootDocument.getField("CAF_WORKFLOW_ACTION").hasValues()) {
-        throw new java.lang.UnsupportedOperationException("Document must contain field CAF_WORKFLOW_ACTION.");
-    }
-    return e.rootDocument.getField("CAF_WORKFLOW_ACTION").getStringValues().get(0) === "bulk_indexer";
-}
-
-function addMdcData(e) {
+function addMdcLoggingData(e) {
     // The logging pattern we use uses a tenantId and a correlationId:
     // 
     // https://github.com/CAFapi/caf-logging/tree/4ef35ae3a6da4329a427667782f7aaff4fee8c1d#pattern
     // https://github.com/CAFapi/caf-logging/blob/4ef35ae3a6da4329a427667782f7aaff4fee8c1d/src/main/resources/logback.xml#L27
     //
     // This function adds a tenantId and correlationID to the MDC (http://logback.qos.ch/manual/mdc.html), so that log messages 
-    // from subsequent workers in the workflow will contain these values.
+    // from workers in the workflow will contain these values.
     //
     // See also addMdcData in WorkflowWorker, which performs similar logic to ensure log messages from the workflow-worker itself also 
     // contain these values. 
@@ -57,22 +48,31 @@ function addMdcData(e) {
     if (!correlationId) {
         correlationId = UUID.randomUUID().toString();  
     }
-    
-    // Add tenantId and correlationId to the MDC.
-    MDC.put("tenantId", tenantId);
-    MDC.put("correlationId", correlationId);
+
+    // Only if this worker is NOT a bulk indexer; add tenantId and correlationId to the MDC.
+    if (!isWorkerBulkIndexer(e)) {  
+        MDC.put("tenantId", tenantId);
+        MDC.put("correlationId", correlationId);
+    }
     
     // Add MDC data to custom data so that its passed it onto the next worker.
     e.task.getResponse().getCustomData().put("tenantId", tenantId);
     e.task.getResponse().getCustomData().put("correlationId", correlationId);
 }
 
+function isWorkerBulkIndexer(e) {
+    if (!e.rootDocument.getField("CAF_WORKFLOW_ACTION").hasValues()) {
+        throw new java.lang.UnsupportedOperationException("Document must contain field CAF_WORKFLOW_ACTION.");
+    }
+    return e.rootDocument.getField("CAF_WORKFLOW_ACTION").getStringValues().get(0) === "bulk_indexer";
+}
+
 function onAfterProcessTask(eventObj) {
-    removeMdcData();
+    removeMdcLoggingData();
     routeTask(eventObj.rootDocument);
 }
 
-function removeMdcData() {
+function removeMdcLoggingData() {
     MDC.remove("tenantId");
     MDC.remove("correlationId");
 }

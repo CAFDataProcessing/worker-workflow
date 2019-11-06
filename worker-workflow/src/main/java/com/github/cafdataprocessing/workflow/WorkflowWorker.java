@@ -37,6 +37,8 @@ import org.slf4j.MDC;
 public final class WorkflowWorker implements DocumentWorker
 {
     private static final Logger LOG = LoggerFactory.getLogger(WorkflowWorker.class);
+    private static final String TENANT_ID_KEY = "tenantId";
+    private static final String CORRELATION_ID_KEY = "correlationId";
     private final WorkflowManager workflowManager;
     private final ScriptManager scriptManager;
     private final ArgumentsManager argumentsManager;
@@ -101,7 +103,7 @@ public final class WorkflowWorker implements DocumentWorker
     @Override
     public void processDocument(final Document document) throws DocumentWorkerTransientException
     {
-        addMdcData(document);
+        addMdcLoggingData(document);
         
         LOG.info("Rory test.");
         
@@ -149,23 +151,23 @@ public final class WorkflowWorker implements DocumentWorker
             document.addFailure("WORKFLOW_SCRIPT_EXCEPTION", e.getMessage());
         }
     }
-
-    private void addMdcData(final Document document)
+    
+    private void addMdcLoggingData(final Document document)
     {
         // The logging pattern we use uses a tenantId and a correlationId:
         // 
         // https://github.com/CAFapi/caf-logging/tree/4ef35ae3a6da4329a427667782f7aaff4fee8c1d#pattern
         // https://github.com/CAFapi/caf-logging/blob/4ef35ae3a6da4329a427667782f7aaff4fee8c1d/src/main/resources/logback.xml#L27
         //
-        // This function adds a tenantId and correlationID to the MDC (http://logback.qos.ch/manual/mdc.html), so that log messages 
-        // from *this* worker (workflow-worker) will contain these values.
+        // This function adds a tenantId and correlationID to the MDC ((http://logback.qos.ch/manual/mdc.html), so that log messages from 
+        // *this* worker (workflow-worker) will contain these values.
         //
         // See also addMdcData in workflow-control.js, which performs similar logic to ensure log messages from *subsequent* workers in 
         // the workflow also contain these values. 
 
         // Get MDC data from custom data.
-        final String tenantId = document.getTask().getCustomData("tenantId");
-        String correlationId = document.getTask().getCustomData("correlationId");
+        final String tenantId = document.getTask().getCustomData(TENANT_ID_KEY);
+        String correlationId = document.getTask().getCustomData(CORRELATION_ID_KEY);
 
         // Generate a random correlationId if it doesn't yet exist.
         if (correlationId == null) {
@@ -173,11 +175,11 @@ public final class WorkflowWorker implements DocumentWorker
         }
 
         // Add tenantId and correlationId to the MDC.
-        MDC.put("tenantId", tenantId);
-        MDC.put("correlationId", correlationId);
+        MDC.put(TENANT_ID_KEY, tenantId);
+        MDC.put(CORRELATION_ID_KEY, correlationId);
 
         // Add MDC data to custom data so that its passed it onto the next worker.
-        document.getTask().getResponse().getCustomData().put("tenantId", tenantId);
-        document.getTask().getResponse().getCustomData().put("correlationId", correlationId);
+        document.getTask().getResponse().getCustomData().put(TENANT_ID_KEY, tenantId);
+        document.getTask().getResponse().getCustomData().put(CORRELATION_ID_KEY, correlationId);
     }
 }
