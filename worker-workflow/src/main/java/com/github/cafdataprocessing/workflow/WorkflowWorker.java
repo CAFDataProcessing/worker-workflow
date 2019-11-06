@@ -105,8 +105,6 @@ public final class WorkflowWorker implements DocumentWorker
     {
         addMdcLoggingData(document);
         
-        LOG.info("Rory test.");
-        
         // Get the workflow specification passed in
         final String customDataWorkflowName = document.getCustomData("workflowName");
         final Field fieldWorkflowName = document.getField("CAF_WORKFLOW_NAME");
@@ -159,7 +157,7 @@ public final class WorkflowWorker implements DocumentWorker
         // https://github.com/CAFapi/caf-logging/tree/4ef35ae3a6da4329a427667782f7aaff4fee8c1d#pattern
         // https://github.com/CAFapi/caf-logging/blob/4ef35ae3a6da4329a427667782f7aaff4fee8c1d/src/main/resources/logback.xml#L27
         //
-        // This function adds a tenantId and correlationID to the MDC ((http://logback.qos.ch/manual/mdc.html), so that log messages from 
+        // This function adds a tenantId and correlationID to the MDC (http://logback.qos.ch/manual/mdc.html), so that log messages from 
         // *this* worker (workflow-worker) will contain these values.
         //
         // See also addMdcData in workflow-control.js, which performs similar logic to ensure log messages from *subsequent* workers in 
