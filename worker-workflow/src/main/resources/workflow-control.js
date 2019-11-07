@@ -49,8 +49,8 @@ function addMdcLoggingData(e) {
         correlationId = UUID.randomUUID().toString();  
     }
 
-    // Only if this worker is NOT a bulk indexer; add tenantId and correlationId to the MDC.
-    if (!isWorkerBulkIndexer(e)) {  
+    // Only if this worker is NOT a bulk worker; add tenantId and correlationId to the MDC.
+    if (!isBulkWorker(e)) {  
         MDC.put("tenantId", tenantId);
         MDC.put("correlationId", correlationId);
     }
@@ -60,11 +60,11 @@ function addMdcLoggingData(e) {
     e.task.getResponse().getCustomData().put("correlationId", correlationId);
 }
 
-function isWorkerBulkIndexer(e) {
+function isBulkWorker(e) {
     if (!e.rootDocument.getField("CAF_WORKFLOW_ACTION").hasValues()) {
         throw new java.lang.UnsupportedOperationException("Document must contain field CAF_WORKFLOW_ACTION.");
     }
-    return e.rootDocument.getField("CAF_WORKFLOW_ACTION").getStringValues().get(0) === "bulk_indexer";
+    return e.rootDocument.getField("CAF_WORKFLOW_ACTION").getStringValues().get(0).indexOf("bulk") !== -1;
 }
 
 function onAfterProcessTask(eventObj) {
