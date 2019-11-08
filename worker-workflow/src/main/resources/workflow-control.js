@@ -20,13 +20,64 @@ if(!ACTIONS){
 }
 
 var URL = Java.type("java.net.URL");
+var MDC = Java.type("org.slf4j.MDC");
+var UUID = Java.type("java.util.UUID");
 
-function onProcessTask() {
+function onProcessTask(e) {
+    addMdcLoggingData(e);
     thisScript.install();
+}
+
+function addMdcLoggingData(e) {
+    // The logging pattern we use uses a tenantId and a correlationId:
+    // 
+    // https://github.com/CAFapi/caf-logging/tree/v1.0.0#pattern
+    // https://github.com/CAFapi/caf-logging/blob/v1.0.0/src/main/resources/logback.xml#L27
+    //
+    // This function adds a tenantId and correlationID to the MDC (http://logback.qos.ch/manual/mdc.html), so that log messages 
+    // from workers in the workflow will contain these values.
+    //
+    // See also addMdcData in WorkflowWorker, which performs similar logic to ensure log messages from the workflow-worker itself also 
+    // contain these values. 
+    
+    // Get MDC data from custom data.
+    var tenantId = e.task.getCustomData("tenantId");
+    var correlationId = e.task.getCustomData("correlationId");
+    
+    // Generate a random correlationId if it doesn't yet exist.
+    if (!correlationId) {
+        correlationId = UUID.randomUUID().toString();  
+    }
+
+    // Only if this worker is NOT a bulk worker; add tenantId and correlationId to the MDC.
+    if (!isBulkWorker(e)) {  
+        if (tenantId) {
+            MDC.put("tenantId", tenantId);
+        }
+        MDC.put("correlationId", correlationId);
+    }
+    
+    // Add MDC data to custom data so that its passed it onto the next worker.
+    e.task.getResponse().getCustomData().put("tenantId", tenantId);
+    e.task.getResponse().getCustomData().put("correlationId", correlationId);
+}
+
+function isBulkWorker(e) {
+    var workflowActionField = e.rootDocument.getField("CAF_WORKFLOW_ACTION");
+    if (!workflowActionField.hasValues()) {
+        throw new java.lang.UnsupportedOperationException("Document must contain field CAF_WORKFLOW_ACTION.");
+    }
+    return workflowActionField.getStringValues().get(0).indexOf("bulk") !== -1;
 }
 
 function onAfterProcessTask(eventObj) {
     routeTask(eventObj.rootDocument);
+    removeMdcLoggingData();
+}
+
+function removeMdcLoggingData() {
+    MDC.remove("tenantId");
+    MDC.remove("correlationId");
 }
 
 function onBeforeProcessDocument(e) {

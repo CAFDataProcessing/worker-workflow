@@ -29,6 +29,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.mockito.Mockito.mock;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
 
 public class WorkflowWorkerTest
 {
@@ -71,7 +74,6 @@ public class WorkflowWorkerTest
         }
     }
 
-
     @Test
     public void validateAllActionsTest() throws Exception {
 
@@ -109,7 +111,6 @@ public class WorkflowWorkerTest
                 null,
                 actionExpectationsBuilder.build());
     }
-
 
     @Test
     public void action2ConditionNotPassTest() throws Exception {
@@ -173,4 +174,32 @@ public class WorkflowWorkerTest
 
     }
 
+    @Test
+    public void mdcLoggingDataIsAddedToDocumentTaskResponseCustomDataTest() throws Exception {
+        
+        // On receiving a document with a tenantId provided via custom data, but no correlationId, verify that the workflow worker:
+        //
+        // 1. Adds the tenantId to the document task response custom data.
+        // 2. Generates a random correlationId, and also adds this to the document task response custom data.
+        //
+        // Adding these two values to the document task response custom data ensures that they will be available to subsequent workers
+        // in the workflow.
+
+        // Arrange
+        final Document document = DocumentBuilder.configure()
+            .withCustomData()
+            .add("tenantId", "test-tenant") 
+            .documentBuilder()
+            .build();
+        
+        assertNull(document.getTask().getResponse().getCustomData().get("tenantId"));
+        assertNull(document.getTask().getResponse().getCustomData().get("correlationId"));
+        
+        // Act
+        workflowWorker.processDocument(document);
+        
+        // Assert
+        assertEquals("test-tenant", document.getTask().getResponse().getCustomData().get("tenantId"));
+        assertNotNull(document.getTask().getResponse().getCustomData().get("correlationId"));
+    }
 }
