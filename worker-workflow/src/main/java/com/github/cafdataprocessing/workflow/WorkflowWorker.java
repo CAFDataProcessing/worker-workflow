@@ -23,6 +23,8 @@ import com.hpe.caf.worker.document.extensibility.DocumentWorker;
 import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.model.Field;
 import com.hpe.caf.worker.document.model.HealthMonitor;
+import com.hpe.caf.worker.document.model.ResponseCustomData;
+import com.hpe.caf.worker.document.model.Task;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,7 +105,7 @@ public final class WorkflowWorker implements DocumentWorker
     @Override
     public void processDocument(final Document document) throws DocumentWorkerTransientException
     {
-        addMdcLoggingData(document);
+        addMdcLoggingData(document.getTask());
         
         // Get the workflow specification passed in
         final String customDataWorkflowName = document.getCustomData("workflowName");
@@ -150,12 +152,12 @@ public final class WorkflowWorker implements DocumentWorker
         }
     }
     
-    private void addMdcLoggingData(final Document document)
+    private void addMdcLoggingData(final Task task)
     {
         // The logging pattern we use uses a tenantId and a correlationId:
         // 
-        // https://github.com/CAFapi/caf-logging/tree/4ef35ae3a6da4329a427667782f7aaff4fee8c1d#pattern
-        // https://github.com/CAFapi/caf-logging/blob/4ef35ae3a6da4329a427667782f7aaff4fee8c1d/src/main/resources/logback.xml#L27
+        // https://github.com/CAFapi/caf-logging/tree/v1.0.0#pattern
+        // https://github.com/CAFapi/caf-logging/blob/v1.0.0/src/main/resources/logback.xml#L27
         //
         // This function adds a tenantId and correlationID to the MDC (http://logback.qos.ch/manual/mdc.html), so that log messages from 
         // *this* worker (workflow-worker) will contain these values.
@@ -163,21 +165,28 @@ public final class WorkflowWorker implements DocumentWorker
         // See also addMdcData in workflow-control.js, which performs similar logic to ensure log messages from *subsequent* workers in 
         // the workflow also contain these values. 
 
-        // Get MDC data from custom data.
-        final String tenantId = document.getTask().getCustomData(TENANT_ID_KEY);
-        String correlationId = document.getTask().getCustomData(CORRELATION_ID_KEY);
-
-        // Generate a random correlationId if it doesn't yet exist.
-        if (correlationId == null) {
-            correlationId = UUID.randomUUID().toString();  
-        }
+        // Get MDC data from custom data, creating a correlationId if it doesn't yet exist.
+        final String tenantId = task.getCustomData(TENANT_ID_KEY);
+        final String correlationId = WorkflowWorker.getOrCreateCorrelationId(task);
 
         // Add tenantId and correlationId to the MDC.
-        MDC.put(TENANT_ID_KEY, tenantId);
+        if (tenantId != null) {
+           MDC.put(TENANT_ID_KEY, tenantId); 
+        }
         MDC.put(CORRELATION_ID_KEY, correlationId);
 
         // Add MDC data to custom data so that its passed it onto the next worker.
-        document.getTask().getResponse().getCustomData().put(TENANT_ID_KEY, tenantId);
-        document.getTask().getResponse().getCustomData().put(CORRELATION_ID_KEY, correlationId);
+        final ResponseCustomData responseCustomData = task.getResponse().getCustomData();
+        responseCustomData.put(TENANT_ID_KEY, tenantId);
+        responseCustomData.put(CORRELATION_ID_KEY, correlationId);
+    }
+    
+    private static String getOrCreateCorrelationId(final Task task)
+    {
+        final String correlationId = task.getCustomData(CORRELATION_ID_KEY);
+
+        return (correlationId == null)
+            ? UUID.randomUUID().toString()
+            : correlationId;
     }
 }

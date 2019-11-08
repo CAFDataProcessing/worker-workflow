@@ -31,8 +31,8 @@ function onProcessTask(e) {
 function addMdcLoggingData(e) {
     // The logging pattern we use uses a tenantId and a correlationId:
     // 
-    // https://github.com/CAFapi/caf-logging/tree/4ef35ae3a6da4329a427667782f7aaff4fee8c1d#pattern
-    // https://github.com/CAFapi/caf-logging/blob/4ef35ae3a6da4329a427667782f7aaff4fee8c1d/src/main/resources/logback.xml#L27
+    // https://github.com/CAFapi/caf-logging/tree/v1.0.0#pattern
+    // https://github.com/CAFapi/caf-logging/blob/v1.0.0/src/main/resources/logback.xml#L27
     //
     // This function adds a tenantId and correlationID to the MDC (http://logback.qos.ch/manual/mdc.html), so that log messages 
     // from workers in the workflow will contain these values.
@@ -51,7 +51,9 @@ function addMdcLoggingData(e) {
 
     // Only if this worker is NOT a bulk worker; add tenantId and correlationId to the MDC.
     if (!isBulkWorker(e)) {  
-        MDC.put("tenantId", tenantId);
+        if (tenantId) {
+            MDC.put("tenantId", tenantId);
+        }
         MDC.put("correlationId", correlationId);
     }
     
@@ -61,15 +63,16 @@ function addMdcLoggingData(e) {
 }
 
 function isBulkWorker(e) {
-    if (!e.rootDocument.getField("CAF_WORKFLOW_ACTION").hasValues()) {
+    var workflowActionField = e.rootDocument.getField("CAF_WORKFLOW_ACTION");
+    if (!workflowActionField.hasValues()) {
         throw new java.lang.UnsupportedOperationException("Document must contain field CAF_WORKFLOW_ACTION.");
     }
-    return e.rootDocument.getField("CAF_WORKFLOW_ACTION").getStringValues().get(0).indexOf("bulk") !== -1;
+    return workflowActionField.getStringValues().get(0).indexOf("bulk") !== -1;
 }
 
 function onAfterProcessTask(eventObj) {
-    removeMdcLoggingData();
     routeTask(eventObj.rootDocument);
+    removeMdcLoggingData();
 }
 
 function removeMdcLoggingData() {
