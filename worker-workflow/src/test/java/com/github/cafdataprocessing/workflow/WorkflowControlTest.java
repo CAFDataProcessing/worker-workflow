@@ -38,7 +38,9 @@ import static com.spotify.hamcrest.jackson.IsJsonText.jsonText;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import static java.util.stream.Collectors.toList;
 import javax.script.Invocable;
 import javax.script.ScriptException;
@@ -79,7 +81,7 @@ public class WorkflowControlTest
 
         // create the various mocked objects to create the document that will be processed
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null,
-                                                                null, builderDoc, true, false);
+                                                                null, null, builderDoc, true, false);
 
         invocable.invokeFunction("processFailures", document);
 
@@ -109,6 +111,8 @@ public class WorkflowControlTest
                    isJsonStringMatching(jsonObject().where("MESSAGE", is(jsonText("message 1")))));
         assertThat(mainFailure,
                    isJsonStringMatching(jsonObject().where("DATE", is(not(jsonNull())))));
+        assertThat(mainFailure,
+                   isJsonStringMatching(jsonObject().where("CORRELATION_ID", is(jsonMissing()))));
     }
 
     @Test
@@ -137,7 +141,7 @@ public class WorkflowControlTest
 
         // create the various mocked objects to create the document that will be processed
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null,
-                                                                null, builderDoc, true, false);
+                                                                null, null, builderDoc, true, false);
 
         invocable.invokeFunction("processFailures", document);
 
@@ -171,6 +175,8 @@ public class WorkflowControlTest
                    isJsonStringMatching(jsonObject().where("AJP_JOB_RUN_ID", is(jsonText("1701")))));
         assertThat(mainFailure,
                    isJsonStringMatching(jsonObject().where("AJP_WORK_UNIT_ID", is(jsonText("74656")))));
+        assertThat(mainFailure,
+                   isJsonStringMatching(jsonObject().where("CORRELATION_ID", is(jsonMissing()))));
     }
 
     @Test
@@ -194,9 +200,14 @@ public class WorkflowControlTest
         // add 2 failures
         builderDoc.addFailure("error_id_1", "message 1");
         builderDoc.addFailure("error_id_2", "message 2");
+        
+        //test correlation_ID if found in customData is processed or not
+        final Map<String, String> customData = new HashMap<>();
+        customData.put("tenantId", "tenant_1");
+        customData.put("correlationId", "cor_12345_id");
 
-        final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null,
-                                                                builderDoc, builderDoc, true, true);
+        final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), 
+                                                customData, null, builderDoc, builderDoc, true, true);
 
         invocable.invokeFunction("processFailures", document);
 
@@ -226,7 +237,10 @@ public class WorkflowControlTest
                    isJsonStringMatching(jsonObject().where("MESSAGE", is(jsonText("message 1")))));
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("DATE", is(not(jsonNull())))));
-
+        //test correlation_ID if found in customData is processed or not
+        assertThat(firstFailure,
+                   isJsonStringMatching(jsonObject().where("CORRELATION_ID", is(jsonText("cor_12345_id"))))); 
+        
         final String secondFailure = document.getField("FAILURES").getValues()
             .stream()
             .filter(v -> !v.getStringValue().isEmpty() && v.getStringValue().contains("message 2"))
@@ -248,6 +262,8 @@ public class WorkflowControlTest
                    isJsonStringMatching(jsonObject().where("MESSAGE", is(jsonText("message 2")))));
         assertThat(secondFailure,
                    isJsonStringMatching(jsonObject().where("DATE", is(not(jsonNull())))));
+        assertThat(firstFailure,
+                   isJsonStringMatching(jsonObject().where("CORRELATION_ID", is(jsonText("cor_12345_id")))));
     }
 
     @Test
@@ -270,7 +286,7 @@ public class WorkflowControlTest
         builderDoc.addFailure("error_id_2", "message 2");
 
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null,
-                                                                builderDoc, builderDoc, true, true);
+                                                                null,  builderDoc, builderDoc, true, true);
 
         invocable.invokeFunction("processFailures", document);
 
@@ -299,6 +315,8 @@ public class WorkflowControlTest
                    isJsonStringMatching(jsonObject().where("MESSAGE", is(jsonText("message 1")))));
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("DATE", is(not(jsonNull())))));
+        assertThat(firstFailure,
+                   isJsonStringMatching(jsonObject().where("CORRELATION_ID", is(jsonMissing()))));
 
         final String secondFailure = document.getField("FAILURES").getStringValues()
             .stream()
@@ -320,6 +338,8 @@ public class WorkflowControlTest
                    isJsonStringMatching(jsonObject().where("MESSAGE", is(jsonText("message 2")))));
         assertThat(secondFailure,
                    isJsonStringMatching(jsonObject().where("DATE", is(not(jsonNull())))));
+        assertThat(firstFailure,
+                   isJsonStringMatching(jsonObject().where("CORRELATION_ID", is(jsonMissing()))));
     }
 
     @Test(expected = IndexOutOfBoundsException.class)
@@ -342,7 +362,7 @@ public class WorkflowControlTest
         builderDoc.addFailure("error_id_2", "message 2");
 
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null,
-                                                                builderDoc, builderDoc, true, true);
+                                                                null, builderDoc, builderDoc, true, true);
 
         invocable.invokeFunction("processFailures", document);
     }
@@ -367,7 +387,7 @@ public class WorkflowControlTest
         builderDoc.addFailure("error_id_2", "message 2");
 
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null,
-                                                                builderDoc, builderDoc, true, true);
+                                                                null, builderDoc, builderDoc, true, true);
 
         invocable.invokeFunction("processFailures", document);
     }
@@ -392,7 +412,7 @@ public class WorkflowControlTest
         builderDoc.addFailure(null, "message 1");
 
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null,
-                                                                builderDoc, builderDoc, true, true);
+                                                                null, builderDoc, builderDoc, true, true);
 
         invocable.invokeFunction("processFailures", document);
         assertThat(document.getFailures().size(), is(equalTo((0))));
@@ -421,6 +441,8 @@ public class WorkflowControlTest
                    isJsonStringMatching(jsonObject().where("MESSAGE", is(jsonText("message 1")))));
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("DATE", is(not(jsonNull())))));
+        assertThat(firstFailure,
+                   isJsonStringMatching(jsonObject().where("CORRELATION_ID", is(jsonMissing()))));
     }
 
     @Test
@@ -443,7 +465,7 @@ public class WorkflowControlTest
         builderDoc.addFailure("error_id_1", null);
 
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null,
-                                                                builderDoc, builderDoc, true, true);
+                                                                null, builderDoc, builderDoc, true, true);
 
         invocable.invokeFunction("processFailures", document);
         assertThat(document.getFailures().size(), is(equalTo((0))));
@@ -472,6 +494,8 @@ public class WorkflowControlTest
                    isJsonStringMatching(jsonObject().where("MESSAGE", is(jsonNull()))));
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("DATE", is(not(jsonNull())))));
+        assertThat(firstFailure,
+                   isJsonStringMatching(jsonObject().where("CORRELATION_ID", is(jsonMissing()))));
     }
 
     @Test
@@ -647,7 +671,7 @@ public class WorkflowControlTest
 
         // processSubdocumentFailures() not called
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null,
-                                                                builderDoc, true, true);
+                                                                null, builderDoc, true, true);
         final DocumentEventObject documentEventObject = new DocumentEventObject(document);
         invocable.invokeFunction("onAfterProcessDocument", documentEventObject);
 
@@ -665,6 +689,7 @@ public class WorkflowControlTest
         assertThat(failureMessage.getWorkflowName(), is(equalTo("example_workflow")));
         assertThat(failureMessage.getWorkflowAction(), is(equalTo("family_hashing")));
         assertThat(failureMessage.getDate(), is(not(isEmptyString())));
+        assertThat(failureMessage.getCorrelationId(), is(nullValue()));
     }
 
     @Test
@@ -681,7 +706,7 @@ public class WorkflowControlTest
         builderDoc.addFailure("error_id_1", "message 1");
 
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null,
-                                                                builderDoc, builderDoc, true, true);
+                                                                null, builderDoc, builderDoc, true, true);
         final DocumentEventObject documentEventObject = new DocumentEventObject(document);
         invocable.invokeFunction("onAfterProcessDocument", documentEventObject);
 
@@ -718,6 +743,8 @@ public class WorkflowControlTest
                    isJsonStringMatching(jsonObject().where("MESSAGE", is(jsonText("message 1")))));
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("DATE", is(not(jsonNull())))));
+        assertThat(firstFailure,
+                   isJsonStringMatching(jsonObject().where("CORRELATION_ID", is(jsonMissing()))));
     }
 
     @Test
@@ -733,7 +760,7 @@ public class WorkflowControlTest
         builderDoc.addFailure("error_id_1", "message 1");
 
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(),
-                                                                builderDoc.getSubdocuments(), builderDoc, builderDoc, true, true);
+                                                                null, builderDoc.getSubdocuments(), builderDoc, builderDoc, true, true);
         final DocumentEventObject documentEventObject = new DocumentEventObject(document);
         invocable.invokeFunction("onAfterProcessDocument", documentEventObject);
 
@@ -769,6 +796,8 @@ public class WorkflowControlTest
                    isJsonStringMatching(jsonObject().where("MESSAGE", is(jsonText("message 1")))));
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("DATE", is(not(jsonNull())))));
+        assertThat(firstFailure,
+                   isJsonStringMatching(jsonObject().where("CORRELATION_ID", is(jsonMissing()))));
 
         // retrieve the subdocs and check that the original failures are still there
         final Subdocument firstSubdoc = document.getSubdocuments().stream().filter(s -> s.getReference().equals("ref_1_subdoc"))
@@ -829,7 +858,7 @@ public class WorkflowControlTest
             .addFailure("level_2_id", "level 2 failure");
 
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(),
-                                                                subdocuments, builderDoc, builderDoc, true, true);
+                                                                null, subdocuments, builderDoc, builderDoc, true, true);
         final DocumentEventObject documentEventObject = new DocumentEventObject(document);
         invocable.invokeFunction("onAfterProcessDocument", documentEventObject);
 
@@ -863,6 +892,8 @@ public class WorkflowControlTest
                    isJsonStringMatching(jsonObject().where("MESSAGE", is(jsonText("message 1")))));
         assertThat(mainFailure,
                    isJsonStringMatching(jsonObject().where("DATE", is(not(jsonNull())))));
+        assertThat(mainFailure,
+                   isJsonStringMatching(jsonObject().where("CORRELATION_ID", is(jsonMissing()))));
 
         //level 2
         final Subdocument firstSubdocLevel2 = document.getSubdocuments()
@@ -980,7 +1011,7 @@ public class WorkflowControlTest
 
         // create the test document that wil contain subdocuments
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(),
-                                                                subdocuments, null, builderDoc, true, false);
+                                                                null, subdocuments, null, builderDoc, true, false);
 
         final DocumentEventObject documentEventObject = new DocumentEventObject(document);
         invocable.invokeFunction("onAfterProcessDocument", documentEventObject);
@@ -1015,6 +1046,8 @@ public class WorkflowControlTest
                    isJsonStringMatching(jsonObject().where("MESSAGE", is(jsonText("message 1")))));
         assertThat(mainFailure,
                    isJsonStringMatching(jsonObject().where("DATE", is(not(jsonNull())))));
+        assertThat(mainFailure,
+                   isJsonStringMatching(jsonObject().where("CORRELATION_ID", is(jsonMissing()))));
 
         // subdocuments
         final Subdocument firstSubdoc = document.getSubdocuments()
@@ -1114,7 +1147,7 @@ public class WorkflowControlTest
 
         // create the test document that will NOT contain subdocuments
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null,
-                                                                builderDoc, true, false);
+                                                                null, builderDoc, true, false);
 
         final DocumentEventObject documentEventObject = new DocumentEventObject(document);
         invocable.invokeFunction("onAfterProcessDocument", documentEventObject);
@@ -1149,6 +1182,8 @@ public class WorkflowControlTest
                    isJsonStringMatching(jsonObject().where("MESSAGE", is(jsonText("message 1")))));
         assertThat(mainFailure,
                    isJsonStringMatching(jsonObject().where("DATE", is(not(jsonNull())))));
+        assertThat(mainFailure,
+                   isJsonStringMatching(jsonObject().where("CORRELATION_ID", is(jsonMissing()))));
     }
 
     @Test
@@ -1180,7 +1215,7 @@ public class WorkflowControlTest
         builderDoc.addFailure("error_id_1", "message 1");
 
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(),
-                                                                null, null, null, true, true);
+                                                               null, null, null, null, true, true);
         final DocumentEventObject documentEventObject = new DocumentEventObject(document);
         invocable.invokeFunction("onAfterProcessDocument", documentEventObject);
 
@@ -1212,7 +1247,7 @@ public class WorkflowControlTest
         builderDoc.addFailure("error_id_1", "message 1");
 
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null,
-                                                                builderDoc, true, false);
+                                                                null, builderDoc, true, false);
 
         final DocumentEventObject documentEventObject = new DocumentEventObject(document);
         invocable.invokeFunction("onAfterProcessDocument", documentEventObject);
@@ -1262,7 +1297,7 @@ public class WorkflowControlTest
         builderDoc.addFailure("error_id_1", "message 1");
 
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null,
-                                                                null, true, true);
+                                                                null, null, true, true);
         final DocumentEventObject documentEventObject = new DocumentEventObject(document);
         invocable.invokeFunction("onAfterProcessDocument", documentEventObject);
 
@@ -1283,7 +1318,7 @@ public class WorkflowControlTest
             Paths.get("src", "test", "resources", "input-document-no-subdoc.json")
                 .toString()).build();
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null,
-                                                                builderDoc, true, false);
+                                                                null, builderDoc, true, false);
 
         final String result = (String) invocable.invokeFunction("getCurrentWorkerName", document);
         assertThat(result, is(equalTo(("application-worker-base"))));
@@ -1310,7 +1345,7 @@ public class WorkflowControlTest
             Paths.get("src", "test", "resources", "input-document-no-subdoc.json")
                 .toString()).build();
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null,
-                                                                builderDoc, true, false);
+                                                                null, builderDoc, true, false);
 
         final String result = (String) invocable.invokeFunction("getCurrentWorkerVersion", document);
         assertThat(result, is(equalTo(("1.0.0-SNAPSHOT-APPLICATION"))));

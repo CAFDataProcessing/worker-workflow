@@ -34,7 +34,8 @@ public class NewFailure
     private String workflowAction;
     @JsonProperty("DATE")
     private String date;
-
+    @JsonProperty("CORRELATION_ID")
+    private String correlationId;
     public String getFailureId()
     {
         return failureId;
@@ -68,6 +69,11 @@ public class NewFailure
     public String getWorkflowAction()
     {
         return workflowAction;
+    }
+
+    public String getCorrelationId()
+    {
+        return correlationId;
     }
 
     
