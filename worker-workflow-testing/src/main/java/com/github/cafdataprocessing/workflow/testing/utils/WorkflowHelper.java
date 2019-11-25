@@ -41,6 +41,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -113,7 +114,7 @@ public class WorkflowHelper
      * @return a Document
      */
     public static Document createDocument(final String reference, final Fields fields, final Failures failures,
-                                          final Subdocuments subdocuments,
+                                          final Map<String, String> customData, final Subdocuments subdocuments, 
                                           final Document parentDoc, final Document rootDoc, final boolean includeApplication,
                                           final boolean inputMessageProcessor)
     {
@@ -126,16 +127,17 @@ public class WorkflowHelper
         final ConfigurationSourceMock csm = new ConfigurationSourceMock(dwc);
         final TaskMock task;
         final Application application;
+        final Map<String, String> docCustomData = (customData!=null)? customData : new HashMap<>();
         if (!includeApplication) {
-            task = new TaskMock(new HashMap<>(), rootDoc, null, wtd, null, null);
+            task = new TaskMock(docCustomData, rootDoc, null, wtd, null, null);
             application = null;
         } else {
             final InputMessageProcessor inputMessageProcessorTest = new InputMessageProcessorMock(inputMessageProcessor);
             application = new ApplicationMock(inputMessageProcessorTest, csm);
-            task = new TaskMock(new HashMap<>(), rootDoc, null, wtd, null, application);
+            task = new TaskMock(docCustomData, rootDoc, null, wtd, null, application);
         }
         final DocumentMock temp
-            = new DocumentMock(reference, fields, task, new HashMap<>(), failures, subdocuments, application, parentDoc, rootDoc);
+            = new DocumentMock(reference, fields, task, docCustomData, failures, subdocuments, application, parentDoc, rootDoc);
         task.setDocument(temp);
         final Fields mockedFields = new FieldsMock(fields, null, temp);
         temp.setFields(mockedFields);
