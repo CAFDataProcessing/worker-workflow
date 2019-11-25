@@ -320,7 +320,7 @@ function processFailures(document) {
                     WORKFLOW_NAME: document.getRootDocument().getField("CAF_WORKFLOW_NAME").getStringValues().get(0),
                     MESSAGE: f.getFailureMessage(),
                     DATE: new Date().toISOString(),
-                    CORRELATION_ID: document.getRootDocument().getCustomData("correlationId") || undefined
+                    CORRELATION_ID: document.getCustomData("correlationId") || undefined
                 };
                 if (extraFailureFields) {
                     for each (var key in Object.keys(extraFailureFields)) {
