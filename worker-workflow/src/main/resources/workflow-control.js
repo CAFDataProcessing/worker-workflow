@@ -192,19 +192,19 @@ function extractFailureSubfields(document) {
     return JSON.parse(failureSubfieldsJson);
 }
 
-function anyDocumentMatches(conditionFunction, document, arguments){
+function anyDocumentMatches(conditionFunction, document, args){
 
-    if (eval(conditionFunction)(document, arguments)) {
+    if (eval(conditionFunction)(document, args)) {
         return true;
     }
 
     return document.getSubdocuments().stream().anyMatch(
         function (d) {
-            return anyDocumentMatches(conditionFunction, d, arguments);
+            return anyDocumentMatches(conditionFunction, d, args);
         });
 }
 
-function evalCustomData(arguments, customDataToEval){
+function evalCustomData(args, customDataToEval){
     var regex = /".*"|'.*'/g;
     var customData = {};
     if (!customDataToEval) {
@@ -217,7 +217,7 @@ function evalCustomData(arguments, customDataToEval){
                 customData[customDataField] = eval(cd);
             }
             else {
-                customData[customDataField] = arguments[cd];
+                customData[customDataField] = args[cd];
             }
         }
     }
