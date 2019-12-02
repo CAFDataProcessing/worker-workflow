@@ -93,9 +93,9 @@ function onBeforeProcessDocument(e) {
         return;
     }
 
-    var arguments = extractArguments(e.rootDocument);
+    var args = extractArguments(e.rootDocument);
 
-    e.cancel = ! eval(action.conditionFunction)(e.document, arguments);
+    e.cancel = ! eval(action.conditionFunction)(e.document, args);
 }
 
 function onProcessDocument(e) {
@@ -129,7 +129,7 @@ function onError(errorEventObj) {
 
 function routeTask(rootDocument) {
 
-    var arguments = extractArguments(rootDocument);
+    var args = extractArguments(rootDocument);
 
     var previousAction = markPreviousActionAsCompleted(rootDocument);
     var terminateOnFailure = getTerminateOnFailure(previousAction);	
@@ -137,11 +137,11 @@ function routeTask(rootDocument) {
     for (var index = 0; index < ACTIONS.length; index ++ ) {
         var action = ACTIONS[index];
         if (!isActionCompleted(rootDocument, action.name)) {
-            if(!action.conditionFunction || anyDocumentMatches(action.conditionFunction, rootDocument, arguments)) {
+            if(!action.conditionFunction || anyDocumentMatches(action.conditionFunction, rootDocument, args)) {
                 var actionDetails = {
                     queueName: action.queueName,
                     scripts: action.scripts,
-                    customData: evalCustomData(arguments, action.customData)
+                    customData: evalCustomData(args, action.customData)
                 };
 
                 rootDocument.getField('CAF_WORKFLOW_ACTION').add(action.name);
