@@ -93,9 +93,9 @@ function onBeforeProcessDocument(e) {
         return;
     }
 
-    var arguments = extractArguments(e.rootDocument);
+    var args = extractArguments(e.rootDocument);
 
-    e.cancel = ! eval(action.conditionFunction)(e.document, arguments);
+    e.cancel = ! eval(action.conditionFunction)(e.document, args);
 }
 
 function onProcessDocument(e) {
@@ -129,7 +129,7 @@ function onError(errorEventObj) {
 
 function routeTask(rootDocument) {
 
-    var arguments = extractArguments(rootDocument);
+    var args = extractArguments(rootDocument);
 
     var previousAction = markPreviousActionAsCompleted(rootDocument);
     var terminateOnFailure = getTerminateOnFailure(previousAction);	
@@ -137,11 +137,11 @@ function routeTask(rootDocument) {
     for (var index = 0; index < ACTIONS.length; index ++ ) {
         var action = ACTIONS[index];
         if (!isActionCompleted(rootDocument, action.name)) {
-            if(!action.conditionFunction || anyDocumentMatches(action.conditionFunction, rootDocument, arguments)) {
+            if(!action.conditionFunction || anyDocumentMatches(action.conditionFunction, rootDocument, args)) {
                 var actionDetails = {
                     queueName: action.queueName,
                     scripts: action.scripts,
-                    customData: evalCustomData(arguments, action.customData)
+                    customData: evalCustomData(args, action.customData)
                 };
 
                 rootDocument.getField('CAF_WORKFLOW_ACTION').add(action.name);
@@ -192,19 +192,19 @@ function extractFailureSubfields(document) {
     return JSON.parse(failureSubfieldsJson);
 }
 
-function anyDocumentMatches(conditionFunction, document, arguments){
+function anyDocumentMatches(conditionFunction, document, args){
 
-    if (eval(conditionFunction)(document, arguments)) {
+    if (eval(conditionFunction)(document, args)) {
         return true;
     }
 
     return document.getSubdocuments().stream().anyMatch(
         function (d) {
-            return anyDocumentMatches(conditionFunction, d, arguments);
+            return anyDocumentMatches(conditionFunction, d, args);
         });
 }
 
-function evalCustomData(arguments, customDataToEval){
+function evalCustomData(args, customDataToEval){
     var regex = /".*"|'.*'/g;
     var customData = {};
     if (!customDataToEval) {
@@ -217,7 +217,7 @@ function evalCustomData(arguments, customDataToEval){
                 customData[customDataField] = eval(cd);
             }
             else {
-                customData[customDataField] = arguments[cd];
+                customData[customDataField] = args[cd];
             }
         }
     }
