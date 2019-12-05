@@ -76,12 +76,8 @@ public class ArgumentsManager {
         // 
         // 1. Trust that the CAF_WORKFLOW_SETTINGS on the document field are valid (after 
         //    performing some checks inside the isPoisonDocument method).
-        // 2. Copy the CAF_WORKFLOW_SETTINGS from the  document field into the custom data of the 
-        //    document task response.
-        // 3. Return without performing any resolving of arguments.
+        // 2. Return without performing any resolving of arguments.
         if (PoisonMessageDetector.isPoisonDocument(document)) {
-            final String cafWorkflowSettingsJson = document.getField("CAF_WORKFLOW_SETTINGS").getStringValues().get(0);
-            document.getTask().getResponse().getCustomData().put("CAF_WORKFLOW_SETTINGS", cafWorkflowSettingsJson);
             return;
         }
 
@@ -128,9 +124,6 @@ public class ArgumentsManager {
         }
 
         document.getField("CAF_WORKFLOW_SETTINGS").set(gson.toJson(arguments));
-        document.getTask().getResponse().getCustomData().put("CAF_WORKFLOW_SETTINGS",
-                gson.toJson(arguments));
-
     }
 
     private String getFromSettingService(final String name, final String options, final Document document)
