@@ -193,9 +193,7 @@ public class ArgumentsManagerTest {
         // arguments again, but instead: 
         // 
         // 1. Trust that the CAF_WORKFLOW_SETTINGS on the document field are valid.
-        // 2. Copy the CAF_WORKFLOW_SETTINGS from the document field into the custom data of the 
-        //    document task response.
-        // 3. Return without performing any resolving of arguments
+        // 2. Return without performing any resolving of arguments
 
         final List<ArgumentDefinition> argumentDefinitions = getArgumentDefinitions();
 
