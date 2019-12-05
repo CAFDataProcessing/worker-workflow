@@ -166,11 +166,7 @@ function getTerminateOnFailure(previousAction)
 function extractArguments(document){
 
     var rootDocument = document.getRootDocument();
-    var argumentsCustomData = rootDocument.getCustomData("CAF_WORKFLOW_SETTINGS");
-    var argumentsField = rootDocument.getField("CAF_WORKFLOW_SETTINGS");
-    var argumentsJson = argumentsCustomData
-        ? argumentsCustomData
-        : argumentsField.getStringValues().stream().findFirst()
+    var argumentsJson = rootDocument.getField("CAF_WORKFLOW_SETTINGS").getStringValues().stream().findFirst()
             .orElseThrow(function () {
                 throw new java.lang.UnsupportedOperationException
                 ("Document must contain field CAF_WORKFLOW_SETTINGS.");

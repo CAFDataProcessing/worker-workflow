@@ -59,7 +59,7 @@ public class ArgumentsManagerTest {
         final Gson gson = new Gson();
         final Type type = new TypeToken<Map<String, String>>() {}.getType();
         final Map<String, String> arguments = gson.fromJson(
-                document.getTask().getResponse().getCustomData().get("CAF_WORKFLOW_SETTINGS"), type);
+                document.getField("CAF_WORKFLOW_SETTINGS").getStringValues().stream().findFirst().get(), type);
 
         assertEquals("value of example field", arguments.get("example"));
         assertEquals("A default value", arguments.get("shouldDefault"));
@@ -87,7 +87,7 @@ public class ArgumentsManagerTest {
         final Gson gson = new Gson();
         final Type type = new TypeToken<Map<String, String>>() {}.getType();
         final Map<String, String> arguments = gson.fromJson(
-                document.getTask().getResponse().getCustomData().get("CAF_WORKFLOW_SETTINGS"), type);
+                document.getField("CAF_WORKFLOW_SETTINGS").getStringValues().stream().findFirst().get(), type);
 
         assertEquals("value of task setting example field", arguments.get("example"));
     }
@@ -114,7 +114,7 @@ public class ArgumentsManagerTest {
         final Gson gson = new Gson();
         final Type type = new TypeToken<Map<String, String>>() {}.getType();
         final Map<String, String> arguments = gson.fromJson(
-                document.getTask().getResponse().getCustomData().get("CAF_WORKFLOW_SETTINGS"), type);
+                document.getField("CAF_WORKFLOW_SETTINGS").getStringValues().stream().findFirst().get(), type);
 
         assertEquals("value of from custom data", arguments.get("example"));
     }
@@ -147,7 +147,7 @@ public class ArgumentsManagerTest {
         final Gson gson = new Gson();
         final Type type = new TypeToken<Map<String, String>>() {}.getType();
         final Map<String, String> arguments = gson.fromJson(
-                document.getTask().getResponse().getCustomData().get("CAF_WORKFLOW_SETTINGS"), type);
+                document.getField("CAF_WORKFLOW_SETTINGS").getStringValues().stream().findFirst().get(), type);
 
         assertEquals("valueFromSettingsService", arguments.get("example"));
     }
@@ -180,7 +180,7 @@ public class ArgumentsManagerTest {
         final Gson gson = new Gson();
         final Type type = new TypeToken<Map<String, String>>() {}.getType();
         final Map<String, String> arguments = gson.fromJson(
-                document.getTask().getResponse().getCustomData().get("CAF_WORKFLOW_SETTINGS"), type);
+                document.getField("CAF_WORKFLOW_SETTINGS").getStringValues().stream().findFirst().get(), type);
 
         assertEquals("valueFromSettingsService", arguments.get("example"));
     }
@@ -229,12 +229,9 @@ public class ArgumentsManagerTest {
         argumentsManager.addArgumentsToDocument(argumentDefinitions, document);
   
         final Type type = new TypeToken<Map<String, String>>() {}.getType();
-        final Map<String, String> arguments = gson.fromJson(
-                document.getTask().getResponse().getCustomData().get("CAF_WORKFLOW_SETTINGS"), type);
         final Map<String, String> cafWorkflowSettings = gson.fromJson(
             document.getField("CAF_WORKFLOW_SETTINGS").getStringValues().get(0), type);
 
-        assertEquals("valueFromCafWorkflowSettings", arguments.get("example"));
         assertEquals("valueFromCafWorkflowSettings", cafWorkflowSettings.get("example"));
     }
 
