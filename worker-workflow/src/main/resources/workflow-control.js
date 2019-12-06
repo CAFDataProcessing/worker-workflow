@@ -306,24 +306,13 @@ function processFailures(document) {
         document.getFailures().stream().forEach(function (failure) {
             listOfOriginalFailures.add(failure);
         });
-
-        for each (var f in listOfFailures) {
-            if (!isFailureInOriginal(listOfOriginalFailures, f)) {
-                var source = getCurrentWorkerName(document);
-                var numericVersion = getCurrentWorkerVersion(document);
-                var message = thisScriptObject.createFailure(
-                    f.getFailureId(),
-                    f.getFailureStack(),
-                    document.getRootDocument().getField("CAF_WORKFLOW_ACTION").getStringValues().get(0),
-                    source.trim() + " " + numericVersion.trim(),
-                    document.getRootDocument().getField("CAF_WORKFLOW_NAME").getStringValues().get(0),
-                    f.getFailureMessage(),
-                    new Date().toISOString(),
-                    document.getCustomData("correlationId"),
-                    document)
-                document.getField("FAILURES").add(JSON.stringify(message));
-            }
-        }
+        var newFailures = new java.util.ArrayList();
+        listOfFailures.stream().forEach(function(failure) {
+           if(!isFailureInOriginal(listOfOriginalFailures, failure)){
+               newFailures.add(failure);
+           }
+        });
+        thisScriptObject.promoteFailures(document, newFailures);
     }
 }
 
@@ -340,25 +329,32 @@ function isFailureInOriginal(listOfOriginalFailures, newFailure) {
 
 
 thisScriptObject = {
-    createFailure: function (failureId, failureStack, failureAction, failureComponent, failureWorkflowName, failureMessage, failureDate,
-            failureCorrelationId, document) {
-        var extraFailureFields = extractFailureSubfields(document);
-        var failureObject = {
-            ID: failureId,
-            STACK: failureStack || undefined,
-            WORKFLOW_ACTION: failureAction,
-            COMPONENT: failureComponent,
-            WORKFLOW_NAME: failureWorkflowName,
-            MESSAGE: failureMessage,
-            DATE: failureDate,
-            CORRELATION_ID: failureCorrelationId || undefined
-        }
-        if (extraFailureFields) {
-            for each (var key in Object.keys(extraFailureFields)) {
-                failureObject[key] = extraFailureFields[key];
-            }
-        }
-        return failureObject;
+    promoteFailures: function (document, failures, extractSourceCallback, action) {
+        failures.stream().forEach(function(f){
+            var component = extractSourceCallback !== undefined
+                            ? extractSourceCallback(f.getFailureId())
+                            : getCurrentWorkerName(document) + " " + getCurrentWorkerVersion(document);
+            var failureAction = action !== undefined
+                                ? action
+                                : document.getRootDocument().getField("CAF_WORKFLOW_ACTION").getStringValues().get(0);
+            var extraFailureFields = extractFailureSubfields(document);
+            var failureObject = {
+                ID: f.getFailureId(),
+                STACK: f.getFailureStack() || undefined,
+                WORKFLOW_ACTION: failureAction,
+                COMPONENT: component,
+                WORKFLOW_NAME: document.getRootDocument().getField("CAF_WORKFLOW_NAME").getStringValues().get(0),
+                MESSAGE: f.getFailureMessage(),
+                DATE: new Date().toISOString(),
+                CORRELATION_ID: document.getCustomData("correlationId") || undefined
+            };
+            if (extraFailureFields) {
+                for each (var key in Object.keys(extraFailureFields)) {
+                    failureObject[key] = extraFailureFields[key];
+                }
+            };
+            document.getField("FAILURES").add(JSON.stringify(failureObject));
+        });
     }
 };
 
