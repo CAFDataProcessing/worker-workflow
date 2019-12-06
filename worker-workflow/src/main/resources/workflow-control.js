@@ -294,7 +294,6 @@ function traverseDocumentForFailures(document) {
 
 function processFailures(document) {
     if (document.getFailures().isChanged()) {
-        var extraFailureFields = extractFailureSubfields(document);
 
         var listOfFailures = new java.util.ArrayList();
         document.getFailures().stream().forEach(function (failure) {
@@ -312,21 +311,16 @@ function processFailures(document) {
             if (!isFailureInOriginal(listOfOriginalFailures, f)) {
                 var source = getCurrentWorkerName(document);
                 var numericVersion = getCurrentWorkerVersion(document);
-                var message = {
-                    ID: f.getFailureId(),
-                    STACK: f.getFailureStack() || undefined,
-                    WORKFLOW_ACTION: document.getRootDocument().getField("CAF_WORKFLOW_ACTION").getStringValues().get(0),
-                    COMPONENT: source.trim() + " " + numericVersion.trim(),
-                    WORKFLOW_NAME: document.getRootDocument().getField("CAF_WORKFLOW_NAME").getStringValues().get(0),
-                    MESSAGE: f.getFailureMessage(),
-                    DATE: new Date().toISOString(),
-                    CORRELATION_ID: document.getCustomData("correlationId") || undefined
-                };
-                if (extraFailureFields) {
-                    for each (var key in Object.keys(extraFailureFields)) {
-                        message[key] = extraFailureFields[key];
-                    }
-                }
+                var message = thisScriptObject.createFailure(
+                    f.getFailureId(),
+                    f.getFailureStack(),
+                    document.getRootDocument().getField("CAF_WORKFLOW_ACTION").getStringValues().get(0),
+                    source.trim() + " " + numericVersion.trim(),
+                    document.getRootDocument().getField("CAF_WORKFLOW_NAME").getStringValues().get(0),
+                    f.getFailureMessage(),
+                    new Date().toISOString(),
+                    document.getCustomData("correlationId"),
+                    document)
                 document.getField("FAILURES").add(JSON.stringify(message));
             }
         }
@@ -343,6 +337,30 @@ function isFailureInOriginal(listOfOriginalFailures, newFailure) {
     }
     return false;
 }
+
+
+thisScriptObject = {
+    createFailure: function (failureId, failureStack, failureAction, failureComponent, failureWorkflowName, failureMessage, failureDate,
+            failureCorrelationId, document) {
+        var extraFailureFields = extractFailureSubfields(document);
+        var failureObject = {
+            ID: failureId,
+            STACK: failureStack || undefined,
+            WORKFLOW_ACTION: failureAction,
+            COMPONENT: failureComponent,
+            WORKFLOW_NAME: failureWorkflowName,
+            MESSAGE: failureMessage,
+            DATE: failureDate,
+            CORRELATION_ID: failureCorrelationId || undefined
+        }
+        if (extraFailureFields) {
+            for each (var key in Object.keys(extraFailureFields)) {
+                failureObject[key] = extraFailureFields[key];
+            }
+        }
+        return failureObject;
+    }
+};
 
 function isLastAction(action) {
     return ACTIONS[ACTIONS.length - 1 ].name === action;
