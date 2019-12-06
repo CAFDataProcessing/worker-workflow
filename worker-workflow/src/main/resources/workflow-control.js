@@ -312,7 +312,7 @@ function processFailures(document) {
                newFailures.add(failure);
            }
         });
-        thisScriptObject.promoteFailures(document, newFailures);
+        thisScriptObject.addFailures(document, newFailures);
     }
 }
 
@@ -329,19 +329,19 @@ function isFailureInOriginal(listOfOriginalFailures, newFailure) {
 
 
 thisScriptObject = {
-    promoteFailures: function (document, failures, extractSourceCallback, action) {
+    addFailures: function (document, failures, extractSourceCallback, action) {
+        var extraFailureFields = extractFailureSubfields(document);
+        var workflowAction = action !== undefined
+                             ? action
+                             : document.getRootDocument().getField("CAF_WORKFLOW_ACTION").getStringValues().get(0);
         failures.stream().forEach(function(f){
             var component = extractSourceCallback !== undefined
-                            ? extractSourceCallback(f.getFailureId())
+                            ? extractSourceCallback(f)
                             : getCurrentWorkerName(document) + " " + getCurrentWorkerVersion(document);
-            var failureAction = action !== undefined
-                                ? action
-                                : document.getRootDocument().getField("CAF_WORKFLOW_ACTION").getStringValues().get(0);
-            var extraFailureFields = extractFailureSubfields(document);
             var failureObject = {
                 ID: f.getFailureId(),
                 STACK: f.getFailureStack() || undefined,
-                WORKFLOW_ACTION: failureAction,
+                WORKFLOW_ACTION: workflowAction,
                 COMPONENT: component,
                 WORKFLOW_NAME: document.getRootDocument().getField("CAF_WORKFLOW_NAME").getStringValues().get(0),
                 MESSAGE: f.getFailureMessage(),
