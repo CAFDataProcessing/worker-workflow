@@ -290,7 +290,6 @@ function traverseDocumentForFailures(document) {
 
 function processFailures(document) {
     if (document.getFailures().isChanged()) {
-        var extraFailureFields = extractFailureSubfields(document);
 
         var listOfFailures = new java.util.ArrayList();
         document.getFailures().stream().forEach(function (failure) {
@@ -303,29 +302,13 @@ function processFailures(document) {
         document.getFailures().stream().forEach(function (failure) {
             listOfOriginalFailures.add(failure);
         });
-
-        for each (var f in listOfFailures) {
-            if (!isFailureInOriginal(listOfOriginalFailures, f)) {
-                var source = getCurrentWorkerName(document);
-                var numericVersion = getCurrentWorkerVersion(document);
-                var message = {
-                    ID: f.getFailureId(),
-                    STACK: f.getFailureStack() || undefined,
-                    WORKFLOW_ACTION: document.getRootDocument().getField("CAF_WORKFLOW_ACTION").getStringValues().get(0),
-                    COMPONENT: source.trim() + " " + numericVersion.trim(),
-                    WORKFLOW_NAME: document.getRootDocument().getField("CAF_WORKFLOW_NAME").getStringValues().get(0),
-                    MESSAGE: f.getFailureMessage(),
-                    DATE: new Date().toISOString(),
-                    CORRELATION_ID: document.getCustomData("correlationId") || undefined
-                };
-                if (extraFailureFields) {
-                    for each (var key in Object.keys(extraFailureFields)) {
-                        message[key] = extraFailureFields[key];
-                    }
-                }
-                document.getField("FAILURES").add(JSON.stringify(message));
-            }
-        }
+        var newFailures = new java.util.ArrayList();
+        listOfFailures.stream().forEach(function(failure) {
+           if(!isFailureInOriginal(listOfOriginalFailures, failure)){
+               newFailures.add(failure);
+           }
+        });
+        thisScriptObject.addFailures(document, newFailures);
     }
 }
 
@@ -339,6 +322,37 @@ function isFailureInOriginal(listOfOriginalFailures, newFailure) {
     }
     return false;
 }
+
+
+thisScriptObject = {
+    addFailures: function (document, failures, extractSourceCallback, action) {
+        var extraFailureFields = extractFailureSubfields(document);
+        var workflowAction = action !== undefined
+                             ? action
+                             : document.getRootDocument().getField("CAF_WORKFLOW_ACTION").getStringValues().get(0);
+        failures.stream().forEach(function(f){
+            var component = extractSourceCallback !== undefined
+                            ? extractSourceCallback(f)
+                            : getCurrentWorkerName(document) + " " + getCurrentWorkerVersion(document);
+            var failureObject = {
+                ID: f.getFailureId(),
+                STACK: f.getFailureStack() || undefined,
+                WORKFLOW_ACTION: workflowAction,
+                COMPONENT: component,
+                WORKFLOW_NAME: document.getRootDocument().getField("CAF_WORKFLOW_NAME").getStringValues().get(0),
+                MESSAGE: f.getFailureMessage(),
+                DATE: new Date().toISOString(),
+                CORRELATION_ID: document.getCustomData("correlationId") || undefined
+            };
+            if (extraFailureFields) {
+                for each (var key in Object.keys(extraFailureFields)) {
+                    failureObject[key] = extraFailureFields[key];
+                }
+            };
+            document.getField("FAILURES").add(JSON.stringify(failureObject));
+        });
+    }
+};
 
 function isLastAction(action) {
     return ACTIONS[ACTIONS.length - 1 ].name === action;
