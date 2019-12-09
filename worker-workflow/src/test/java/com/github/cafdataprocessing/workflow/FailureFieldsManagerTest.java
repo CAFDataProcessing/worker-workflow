@@ -15,14 +15,20 @@
  */
 package com.github.cafdataprocessing.workflow;
 
+import com.github.cafdataprocessing.workflow.testing.utils.WorkflowHelper;
+import com.google.gson.Gson;
 import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.testing.DocumentBuilder;
 import static org.junit.Assert.*;
+import java.nio.file.Paths;
+import java.util.Objects;
+import javax.script.Invocable;
 import org.junit.Test;
 
 public final class FailureFieldsManagerTest
 {
     private final FailureFieldsManager failureFieldsManager = new FailureFieldsManager();
+    private final Gson gson = new Gson();
 
     @Test
     public void testMultipleFailureSubFields() throws Exception
@@ -89,5 +95,80 @@ public final class FailureFieldsManagerTest
         assertFalse(document.getField("CAF_WORKFLOW_EXTRA_FAILURE_SUBFIELDS").hasChanges());
         assertTrue(document.getField("CAF_WORKFLOW_EXTRA_FAILURE_SUBFIELDS")
             .getStringValues().stream().findFirst().get().equals(verificationString));
+    }
+
+    @Test
+    public void callingAddFailuresFromOutsideScript() throws Exception
+    {
+        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl(
+            "function extractSource(failure){return \"kv\"}",
+            "function testDocument(document, failures, source){thisScriptObject.addFailures(document, failures, extractSource, source);}");
+
+        // doc with one original failure
+        final Document builderDoc = DocumentBuilder.fromFile(
+            Paths.get("src", "test", "resources", "input-document-with-subdoc-with-stack.json").toString()).build();
+
+        final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(),
+                                                                null, builderDoc.getSubdocuments(), builderDoc, builderDoc, true, true);
+        invocable.invokeFunction("testDocument", document, document.getFailures(), "on_premise");
+
+        assertEquals(document.getField("FAILURES").getValues().stream().filter(x -> !x.getStringValue().isEmpty()).count(), 1L);
+
+        final String firstFailure = document.getField("FAILURES").getValues()
+            .stream()
+            .filter(v -> !v.getStringValue().isEmpty())
+            .map(v -> v.getStringValue())
+            .findFirst()
+            .get();
+        final FailureRep failureRep = new FailureRep("original_fail_id_1", "super stack", "on_premise", "kv", "example_workflow",
+                                                     "original message 1", null);
+        assertEquals(failureRep, gson.fromJson(firstFailure, FailureRep.class));
+    }
+}
+
+final class FailureRep extends Object
+{
+    private final String ID;
+    private final String STACK;
+    private final String WORKFLOW_ACTION;
+    private final String COMPONENT;
+    private final String WORKFLOW_NAME;
+    private final String MESSAGE;
+    private final String DATE;
+
+    public FailureRep(final String ID, final String Stack, final String WORKFLOW_ACTION, final String COMPONENT,
+                      final String WORKFLOW_NAME, final String MESSAGE, final String DATE)
+    {
+        this.ID = ID;
+        this.STACK = Stack;
+        this.WORKFLOW_ACTION = WORKFLOW_ACTION;
+        this.COMPONENT = COMPONENT;
+        this.WORKFLOW_NAME = WORKFLOW_NAME;
+        this.MESSAGE = MESSAGE;
+        this.DATE = DATE;
+    }
+
+    @Override
+    public boolean equals(final Object obj)
+    {
+        final FailureRep passedRep = (FailureRep) obj;
+        return this.ID.equals(passedRep.ID) && this.STACK.equals(passedRep.STACK)
+            && this.WORKFLOW_ACTION.equals(passedRep.WORKFLOW_ACTION)
+            && this.WORKFLOW_NAME.equals(passedRep.WORKFLOW_NAME)
+            && this.COMPONENT.equals(passedRep.COMPONENT)
+            && this.MESSAGE.equals(passedRep.MESSAGE);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int hash = 3;
+        hash = 67 * hash + Objects.hashCode(this.ID);
+        hash = 67 * hash + Objects.hashCode(this.STACK);
+        hash = 67 * hash + Objects.hashCode(this.WORKFLOW_ACTION);
+        hash = 67 * hash + Objects.hashCode(this.COMPONENT);
+        hash = 67 * hash + Objects.hashCode(this.WORKFLOW_NAME);
+        hash = 67 * hash + Objects.hashCode(this.MESSAGE);
+        return hash;
     }
 }

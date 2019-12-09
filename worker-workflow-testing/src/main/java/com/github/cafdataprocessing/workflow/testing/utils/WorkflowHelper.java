@@ -74,6 +74,31 @@ public class WorkflowHelper
     }
 
     /**
+     * Utility method to create a Nashorn engine with a predefined set of actions and the workflow-control.js loaded. 
+     * This function will also eval any scripts passed to it as params.
+     *
+     * @param scripts variable number of scripts to eval
+     * @return an Invocable nashorn engine
+     * @throws IOException
+     * @throws ScriptException
+     */
+    public static Invocable createInvocableNashornEngineWithActionsAndWorkflowControl(final String... scripts)
+        throws IOException, ScriptException
+    {
+        final ScriptEngine nashorn = new ScriptEngineManager().getEngineByName("nashorn");
+        nashorn.eval("var actionFamilyHashing = {name: \"family_hashing\", terminateOnFailure: false};\n"
+            + "var actionBulkIndexer = {name: \"bulk_indexer\", terminateOnFailure: true};\n"
+            + "var actionElastic = {name: \"elastic\", terminateOnFailure: false};\n"
+            + "var ACTIONS = [actionFamilyHashing, actionBulkIndexer, actionElastic];");
+        nashorn.eval(new InputStreamReader(new FileInputStream(Paths.get("src", "main", "resources", "workflow-control.js")
+            .toFile())));
+        for(final String script : scripts){
+            nashorn.eval(script);
+        }
+        return (Invocable) nashorn;
+    }
+
+    /**
      * Utility method to create a Nashorn engine that accepts optional strings to be eval and/or paths to files to be eval as well.
      *
      * @param codesToEval list of strings
