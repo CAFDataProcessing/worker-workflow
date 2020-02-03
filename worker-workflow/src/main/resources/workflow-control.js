@@ -121,7 +121,7 @@ function setWorkerVersion(document) {
 function onError(errorEventObj) {
     var rootDoc = errorEventObj.rootDocument;
     var message = errorEventObj.error.getMessage();
-    rootDoc.getFailures().add("WCS_UNHANDLED_ERROR", message, errorEventObj.error);
+    rootDoc.failures.add("UNHANDLED_ERROR", message, errorEventObj.error);
     errorEventObj.handled = true;
     traverseDocumentForFailures(rootDoc);
     routeTask(errorEventObj.rootDocument);
