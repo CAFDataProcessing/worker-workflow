@@ -119,11 +119,11 @@ function setWorkerVersion(document) {
 }
 
 function onError(errorEventObj) {
-    // We will not mark the error as handled here. This will allow the document-worker framework to add the failure
-    // itself rather than us duplicating the format of the failure value it constructs for non-script failure responses
-
-    // Even though the action failed it still completed in terms of the document being sent for processing against the
-    // action, so the action should be marked as completed
+    var rootDoc = errorEventObj.rootDocument;
+    var message = errorEventObj.error.getMessage();
+    rootDoc.getFailures().add("WCS_UNHANDLED_ERROR", message, errorEventObj.error);
+    errorEventObj.handled = true;
+    traverseDocumentForFailures(rootDoc);
     routeTask(errorEventObj.rootDocument);
 }
 
