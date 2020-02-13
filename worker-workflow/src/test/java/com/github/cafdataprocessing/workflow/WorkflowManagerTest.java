@@ -143,8 +143,8 @@ public class WorkflowManagerTest {
         document.getField("CAF_WORKFLOW_SETTINGS").add("{}");
         
         final WorkflowManager workflowManager = new WorkflowManager(document.getApplication(),
-                                    WorkflowDirectoryProvider.getWorkflowDirectory("workflow-manager-test"),
-                                    null);
+                                     WorkflowDirectoryProvider.getWorkflowDirectory("workflow-manager-test"),
+                                     null);
 
         final Workflow workflow = workflowManager.get("test-workflow");
         final String workflowScript = workflow.getWorkflowScript();
