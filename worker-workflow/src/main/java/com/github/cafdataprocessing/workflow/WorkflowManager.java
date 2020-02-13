@@ -57,7 +57,6 @@ public class WorkflowManager {
 
     private File getContextScriptFile(final String contextScriptFilePath) {
         return contextScriptFilePath != null ? new File(contextScriptFilePath) : null;
-
     }
     
     private Map<String, Workflow> getWorkflows(final String workflowsDirectory) throws ConfigurationException {
@@ -71,7 +70,7 @@ public class WorkflowManager {
         if(Strings.isNullOrEmpty(dir.toString())){
             throw new ConfigurationException(String.format("No workflows found in [%s].", workflowsDirectory));
         }
-        File contextScriptFile = getContextScriptFile(this.contextScriptFilePath);
+        final File contextScriptFile = getContextScriptFile(this.contextScriptFilePath);
         final FilenameFilter filter = (final File dir1, final String name) -> name.endsWith(".yaml");
         for (final File workflowFile : dir.listFiles(filter)) {
 
