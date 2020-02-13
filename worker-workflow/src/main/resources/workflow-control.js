@@ -346,11 +346,6 @@ thisScriptObject = {
                     DATE: new Date().toISOString(),
                     CORRELATION_ID: document.getCustomData("correlationId") || undefined
                 };
-                if (extraFailureFields) {
-                    for each (var key in Object.keys(extraFailureFields)) {
-                        warningObject[key] = extraFailureFields[key];
-                    }
-                };
                 document.getField("WARNINGS").add(JSON.stringify(warningObject));
             }else {
                 var failureObject = {
