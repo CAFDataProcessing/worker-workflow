@@ -45,7 +45,8 @@ public class WorkflowManager {
     private final DataStore dataStore;
     private final String contextScriptFilePath;
 
-    public WorkflowManager(final Application application, final String workflowDirectory, final String contextScriptFilePath) throws ConfigurationException {
+    public WorkflowManager(final Application application, final String workflowDirectory, final String contextScriptFilePath) 
+                           throws ConfigurationException {
         dataStore = application.getService(DataStore.class);
         this.contextScriptFilePath = contextScriptFilePath;
         workflows = getWorkflows(workflowDirectory);
