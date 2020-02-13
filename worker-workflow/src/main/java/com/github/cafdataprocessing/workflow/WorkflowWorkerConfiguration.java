@@ -35,6 +35,18 @@ public final class WorkflowWorkerConfiguration
      */
     @NotNull
     private String settingsServiceUrl;
+    
+    private String contextScriptFilePath;
+
+    public String getContextScriptFilePath()
+    {
+        return contextScriptFilePath;
+    }
+
+    public void setContextScriptFilePath(final String contextScriptFilePath)
+    {
+        this.contextScriptFilePath = contextScriptFilePath;
+    }
 
     public String getWorkflowsDirectory()
     {

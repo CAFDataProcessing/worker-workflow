@@ -395,6 +395,7 @@
                                     <port>${worker.debugport}:5005</port>
                                 </ports>
                                 <env>
+                                    <CAF_WORKFLOW_WORKER_CONTEXT_JAVASCRIPT_PATH>/maven/context.js</CAF_WORKFLOW_WORKER_CONTEXT_JAVASCRIPT_PATH>
                                     <CAF_WORKFLOW_WORKER_WORKFLOWS_DIRECTORY>/maven/workflows</CAF_WORKFLOW_WORKER_WORKFLOWS_DIRECTORY>
                                     <CAF_RABBITMQ_PREFETCH_BUFFER>1000</CAF_RABBITMQ_PREFETCH_BUFFER>
                                     <CAF_WORKER_DATASTORE_PATH>/srv/common/webdav</CAF_WORKER_DATASTORE_PATH>

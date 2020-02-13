@@ -334,22 +334,42 @@ thisScriptObject = {
             var component = extractSourceCallback !== undefined
                             ? extractSourceCallback(f)
                             : getCurrentWorkerName(document) + " " + getCurrentWorkerVersion(document);
-            var failureObject = {
-                ID: f.getFailureId(),
-                STACK: f.getFailureStack() || undefined,
-                WORKFLOW_ACTION: workflowAction,
-                COMPONENT: component,
-                WORKFLOW_NAME: document.getRootDocument().getField("CAF_WORKFLOW_NAME").getStringValues().get(0),
-                MESSAGE: f.getFailureMessage(),
-                DATE: new Date().toISOString(),
-                CORRELATION_ID: document.getCustomData("correlationId") || undefined
-            };
-            if (extraFailureFields) {
-                for each (var key in Object.keys(extraFailureFields)) {
-                    failureObject[key] = extraFailureFields[key];
-                }
-            };
-            document.getField("FAILURES").add(JSON.stringify(failureObject));
+            var isWarningFlag = (typeof isWarning === 'function') ? isWarning(f): false;
+            
+            if (isWarningFlag) {
+                var warningObject = {
+                    ID: f.getFailureId(),
+                    WORKFLOW_ACTION: workflowAction,
+                    COMPONENT: component,
+                    WORKFLOW_NAME: document.getRootDocument().getField("CAF_WORKFLOW_NAME").getStringValues().get(0),
+                    MESSAGE: f.getFailureMessage(),
+                    DATE: new Date().toISOString(),
+                    CORRELATION_ID: document.getCustomData("correlationId") || undefined
+                };
+                if (extraFailureFields) {
+                    for each (var key in Object.keys(extraFailureFields)) {
+                        warningObject[key] = extraFailureFields[key];
+                    }
+                };
+                document.getField("WARNINGS").add(JSON.stringify(warningObject));
+            }else {
+                var failureObject = {
+                    ID: f.getFailureId(),
+                    STACK: f.getFailureStack() || undefined,
+                    WORKFLOW_ACTION: workflowAction,
+                    COMPONENT: component,
+                    WORKFLOW_NAME: document.getRootDocument().getField("CAF_WORKFLOW_NAME").getStringValues().get(0),
+                    MESSAGE: f.getFailureMessage(),
+                    DATE: new Date().toISOString(),
+                    CORRELATION_ID: document.getCustomData("correlationId") || undefined
+                };
+                if (extraFailureFields) {
+                    for each (var key in Object.keys(extraFailureFields)) {
+                        failureObject[key] = extraFailureFields[key];
+                    }
+                };
+                document.getField("FAILURES").add(JSON.stringify(failureObject));
+            } 
         });
     }
 };

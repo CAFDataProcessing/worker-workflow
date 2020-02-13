@@ -32,19 +32,21 @@ import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.apache.commons.io.FileUtils;
 
 public class WorkflowManager {
 
     private final Map<String, Workflow> workflows;
     private final DataStore dataStore;
+    private final String contextScriptFilePath;
 
-    public WorkflowManager(final Application application, final String workflowDirectory) throws ConfigurationException {
+    public WorkflowManager(final Application application, final String workflowDirectory, final String contextScriptFilePath) throws ConfigurationException {
         dataStore = application.getService(DataStore.class);
+        this.contextScriptFilePath = contextScriptFilePath;
         workflows = getWorkflows(workflowDirectory);
     }
 
@@ -52,6 +54,11 @@ public class WorkflowManager {
         return workflows.get(workflowName);
     }
 
+    private File getContextScriptFile(final String contextScriptFilePath) {
+        return contextScriptFilePath != null ? new File(contextScriptFilePath) : null;
+
+    }
+    
     private Map<String, Workflow> getWorkflows(final String workflowsDirectory) throws ConfigurationException {
 
         final Map<String, Workflow> workflowMap = new HashMap<>();
@@ -63,6 +70,7 @@ public class WorkflowManager {
         if(Strings.isNullOrEmpty(dir.toString())){
             throw new ConfigurationException(String.format("No workflows found in [%s].", workflowsDirectory));
         }
+        File contextScriptFile = getContextScriptFile(this.contextScriptFilePath);
         final FilenameFilter filter = (final File dir1, final String name) -> name.endsWith(".yaml");
         for (final File workflowFile : dir.listFiles(filter)) {
 
@@ -83,6 +91,10 @@ public class WorkflowManager {
                             StandardCharsets.UTF_8));
                 } catch (final IOException e) {
                     throw new RuntimeException("Could not obtain workflow-control.js");
+                }
+                if (contextScriptFile != null && contextScriptFile.exists()) {
+                    final String contextScriptFileContent = FileUtils.readFileToString(contextScriptFile, StandardCharsets.UTF_8);
+                    stringBuilder.append(contextScriptFileContent);
                 }
                 workflow.setWorkflowScript(stringBuilder.toString());
 

@@ -56,7 +56,7 @@ public class WorkflowManagerTest {
                 .build();
 
         final WorkflowManager workflowManager = new WorkflowManager(document.getApplication(),
-                WorkflowDirectoryProvider.getWorkflowDirectory("workflow-manager-test"));
+                WorkflowDirectoryProvider.getWorkflowDirectory("workflow-manager-test"), null);
 
         final Workflow workflow = workflowManager.get("test-workflow");
 
@@ -90,7 +90,8 @@ public class WorkflowManagerTest {
 
         try {
             final WorkflowManager workflowManager = new WorkflowManager(document.getApplication(),
-                    WorkflowDirectoryProvider.getWorkflowDirectory("workflow-manager-duplicate-action-test"));
+                    WorkflowDirectoryProvider.getWorkflowDirectory("workflow-manager-duplicate-action-test"),
+                    null);
         } catch (ConfigurationException ex) {
             assertEquals("Duplicated action name [action_1].", ex.getMessage());
         }
@@ -104,7 +105,8 @@ public class WorkflowManagerTest {
 
         try {
             final WorkflowManager workflowManager = new WorkflowManager(document.getApplication(),
-                    WorkflowDirectoryProvider.getWorkflowDirectory("workflow-manager-no-action-name-test"));
+                    WorkflowDirectoryProvider.getWorkflowDirectory("workflow-manager-no-action-name-test"),
+                    null);
         } catch (ConfigurationException ex) {
             assertEquals("Action name is not defined for action [0].", ex.getMessage());
         }
@@ -119,7 +121,8 @@ public class WorkflowManagerTest {
         document.getField("CAF_WORKFLOW_SETTINGS").add("{}");
         
         final WorkflowManager workflowManager = new WorkflowManager(document.getApplication(),
-                                     WorkflowDirectoryProvider.getWorkflowDirectory("wokflow-worker-action-fields-test"));
+                                     WorkflowDirectoryProvider.getWorkflowDirectory("wokflow-worker-action-fields-test"),
+                                     null);
 
         final Workflow workflow = workflowManager.get("test-workflow");
         
@@ -140,7 +143,8 @@ public class WorkflowManagerTest {
         document.getField("CAF_WORKFLOW_SETTINGS").add("{}");
         
         final WorkflowManager workflowManager = new WorkflowManager(document.getApplication(),
-                                     WorkflowDirectoryProvider.getWorkflowDirectory("workflow-manager-test"));
+                                    WorkflowDirectoryProvider.getWorkflowDirectory("workflow-manager-test"),
+                                    null);
 
         final Workflow workflow = workflowManager.get("test-workflow");
         final String workflowScript = workflow.getWorkflowScript();
