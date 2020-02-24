@@ -35,7 +35,7 @@ public final class WorkflowWorkerConfiguration
      */
     @NotNull
     private String settingsServiceUrl;
-    
+
     private String contextScriptFilePath;
 
     public String getContextScriptFilePath()

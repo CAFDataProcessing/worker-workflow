@@ -25,6 +25,9 @@ import com.hpe.caf.api.ConfigurationException;
 import com.hpe.caf.api.worker.DataStore;
 import com.hpe.caf.api.worker.DataStoreException;
 import com.hpe.caf.worker.document.model.Application;
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
@@ -37,19 +40,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.io.FileUtils;
 
 public class WorkflowManager {
 
+    private final static Logger LOG = LoggerFactory.getLogger(WorkflowManager.class);
+
     private final Map<String, Workflow> workflows;
     private final DataStore dataStore;
-    private final String contextScriptFilePath;
 
-    public WorkflowManager(final Application application, final String workflowDirectory, final String contextScriptFilePath) 
+    public WorkflowManager(final Application application, final String workflowDirectory, final String contextScriptFilePath)
                            throws ConfigurationException {
         dataStore = application.getService(DataStore.class);
-        this.contextScriptFilePath = contextScriptFilePath;
-        workflows = getWorkflows(workflowDirectory);
+        workflows = getWorkflows(workflowDirectory, contextScriptFilePath);
     }
 
     public Workflow get(final String workflowName){
@@ -59,8 +61,9 @@ public class WorkflowManager {
     private File getContextScriptFile(final String contextScriptFilePath) {
         return contextScriptFilePath != null ? new File(contextScriptFilePath) : null;
     }
-    
-    private Map<String, Workflow> getWorkflows(final String workflowsDirectory) throws ConfigurationException {
+
+    private Map<String, Workflow> getWorkflows(final String workflowsDirectory, final String contextScriptFilePath)
+            throws ConfigurationException {
 
         final Map<String, Workflow> workflowMap = new HashMap<>();
         final Yaml yaml = new Yaml();
@@ -71,7 +74,7 @@ public class WorkflowManager {
         if(Strings.isNullOrEmpty(dir.toString())){
             throw new ConfigurationException(String.format("No workflows found in [%s].", workflowsDirectory));
         }
-        final File contextScriptFile = getContextScriptFile(this.contextScriptFilePath);
+        final File contextScriptFile = getContextScriptFile(contextScriptFilePath);
         final FilenameFilter filter = (final File dir1, final String name) -> name.endsWith(".yaml");
         for (final File workflowFile : dir.listFiles(filter)) {
 
@@ -87,15 +90,18 @@ public class WorkflowManager {
 
                 final StringBuilder stringBuilder = new StringBuilder();
                 stringBuilder.append(String.format("var ACTIONS = %s;\n", gson.toJson(workflow.getActions())));
+
+                if (contextScriptFile != null && contextScriptFile.exists()) {
+                    LOG.warn("Context script file from the path " + contextScriptFilePath + " not found.");
+                    final String contextScriptFileContent = FileUtils.readFileToString(contextScriptFile, StandardCharsets.UTF_8);
+                    stringBuilder.append(contextScriptFileContent);
+                }
+
                 try {
                     stringBuilder.append(Resources.toString(Resources.getResource("workflow-control.js"),
                             StandardCharsets.UTF_8));
                 } catch (final IOException e) {
                     throw new RuntimeException("Could not obtain workflow-control.js");
-                }
-                if (contextScriptFile != null && contextScriptFile.exists()) {
-                    final String contextScriptFileContent = FileUtils.readFileToString(contextScriptFile, StandardCharsets.UTF_8);
-                    stringBuilder.append(contextScriptFileContent);
                 }
                 workflow.setWorkflowScript(stringBuilder.toString());
 
