@@ -43,7 +43,7 @@ import java.util.Map;
 
 public class WorkflowManager {
 
-    private final static Logger LOG = LoggerFactory.getLogger(WorkflowManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(WorkflowManager.class);
 
     private final Map<String, Workflow> workflows;
     private final DataStore dataStore;
@@ -58,7 +58,7 @@ public class WorkflowManager {
         return workflows.get(workflowName);
     }
 
-    private File getContextScriptFile(final String contextScriptFilePath) {
+    private static File getContextScriptFile(final String contextScriptFilePath) {
         return contextScriptFilePath != null ? new File(contextScriptFilePath) : null;
     }
 
@@ -92,9 +92,10 @@ public class WorkflowManager {
                 stringBuilder.append(String.format("var ACTIONS = %s;\n", gson.toJson(workflow.getActions())));
 
                 if (contextScriptFile != null && contextScriptFile.exists()) {
-                    LOG.warn("Context script file from the path " + contextScriptFilePath + " not found.");
                     final String contextScriptFileContent = FileUtils.readFileToString(contextScriptFile, StandardCharsets.UTF_8);
                     stringBuilder.append(contextScriptFileContent);
+                }else{
+                    LOG.warn("Context script file from the path " + contextScriptFilePath + " not found.");
                 }
 
                 try {
