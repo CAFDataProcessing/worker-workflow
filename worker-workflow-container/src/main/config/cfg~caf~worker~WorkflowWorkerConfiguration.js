@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 ({
+    contextScriptFilePath: getenv("CAF_WORKFLOW_WORKER_CONTEXT_JAVASCRIPT_PATH") || undefined,
     workflowsDirectory: getenv("CAF_WORKFLOW_WORKER_WORKFLOWS_DIRECTORY") || undefined,
     settingsServiceUrl: getenv("CAF_SETTINGS_SERVICE_URL") || undefined
 });

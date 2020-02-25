@@ -124,6 +124,36 @@ public final class FailureFieldsManagerTest
                                                      "original message 1", null);
         assertEquals(failureRep, gson.fromJson(firstFailure, FailureRep.class));
     }
+    
+    @Test
+    public void callingAddFailuresFromOutsideScriptForWarnings() throws Exception
+    {
+        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl(
+            "function extractSource(failure){return \"KV:13\"}",
+            "function isWarning(failure) {var warnings = [\"KV:7\", \"KV:8\", \"KV:10\", \"KV:11\", \"KV:13\"]; return warnings.indexOf(failure.failureId) !== -1;}",
+            "function testDocument(document, failures, source){thisScriptObject.addFailures(document, failures, extractSource, source);}");
+
+        // doc with one original failure
+        final Document builderDoc = DocumentBuilder.fromFile(
+            Paths.get("src", "test", "resources", "input-document-with-subdoc-for-warning-test.json").toString()).build();
+
+        final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(),
+                                                                null, builderDoc.getSubdocuments(), builderDoc, builderDoc, true, true);
+        invocable.invokeFunction("testDocument", document, document.getFailures(), "on_premise");
+
+        assertEquals(document.getField("WARNINGS").getValues().stream().filter(x -> !x.getStringValue().isEmpty()).count(), 1L);
+
+        final String firstWarning = document.getField("WARNINGS").getValues()
+            .stream()
+            .filter(v -> !v.getStringValue().isEmpty())
+            .map(v -> v.getStringValue())
+            .findFirst()
+            .get();
+        final WarningRep firstWarningRep = gson.fromJson(firstWarning, WarningRep.class);
+        final WarningRep warningRep = new WarningRep("KV:13", "on_premise", "KV:13", "example_workflow",
+                                                     "Failed to open KV stream: No reader available for this format", null);
+        assertEquals(warningRep, firstWarningRep);
+    }
 }
 
 final class FailureRep extends Object
@@ -172,3 +202,48 @@ final class FailureRep extends Object
         return hash;
     }
 }
+
+final class WarningRep extends Object
+{
+    private final String ID;
+    private final String WORKFLOW_ACTION;
+    private final String COMPONENT;
+    private final String WORKFLOW_NAME;
+    private final String MESSAGE;
+    private final String DATE;
+
+    public WarningRep(final String ID, final String WORKFLOW_ACTION, final String COMPONENT,
+                      final String WORKFLOW_NAME, final String MESSAGE, final String DATE)
+    {
+        this.ID = ID;
+        this.WORKFLOW_ACTION = WORKFLOW_ACTION;
+        this.COMPONENT = COMPONENT;
+        this.WORKFLOW_NAME = WORKFLOW_NAME;
+        this.MESSAGE = MESSAGE;
+        this.DATE = DATE;
+    }
+
+    @Override
+    public boolean equals(final Object obj)
+    {
+        final WarningRep passedRep = (WarningRep) obj;
+        return this.ID.equals(passedRep.ID) 
+            && this.WORKFLOW_ACTION.equals(passedRep.WORKFLOW_ACTION)
+            && this.WORKFLOW_NAME.equals(passedRep.WORKFLOW_NAME)
+            && this.COMPONENT.equals(passedRep.COMPONENT)
+            && this.MESSAGE.equals(passedRep.MESSAGE);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int hash = 3;
+        hash = 67 * hash + Objects.hashCode(this.ID);
+        hash = 67 * hash + Objects.hashCode(this.WORKFLOW_ACTION);
+        hash = 67 * hash + Objects.hashCode(this.COMPONENT);
+        hash = 67 * hash + Objects.hashCode(this.WORKFLOW_NAME);
+        hash = 67 * hash + Objects.hashCode(this.MESSAGE);
+        return hash;
+    }
+}
+

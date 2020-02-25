@@ -55,3 +55,4 @@ Further Workflow Worker container configuration that can be controlled through e
 | Property | Description | Checked Environment Variables                        | Default               |
 |----------|--------|------------------------------------------------------|-----------------------|
 | workflowsDirectory | The location within the container that the workflow scripts can be found. | CAF_WORKFLOW_WORKER_WORKFLOW_DIRECTORY | undefined |
+| contextScriptFilePath | The location within the container that the context script can be found. | CAF_WORKFLOW_WORKER_CONTEXT_JAVASCRIPT_PATH | undefined |

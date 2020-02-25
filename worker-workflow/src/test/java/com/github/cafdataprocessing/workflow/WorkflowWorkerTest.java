@@ -55,7 +55,8 @@ public class WorkflowWorkerTest
             final Document document = DocumentBuilder.configure().build();
             workflowWorker = new WorkflowWorker(
                     workflowWorkerConfiguration,
-                    new WorkflowManager(document.getApplication(), workflowWorkerConfiguration.getWorkflowsDirectory()),
+                    new WorkflowManager(document.getApplication(), workflowWorkerConfiguration.getWorkflowsDirectory(),
+                        workflowWorkerConfiguration.getContextScriptFilePath()),
                     new ScriptManager(),
                     argumentsManager,
                     new FailureFieldsManager());

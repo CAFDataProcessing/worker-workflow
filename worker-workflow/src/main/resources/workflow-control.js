@@ -334,9 +334,9 @@ thisScriptObject = {
             var component = extractSourceCallback !== undefined
                             ? extractSourceCallback(f)
                             : getCurrentWorkerName(document) + " " + getCurrentWorkerVersion(document);
-            var failureObject = {
+            var isWarningFlag = (typeof isWarning === 'function') ? isWarning(f): false;
+            var errorObject = {
                 ID: f.getFailureId(),
-                STACK: f.getFailureStack() || undefined,
                 WORKFLOW_ACTION: workflowAction,
                 COMPONENT: component,
                 WORKFLOW_NAME: document.getRootDocument().getField("CAF_WORKFLOW_NAME").getStringValues().get(0),
@@ -344,12 +344,18 @@ thisScriptObject = {
                 DATE: new Date().toISOString(),
                 CORRELATION_ID: document.getCustomData("correlationId") || undefined
             };
-            if (extraFailureFields) {
-                for each (var key in Object.keys(extraFailureFields)) {
-                    failureObject[key] = extraFailureFields[key];
+
+            if (!isWarningFlag) {
+                errorObject["STACK"] = f.getFailureStack() || undefined;
+                if (extraFailureFields) {
+                    for each (var key in Object.keys(extraFailureFields)) {
+                        errorObject[key] = extraFailureFields[key];
+                    }
                 }
-            };
-            document.getField("FAILURES").add(JSON.stringify(failureObject));
+                document.getField("FAILURES").add(JSON.stringify(errorObject));
+            } else {
+                document.getField("WARNINGS").add(JSON.stringify(errorObject));
+            }
         });
     }
 };

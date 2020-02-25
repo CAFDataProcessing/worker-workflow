@@ -1,0 +1,67 @@
+{
+    "document": {
+        "reference": "ref_1_file",
+        "fields": {
+            "CAF_WORKFLOW_ACTION": [{
+                    "data": "family_hashing"
+                }
+            ],
+            "CAF_WORKFLOW_NAME": [{
+                    "data": "example_workflow",
+                    "encoding": "utf8"
+                }
+            ],
+            "FAILURES": []
+        },
+        "failures": [{
+                "failureId": "KV:13",
+                "failureMessage": "Failed to open KV stream: No reader available for this format",
+                "failureStack": ""
+            }],
+        "subdocuments": [
+            {
+                "reference": "ref_1_subdoc",
+                "fields": {
+                    "CAF_WORKFLOW_ACTION": [{
+                            "data": "family_hashing"
+                        }
+                    ],
+                    "CAF_WORKFLOW_NAME": [{
+                            "data": "example_workflow",
+                            "encoding": "utf8"
+                        }
+                    ],
+                    "FAILURES": []
+                },
+                "failures": [{
+                        "failureId": "KV:13",
+                        "failureMessage": "Failed to open KV stream: No reader available for this format",
+                        "failureStack": ""
+                    }]
+            },
+            {
+                "reference": "ref_2_subdoc",
+                "fields": {
+                    "CAF_WORKFLOW_ACTION": [{
+                            "data": "family_hashing"
+                        }
+                    ],
+                    "CAF_WORKFLOW_NAME": [{
+                            "data": "example_workflow",
+                            "encoding": "utf8"
+                        }
+                    ],
+                    "FAILURES": []
+                },
+                "failures": [{
+                        "failureId": "KV:13",
+                        "failureMessage": "Failed to open KV stream: No reader available for this format",
+                        "failureStack": ""
+                    }]
+            }
+        ]
+    },
+    "customData": {
+        "tenantId": "tenant1"
+    }
+}
