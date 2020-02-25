@@ -93,7 +93,8 @@ public class WorkflowManager {
 
                 if (contextScriptFile != null) {
                     if (contextScriptFile.exists()) {
-                        final String contextScriptFileContent = FileUtils.readFileToString(contextScriptFile, StandardCharsets.UTF_8);
+                        final String contextScriptFileContent = FileUtils.readFileToString(contextScriptFile,
+                                                                                           StandardCharsets.UTF_8);
                         stringBuilder.append(contextScriptFileContent);
                     } else {
                         LOG.warn("The context script file from the path {} does not exist.", contextScriptFilePath);
