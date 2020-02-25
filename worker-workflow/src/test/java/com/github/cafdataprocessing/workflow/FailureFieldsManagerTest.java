@@ -149,7 +149,7 @@ public final class FailureFieldsManagerTest
             .map(v -> v.getStringValue())
             .findFirst()
             .get();
-        WarningRep firstWarningRep = gson.fromJson(firstWarning, WarningRep.class);
+        final WarningRep firstWarningRep = gson.fromJson(firstWarning, WarningRep.class);
         final WarningRep warningRep = new WarningRep("KV:13", "on_premise", "KV:13", "example_workflow",
                                                      "Failed to open KV stream: No reader available for this format", null);
         assertEquals(warningRep, firstWarningRep);
