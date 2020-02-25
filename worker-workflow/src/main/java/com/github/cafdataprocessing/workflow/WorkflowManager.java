@@ -92,12 +92,11 @@ public class WorkflowManager {
                 stringBuilder.append(String.format("var ACTIONS = %s;\n", gson.toJson(workflow.getActions())));
 
                 if (contextScriptFile != null) {
-                    if (!contextScriptFile.exists()) {
-                        LOG.warn(String.format("Context script file from the path [%s] does not exist.",
-                                               contextScriptFilePath));
-                    } else {
+                    if (contextScriptFile.exists()) {
                         final String contextScriptFileContent = FileUtils.readFileToString(contextScriptFile, StandardCharsets.UTF_8);
                         stringBuilder.append(contextScriptFileContent);
+                    } else {
+                        LOG.warn("The context script file from the path {} does not exist.", contextScriptFilePath);
                     }
                 }
 
