@@ -34,7 +34,6 @@
         <settingsServiceAdminUrl>http://${docker.host.address}:${settings.service.admin.port}</settingsServiceAdminUrl>
         <maven.install.skip>true</maven.install.skip>
         <maven.deploy.skip>true</maven.deploy.skip>
-        <postgresDbName>workflow</postgresDbName>
         <settingsPostgresDbName>settings</settingsPostgresDbName>
         <postgresDbPassword>root</postgresDbPassword>
         <postgresDbUser>root</postgresDbUser>
@@ -275,7 +274,7 @@
                         <!-- Settings database -->
                         <image>
                             <alias>settings-db</alias>
-                            <name>postgres:9.4</name>
+                            <name>postgres:9.6</name>
                             <run>
                                 <ports>
                                     <port>${settings.postgres.db.port}:5432</port>
@@ -283,10 +282,11 @@
                                 <env>
                                     <POSTGRES_PASSWORD>${postgresDbPassword}</POSTGRES_PASSWORD>
                                     <POSTGRES_USER>${postgresDbUser}</POSTGRES_USER>
+                                    <POSTGRES_DB>${settingsPostgresDbName}</POSTGRES_DB>
                                 </env>
                                 <wait>
-                                    <!--<log>PostgreSQL init process complete</log>-->
-                                    <time>10000</time>
+                                    <log>PostgreSQL init process complete</log>
+                                    <time>120000</time>
                                     <shutdown>500</shutdown>
                                 </wait>
                                 <log>
