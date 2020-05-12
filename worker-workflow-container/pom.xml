@@ -274,7 +274,7 @@
                         <!-- Settings database -->
                         <image>
                             <alias>settings-db</alias>
-                            <name>postgres:9.6</name>
+                            <name>postgres:11.7</name>
                             <run>
                                 <ports>
                                     <port>${settings.postgres.db.port}:5432</port>
