@@ -317,7 +317,7 @@
                                         <url>${settingsServiceAdminUrl}/healthcheck</url>
                                         <method>GET</method>
                                     </http>
-                                    <time>40000</time>
+                                    <time>120000</time>
                                     <shutdown>500</shutdown>
                                 </wait>
                                 <links>
