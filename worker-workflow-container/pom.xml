@@ -334,7 +334,7 @@
                             <alias>worker-workflow</alias>
                             <name>${worker-workflow.container.name}</name>
                             <build>
-                                <from>cafinternal/prereleases:opensuse-jre11-3.0.0-SNAPSHOT</from>
+                                <from>cafapi/opensuse-jre11:3</from>
                                 <labels>
                                     <Build.Number>${project.version}</Build.Number>
                                     <Build.Date>${maven.build.timestamp}</Build.Date>
