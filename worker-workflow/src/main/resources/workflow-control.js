@@ -124,8 +124,8 @@ function onError(errorEventObj) {
     rootDoc.failures.add("UNHANDLED_ERROR", message, errorEventObj.error);
     if (!isLastAction(errorEventObj.rootDocument.getField("CAF_WORKFLOW_ACTION").getStringValues().get(0))) {
         errorEventObj.handled = true;
+        traverseDocumentForFailures(rootDoc);
     }
-    traverseDocumentForFailures(rootDoc);
     routeTask(errorEventObj.rootDocument);
 }
 
