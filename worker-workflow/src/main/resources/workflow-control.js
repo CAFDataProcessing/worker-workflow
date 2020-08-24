@@ -122,7 +122,9 @@ function onError(errorEventObj) {
     var rootDoc = errorEventObj.rootDocument;
     var message = errorEventObj.error.getMessage();
     rootDoc.failures.add("UNHANDLED_ERROR", message, errorEventObj.error);
-    errorEventObj.handled = true;
+    if (!isLastAction(errorEventObj.rootDocument.getField("CAF_WORKFLOW_ACTION").getStringValues().get(0))) {
+        errorEventObj.handled = true;
+    }
     traverseDocumentForFailures(rootDoc);
     routeTask(errorEventObj.rootDocument);
 }
