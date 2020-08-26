@@ -397,7 +397,7 @@
                                     <CAF_WORKFLOW_WORKER_WORKFLOWS_DIRECTORY>/maven/workflows</CAF_WORKFLOW_WORKER_WORKFLOWS_DIRECTORY>
                                     <CAF_RABBITMQ_PREFETCH_BUFFER>1000</CAF_RABBITMQ_PREFETCH_BUFFER>
                                     <CAF_WORKER_DATASTORE_PATH>/srv/common/webdav</CAF_WORKER_DATASTORE_PATH>
-                                    <CAF_WORKER_JAVA_OPTS>-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005</CAF_WORKER_JAVA_OPTS>
+                                    <CAF_WORKER_JAVA_OPTS>-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005</CAF_WORKER_JAVA_OPTS>
                                     <CAF_WORKER_MAX_BATCH_SIZE>2</CAF_WORKER_MAX_BATCH_SIZE>
                                     <CAF_WORKER_MAX_BATCH_TIME>5000</CAF_WORKER_MAX_BATCH_TIME>
                                     <CAF_WORKER_RETRY_LIMIT>2</CAF_WORKER_RETRY_LIMIT>
