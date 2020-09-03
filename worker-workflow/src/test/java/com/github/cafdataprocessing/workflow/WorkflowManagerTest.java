@@ -28,7 +28,10 @@ import com.google.common.io.Resources;
 import com.hpe.caf.worker.document.model.Failure;
 import com.hpe.caf.worker.document.scripting.events.CancelableDocumentEventObject;
 import com.microfocus.darwin.settings.client.SettingsApi;
+import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
 import org.apache.commons.io.IOUtils;
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.HostAccess;
 import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
@@ -153,7 +156,14 @@ public class WorkflowManagerTest {
 
     private static void executeOnBeforeProcessDocumentScript(String workflowScript, Document document)
     {
-        final ScriptEngine scriptEngine = new ScriptEngineManager().getEngineByName("nashorn");
+        final ScriptEngine scriptEngine = GraalJSScriptEngine.create(
+                null,
+                Context.newBuilder("js")
+                    .allowExperimentalOptions(true) // Needed for loading from classpath
+                    .option("js.nashorn-compat", "true")
+                    .allowHostAccess(HostAccess.ALL) // Allow JS access to public Java methods/members
+                    .allowHostClassLookup(s -> true) // Allow JS access to public Java classes
+                    .option("js.syntax-extensions", "true"));
         final Invocable invocable = (Invocable) scriptEngine;
         try {
             scriptEngine.eval(workflowScript);

@@ -46,7 +46,11 @@ import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+
+import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
 import org.apache.commons.collections4.CollectionUtils;
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.HostAccess;
 
 public class WorkflowHelper
 {
@@ -63,7 +67,7 @@ public class WorkflowHelper
      */
     public static Invocable createInvocableNashornEngineWithActionsAndWorkflowControl() throws IOException, ScriptException
     {
-        final ScriptEngine nashorn = new ScriptEngineManager().getEngineByName("nashorn");
+        final ScriptEngine nashorn = getScriptEngine();
         nashorn.eval("var actionFamilyHashing = {name: \"family_hashing\", terminateOnFailure: false};\n"
             + "var actionBulkIndexer = {name: \"bulk_indexer\", terminateOnFailure: true};\n"
             + "var actionElastic = {name: \"elastic\", terminateOnFailure: false};\n"
@@ -85,7 +89,7 @@ public class WorkflowHelper
     public static Invocable createInvocableNashornEngineWithActionsAndWorkflowControl(final String... scripts)
         throws IOException, ScriptException
     {
-        final ScriptEngine nashorn = new ScriptEngineManager().getEngineByName("nashorn");
+        final ScriptEngine nashorn = getScriptEngine();
         nashorn.eval("var actionFamilyHashing = {name: \"family_hashing\", terminateOnFailure: false};\n"
             + "var actionBulkIndexer = {name: \"bulk_indexer\", terminateOnFailure: true};\n"
             + "var actionElastic = {name: \"elastic\", terminateOnFailure: false};\n"
@@ -110,7 +114,7 @@ public class WorkflowHelper
     public static Invocable createInvocableNashornEngine(final List<String> codesToEval, final List<Path> filesToReadAndEval)
         throws IOException, ScriptException
     {
-        final ScriptEngine nashorn = new ScriptEngineManager().getEngineByName("nashorn");
+        final ScriptEngine nashorn = getScriptEngine();
         if (CollectionUtils.isNotEmpty(codesToEval)) {
             for (final String code : codesToEval) {
                 nashorn.eval(code);
@@ -210,5 +214,16 @@ public class WorkflowHelper
             = new SubdocumentMock(reference, fields, task, new HashMap<>(), failures, subdocuments, application, parentDoc, rootDoc);
         task.setDocument(temp);
         return temp;
+    }
+
+    private static ScriptEngine getScriptEngine() {
+        return GraalJSScriptEngine.create(
+            null,
+            Context.newBuilder("js")
+                .allowExperimentalOptions(true) // Needed for loading from classpath
+                .option("js.nashorn-compat", "true")
+                .allowHostAccess(HostAccess.ALL) // Allow JS access to public Java methods/members
+                .allowHostClassLookup(s -> true) // Allow JS access to public Java classes
+                .option("js.syntax-extensions", "true"));
     }
 }
