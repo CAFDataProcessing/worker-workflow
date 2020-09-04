@@ -52,6 +52,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.IsNull.nullValue;
+
+import org.graalvm.polyglot.PolyglotException;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class WorkflowControlTest
@@ -342,7 +345,7 @@ public class WorkflowControlTest
                    isJsonStringMatching(jsonObject().where("CORRELATION_ID", is(jsonMissing()))));
     }
 
-    @Test(expected = IndexOutOfBoundsException.class)
+    @Test
     public void failuresNegativeNoWorkflowNameFieldTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
         // this method fails because there is not the CAF_WORKFLOW_NAME field
@@ -363,11 +366,16 @@ public class WorkflowControlTest
 
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null,
                                                                 null, builderDoc, builderDoc, true, true);
-
-        invocable.invokeFunction("processFailures", document);
+        try {
+            invocable.invokeFunction("processFailures", document);
+        } catch (final ScriptException e) {
+            Assert.assertTrue(e.getMessage().contains("Index 0 out of bounds for length 0"));
+            return;
+        }
+        Assert.fail("Exception not thrown");
     }
 
-    @Test(expected = IndexOutOfBoundsException.class)
+    @Test
     public void failuresNegativeNoWorkflowActionFieldTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
         // this method fails because there is not a CAF_WORKFLOW_ACTION field
@@ -389,7 +397,13 @@ public class WorkflowControlTest
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null,
                                                                 null, builderDoc, builderDoc, true, true);
 
-        invocable.invokeFunction("processFailures", document);
+        try {
+            invocable.invokeFunction("processFailures", document);
+        } catch (final ScriptException e) {
+            Assert.assertTrue(e.getMessage().contains("Index 0 out of bounds for length 0"));
+            return;
+        }
+        Assert.fail("Exception not thrown");
     }
 
     @Test
