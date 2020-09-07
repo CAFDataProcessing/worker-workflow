@@ -221,9 +221,8 @@ public class WorkflowHelper
             null,
             Context.newBuilder("js")
                 .allowExperimentalOptions(true) // Needed for loading from classpath
-                .option("js.nashorn-compat", "true")
                 .allowHostAccess(HostAccess.ALL) // Allow JS access to public Java methods/members
                 .allowHostClassLookup(s -> true) // Allow JS access to public Java classes
-                .option("js.syntax-extensions", "true"));
+                .option("js.load-from-classpath", "true"));
     }
 }

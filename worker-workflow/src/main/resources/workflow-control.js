@@ -13,15 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/* global Java, java, thisScript */
-
-if(!ACTIONS){
-    throw new java.lang.UnsupportedOperationException ("Workflow script must define an ACTIONS object.");
-}
-
+/* global Java, thisScript */
+var UnsupportedOperationException = Java.type("java.lang.UnsupportedOperationException");
+var RuntimeException = Java.type("java.lang.RuntimeException");
+var ArrayList = Java.type("java.util.ArrayList");
 var URL = Java.type("java.net.URL");
 var MDC = Java.type("org.slf4j.MDC");
 var UUID = Java.type("java.util.UUID");
+var ScriptEngineType = Java.type("com.hpe.caf.worker.document.model.ScriptEngineType");
+
+if(!ACTIONS){
+    throw new UnsupportedOperationException ("Workflow script must define an ACTIONS object.");
+}
 
 function onProcessTask(e) {
     addMdcLoggingData(e);
@@ -65,7 +68,7 @@ function addMdcLoggingData(e) {
 function isBulkWorker(e) {
     var workflowActionField = e.rootDocument.getField("CAF_WORKFLOW_ACTION");
     if (!workflowActionField.hasValues()) {
-        throw new java.lang.UnsupportedOperationException("Document must contain field CAF_WORKFLOW_ACTION.");
+        throw new UnsupportedOperationException("Document must contain field CAF_WORKFLOW_ACTION.");
     }
     return workflowActionField.getStringValues().get(0).indexOf("bulk") !== -1;
 }
@@ -83,7 +86,7 @@ function removeMdcLoggingData() {
 function onBeforeProcessDocument(e) {
     //Get the action from ACTIONS, use the value of CAF_WORKFLOW_ACTION to know the name of the action
     if(!e.rootDocument.getField("CAF_WORKFLOW_ACTION").hasValues())
-        throw new java.lang.UnsupportedOperationException("Document must contain field CAF_WORKFLOW_ACTION.");
+        throw new UnsupportedOperationException("Document must contain field CAF_WORKFLOW_ACTION.");
     var index = ACTIONS.map(function (x) {
                 return x.name;
             }).indexOf(e.rootDocument.getField("CAF_WORKFLOW_ACTION").getStringValues().get(0));
@@ -94,8 +97,8 @@ function onBeforeProcessDocument(e) {
     }
 
     var args = extractArguments(e.rootDocument);
-
-    e.cancel = ! eval(action.conditionFunction)(e.document, args);
+    eval(action.conditionFunction);
+    e.cancel = ! condition(e.document, args);
 }
 
 function onProcessDocument(e) {
@@ -108,9 +111,9 @@ function onProcessDocument(e) {
 
 function traverseDocumentForSettingWorkerVersion(document) {
     setWorkerVersion(document);
-    for each(var subdoc in document.subdocuments) {
+    document.getSubdocuments().forEach(function (subdoc) {
         traverseDocumentForSettingWorkerVersion(subdoc);
-    }
+    });
 }
 
 function setWorkerVersion(document) {
@@ -121,7 +124,7 @@ function setWorkerVersion(document) {
 function onError(errorEventObj) {
     var rootDoc = errorEventObj.rootDocument;
     var message = errorEventObj.error.getMessage();
-    rootDoc.failures.add("UNHANDLED_ERROR", message, errorEventObj.error);
+    rootDoc.getFailures().add("UNHANDLED_ERROR", message, errorEventObj.error);
     if (!isLastAction(errorEventObj.rootDocument.getField("CAF_WORKFLOW_ACTION").getStringValues().get(0))) {
         errorEventObj.handled = true;
         traverseDocumentForFailures(rootDoc);
@@ -170,12 +173,12 @@ function extractArguments(document){
     var rootDocument = document.getRootDocument();
     var argumentsJson = rootDocument.getField("CAF_WORKFLOW_SETTINGS").getStringValues().stream().findFirst()
             .orElseThrow(function () {
-                throw new java.lang.UnsupportedOperationException
+                throw new UnsupportedOperationException
                 ("Document must contain field CAF_WORKFLOW_SETTINGS.");
             });
 
     if (argumentsJson === undefined) {
-        throw new java.lang.UnsupportedOperationException("Document must contain field CAF_WORKFLOW_SETTINGS.");
+        throw new UnsupportedOperationException("Document must contain field CAF_WORKFLOW_SETTINGS.");
     }
 
     return JSON.parse(argumentsJson);
@@ -192,7 +195,12 @@ function extractFailureSubfields(document) {
 
 function anyDocumentMatches(conditionFunction, document, args){
 
-    if (eval(conditionFunction)(document, args)) {
+    //Test the condition string defines a function called 'condition'
+    if(! conditionFunction.match(/function\s+condition\s*\(/)) {
+        return false; //Should this be an exception?
+    }
+    eval(conditionFunction);
+    if (condition(document, args)) {
         return true;
     }
 
@@ -244,26 +252,31 @@ function applyActionDetails(document, actionDetails, terminateOnFailure) {
     // Update document destination queue to that specified by action and pass appropriate settings and customData
     var queueToSet = actionDetails.queueName;
     var response = document.getTask().getResponse();
-    response.successQueue.set(queueToSet);
+    response.getSuccessQueue().set(queueToSet);
     if (!terminateOnFailure){
-        response.failureQueue.set(queueToSet);
+        response.getFailureQueue().set(queueToSet);
     }   
-    response.customData.putAll(responseCustomData);
+    response.getCustomData().putAll(responseCustomData);
 
     // Add any scripts specified on the action
     if (actionDetails.scripts && actionDetails.scripts.length != 0) {
-        for each(var scriptToAdd in actionDetails.scripts) {
+        for (var scriptToAdd of actionDetails.scripts) {
             var scriptObjectAdded = document.getTask().getScripts().add();
             scriptObjectAdded.setName(scriptToAdd.name);
 
+            var scriptEngine = ScriptEngineType.NASHORN;
+            if (scriptToAdd.engine !== undefined) {
+                scriptEngine = ScriptEngineType.valueOf(scriptToAdd.engine);
+            }
+
             if (scriptToAdd.script !== undefined) {
-                scriptObjectAdded.setScriptInline(scriptToAdd.script);
+                scriptObjectAdded.setScriptInline(scriptToAdd.script, scriptEngine);
             } else if (scriptToAdd.storageRef !== undefined) {
-                scriptObjectAdded.setScriptByReference(scriptToAdd.storageRef);
+                scriptObjectAdded.setScriptByReference(scriptToAdd.storageRef, scriptEngine);
             } else if (scriptToAdd.url !== undefined) {
-                scriptObjectAdded.setScriptByUrl(new URL(scriptToAdd.url));
+                scriptObjectAdded.setScriptByUrl(new URL(scriptToAdd.url), scriptEngine);
             } else {
-                throw new java.lang.RuntimeException("Invalid script definition on action. No valid script value source.");
+                throw new RuntimeException("Invalid script definition on action. No valid script value source.");
             }
 
             scriptObjectAdded.install();
@@ -285,26 +298,28 @@ function onAfterProcessDocument(e) {
 
 function traverseDocumentForFailures(document) {
     processFailures(document);
-    for each(var subdoc in document.getSubdocuments()) {
-        traverseDocumentForFailures(subdoc);
+    if (document.getSubdocuments()) {
+        document.getSubdocuments().forEach(function (subdoc){
+            traverseDocumentForFailures(subdoc);
+        });
     }
 }
 
 function processFailures(document) {
     if (document.getFailures().isChanged()) {
 
-        var listOfFailures = new java.util.ArrayList();
+        var listOfFailures = new ArrayList();
         document.getFailures().stream().forEach(function (failure) {
             listOfFailures.add(failure);
         });
 
         document.getFailures().reset();
 
-        var listOfOriginalFailures = new java.util.ArrayList();
+        var listOfOriginalFailures = new ArrayList();
         document.getFailures().stream().forEach(function (failure) {
             listOfOriginalFailures.add(failure);
         });
-        var newFailures = new java.util.ArrayList();
+        var newFailures = new ArrayList();
         listOfFailures.stream().forEach(function(failure) {
            if(!isFailureInOriginal(listOfOriginalFailures, failure)){
                newFailures.add(failure);
@@ -315,7 +330,7 @@ function processFailures(document) {
 }
 
 function isFailureInOriginal(listOfOriginalFailures, newFailure) {
-    for each(var failure in listOfOriginalFailures) {
+    for (var failure of listOfOriginalFailures) {
         if (newFailure.getFailureId() === failure.getFailureId()
                 && newFailure.getFailureMessage() === failure.getFailureMessage()
                 && newFailure.getFailureStack() === failure.getFailureStack()) {
@@ -350,7 +365,7 @@ thisScriptObject = {
             if (!isWarningFlag) {
                 errorObject["STACK"] = f.getFailureStack() || undefined;
                 if (extraFailureFields) {
-                    for each (var key in Object.keys(extraFailureFields)) {
+                    for (var key of Object.keys(extraFailureFields)) {
                         errorObject[key] = extraFailureFields[key];
                     }
                 }
@@ -367,13 +382,13 @@ function isLastAction(action) {
 }
 
 function getCurrentWorkerName(document) {
-    return document.application.name
+    return document.getApplication().getName()
             || document.getApplication().getService(com.hpe.caf.api.ConfigurationSource.class)
             .getConfiguration(com.hpe.caf.worker.document.config.DocumentWorkerConfiguration.class).getWorkerName();
 }
 
 function getCurrentWorkerVersion(document) {
-    return document.application.version
+    return document.getApplication().getVersion()
             || document.getApplication().getService(com.hpe.caf.api.ConfigurationSource.class)
             .getConfiguration(com.hpe.caf.worker.document.config.DocumentWorkerConfiguration.class).getWorkerVersion();
 }
@@ -396,7 +411,7 @@ function fieldHasStringValue(document, fieldName, value) {
     var fieldValues = document.getField(fieldName).getValues();
     if (fieldValues)
     {
-        for each(var fieldValue in fieldValues) {
+        for (var fieldValue of fieldValues) {
             if (fieldValue.isStringValue() && fieldValue.getStringValue() === value) {
                 return true;
             }

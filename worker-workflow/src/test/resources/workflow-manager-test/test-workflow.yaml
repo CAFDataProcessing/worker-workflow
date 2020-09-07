@@ -64,7 +64,7 @@ actions:
           }
   - name: lang_detect
     conditionFunction: |
-      function (document) {
+      function condition (document) {
         return fieldExists(document, 'CONTENT_PRIMARY');
       }
     customData:
