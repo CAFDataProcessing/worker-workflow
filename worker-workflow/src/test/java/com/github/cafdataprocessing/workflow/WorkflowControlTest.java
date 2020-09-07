@@ -369,7 +369,10 @@ public class WorkflowControlTest
         try {
             invocable.invokeFunction("processFailures", document);
         } catch (final ScriptException e) {
-            Assert.assertTrue(e.getMessage().contains("Index 0 out of bounds for length 0"));
+            final String message = e.getMessage();
+            //Error msg changes between java 8 and 11
+            Assert.assertTrue(message.contains("Index 0 out of bounds for length 0") ||
+                    message.contains("Index: 0, Size: 0"));
             return;
         }
         Assert.fail("Exception not thrown");
@@ -400,8 +403,10 @@ public class WorkflowControlTest
         try {
             invocable.invokeFunction("processFailures", document);
         } catch (final ScriptException e) {
-            e.printStackTrace();
-            Assert.assertTrue(e.getMessage().contains("Index 0 out of bounds for length 0"));
+            final String message = e.getMessage();
+            //Error msg changes between java 8 and 11
+            Assert.assertTrue(message.contains("Index 0 out of bounds for length 0") ||
+                    message.contains("Index: 0, Size: 0"));
             return;
         }
         Assert.fail("Exception not thrown");
