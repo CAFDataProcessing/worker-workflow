@@ -400,6 +400,7 @@ public class WorkflowControlTest
         try {
             invocable.invokeFunction("processFailures", document);
         } catch (final ScriptException e) {
+            e.printStackTrace();
             Assert.assertTrue(e.getMessage().contains("Index 0 out of bounds for length 0"));
             return;
         }
