@@ -45,7 +45,7 @@ public class DocumentMock implements Document
         this.task = task;
         this.customData = customData;
         this.failures = failures;
-        this.subdocuments = subdocuments;
+        this.subdocuments = subdocuments == null ? new SubdocumentsMock() : subdocuments;
         this.application = application;
         this.parentDocument = parentDocument;
         this.rootDocument = rootDocument;
