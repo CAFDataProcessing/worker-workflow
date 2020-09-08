@@ -298,9 +298,11 @@ function onAfterProcessDocument(e) {
 
 function traverseDocumentForFailures(document) {
     processFailures(document);
-    document.getSubdocuments().forEach(function (subdoc){
-        traverseDocumentForFailures(subdoc);
-    });
+    if (document.getSubdocuments()) {
+        document.getSubdocuments().forEach(function (subdoc){
+            traverseDocumentForFailures(subdoc);
+        });
+    }
 }
 
 function processFailures(document) {
