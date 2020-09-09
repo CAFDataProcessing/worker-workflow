@@ -4,11 +4,13 @@
 ${version-number}
 
 #### New Features
+* [SCMOD-10362](https://portal.digitalsafe.net/browse/SCMOD-10362) - GraalVM JavaScript engine added  
+The worker has been enhanced to support Graal.js scripts in Workflows. This allows ECMAScript 2020 features
+to be included in customization scripts. Existing Nashorn scripts continue to be supported. 
 
 #### Known Issues
 
 #### Breaking Changes
-* [SCMOD-10362](https://portal.digitalsafe.net/browse/SCMOD-10362): Migrate from Nashorn to Graal.JS  
-The Nashorn engine (scheduled for removal in [JEP372](https://openjdk.java.net/jeps/372)) has been deprecated and will 
-be replaced with the GraalVM JavaScript engine. This necessitated a number of changes to the workflow control script 
-that are incompatible with workers built on a worker-document framework version older than 4.5.0.
+* Due to moving to Graal.js all `conditionFunction` elements in Workflows must be updated so that the function is named 
+`condition` and use valid Graal.js syntax.
+* All downstream Workers must be upgraded to Worker-Document framework 4.5.0 to support executing Graal.js scripts.
