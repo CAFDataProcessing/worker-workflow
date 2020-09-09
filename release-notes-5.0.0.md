@@ -12,5 +12,6 @@ to be included in customization scripts. Existing Nashorn scripts continue to be
 
 #### Breaking Changes
 * Due to moving to Graal.js all `conditionFunction` elements in Workflows must be updated so that the function is named 
-`condition` and use valid Graal.js syntax.
+`condition` and be Graal.js compatible.
+* Any `context.js` scripts must be Graal.js compatible.
 * All downstream Workers must be upgraded to Worker-Document framework 4.5.0 to support executing Graal.js scripts.
