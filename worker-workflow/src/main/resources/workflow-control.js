@@ -102,7 +102,7 @@ function onBeforeProcessDocument(e) {
 }
 
 function onProcessDocument(e) {
-    if (e.application.inputMessageProcessor.processSubdocumentsSeparately) {
+    if (e.application.getInputMessageProcessor().getProcessSubdocumentsSeparately()) {
         setWorkerVersion(e.document);
     } else {
         traverseDocumentForSettingWorkerVersion(e.document);
