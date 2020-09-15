@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/* global Java, thisScript, Polyglot */
+/* global Java, thisScript */
 var UnsupportedOperationException = Java.type("java.lang.UnsupportedOperationException");
 var RuntimeException = Java.type("java.lang.RuntimeException");
 var ArrayList = Java.type("java.util.ArrayList");
@@ -374,8 +374,6 @@ thisScriptObject = {
         });
     }
 };
-
-Polyglot.export('thisScriptObject', thisScriptObject);
 
 function isLastAction(action) {
     return ACTIONS[ACTIONS.length - 1 ].name === action;
