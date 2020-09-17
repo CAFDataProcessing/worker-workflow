@@ -14,6 +14,16 @@
  * limitations under the License.
  */
 function addFailures (document, failures, extractSourceCallback, action) {
+
+    function extractFailureSubfields(document) {
+
+        var rootDocument = document.getRootDocument();
+        var failureSubfieldsField = rootDocument.getField("CAF_WORKFLOW_EXTRA_FAILURE_SUBFIELDS");
+        var failureSubfieldsJson = failureSubfieldsField.getStringValues().stream().findFirst()
+            .orElse("{}");
+        return JSON.parse(failureSubfieldsJson);
+    }
+
     var extraFailureFields = extractFailureSubfields(document);
     var workflowAction = action !== undefined
         ? action
