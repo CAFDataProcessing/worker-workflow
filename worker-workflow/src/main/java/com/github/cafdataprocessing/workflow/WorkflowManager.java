@@ -35,7 +35,6 @@ import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -91,14 +90,18 @@ public class WorkflowManager {
                 final StringBuilder stringBuilder = new StringBuilder();
                 stringBuilder.append(String.format("var ACTIONS = %s;\n", gson.toJson(workflow.getActions())));
 
+                final String contextScriptFileContent;
                 if (contextScriptFile != null) {
                     if (contextScriptFile.exists()) {
-                        final String contextScriptFileContent = FileUtils.readFileToString(contextScriptFile,
+                        contextScriptFileContent = FileUtils.readFileToString(contextScriptFile,
                                                                                            StandardCharsets.UTF_8);
                         stringBuilder.append(contextScriptFileContent);
                     } else {
                         LOG.warn("The context script file from the path {} does not exist.", contextScriptFilePath);
+                        contextScriptFileContent = null;
                     }
+                } else {
+                    contextScriptFileContent = null;
                 }
 
                 try {
@@ -107,6 +110,19 @@ public class WorkflowManager {
                 } catch (final IOException e) {
                     throw new RuntimeException("Could not obtain workflow-control.js");
                 }
+
+                try {
+                    final String addFailures = Resources.toString(Resources.getResource("add-failures.js"),
+                            StandardCharsets.UTF_8);
+                    stringBuilder.append("thisScriptObject = `\n").append(addFailures);
+                    if(contextScriptFileContent != null) {
+                        stringBuilder.append(contextScriptFileContent);
+                    }
+                    stringBuilder.append("\n`;");
+                } catch (final IOException e) {
+                    throw new RuntimeException("Could not obtain add add-failures.js");
+                }
+
                 workflow.setWorkflowScript(stringBuilder.toString());
 
                 workflow.setStorageReference(

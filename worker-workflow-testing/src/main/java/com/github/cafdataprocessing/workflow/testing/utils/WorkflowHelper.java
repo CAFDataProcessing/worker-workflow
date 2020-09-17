@@ -49,6 +49,7 @@ import javax.script.ScriptException;
 
 import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.io.IOUtils;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.HostAccess;
 
@@ -74,7 +75,18 @@ public class WorkflowHelper
             + "var ACTIONS = [actionFamilyHashing, actionBulkIndexer, actionElastic];");
         nashorn.eval(new InputStreamReader(new FileInputStream(Paths.get("src", "main", "resources", "workflow-control.js")
             .toFile())));
+        evalAddFailuresScript(nashorn);
         return (Invocable) nashorn;
+    }
+
+    private static void evalAddFailuresScript(final ScriptEngine engine) throws IOException, ScriptException
+    {
+        try(final InputStreamReader reader = new InputStreamReader(
+                new FileInputStream(Paths.get("src", "main", "resources", "add-failures.js")
+                .toFile()))) {
+            final String addFailures = IOUtils.toString(reader);
+            engine.eval("\nthisScriptObject = `\n" + addFailures +"`;\n");
+        }
     }
 
     /**
@@ -96,6 +108,7 @@ public class WorkflowHelper
             + "var ACTIONS = [actionFamilyHashing, actionBulkIndexer, actionElastic];");
         nashorn.eval(new InputStreamReader(new FileInputStream(Paths.get("src", "main", "resources", "workflow-control.js")
             .toFile())));
+        evalAddFailuresScript(nashorn);
         for(final String script : scripts){
             nashorn.eval(script);
         }

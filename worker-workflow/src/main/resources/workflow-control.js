@@ -323,7 +323,8 @@ function processFailures(document) {
                newFailures.add(failure);
            }
         });
-        thisScriptObject.addFailures(document, newFailures);
+        eval(thisScriptObject);
+        addFailures(document, newFailures);
     }
 }
 
@@ -338,42 +339,6 @@ function isFailureInOriginal(listOfOriginalFailures, newFailure) {
     return false;
 }
 
-
-thisScriptObject = {
-    addFailures: function (document, failures, extractSourceCallback, action) {
-        var extraFailureFields = extractFailureSubfields(document);
-        var workflowAction = action !== undefined
-                             ? action
-                             : document.getRootDocument().getField("CAF_WORKFLOW_ACTION").getStringValues().get(0);
-        failures.stream().forEach(function(f){
-            var component = extractSourceCallback !== undefined
-                            ? extractSourceCallback(f)
-                            : getCurrentWorkerName(document) + " " + getCurrentWorkerVersion(document);
-            var isWarningFlag = (typeof isWarning === 'function') ? isWarning(f): false;
-            var errorObject = {
-                ID: f.getFailureId(),
-                WORKFLOW_ACTION: workflowAction,
-                COMPONENT: component,
-                WORKFLOW_NAME: document.getRootDocument().getField("CAF_WORKFLOW_NAME").getStringValues().get(0),
-                MESSAGE: f.getFailureMessage(),
-                DATE: new Date().toISOString(),
-                CORRELATION_ID: document.getCustomData("correlationId") || undefined
-            };
-
-            if (!isWarningFlag) {
-                errorObject["STACK"] = f.getFailureStack() || undefined;
-                if (extraFailureFields) {
-                    for (var key of Object.keys(extraFailureFields)) {
-                        errorObject[key] = extraFailureFields[key];
-                    }
-                }
-                document.getField("FAILURES").add(JSON.stringify(errorObject));
-            } else {
-                document.getField("WARNINGS").add(JSON.stringify(errorObject));
-            }
-        });
-    }
-};
 
 function isLastAction(action) {
     return ACTIONS[ACTIONS.length - 1 ].name === action;
