@@ -114,7 +114,7 @@ public class WorkflowManager {
                 try {
                     final String addFailures = Resources.toString(Resources.getResource("add-failures.js"),
                             StandardCharsets.UTF_8).replaceAll("`", "\\`");
-                    stringBuilder.append("thisScriptObject = `\n").append(addFailures);
+                    stringBuilder.append("thisScriptObject = String.raw`\n").append(addFailures);
                     if(contextScriptFileContent != null) {
                         stringBuilder.append(contextScriptFileContent);
                     }
