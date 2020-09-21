@@ -18,6 +18,7 @@ package com.github.cafdataprocessing.workflow;
 import com.github.cafdataprocessing.workflow.model.Workflow;
 import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.model.Script;
+import com.hpe.caf.worker.document.model.ScriptEngineType;
 import com.hpe.caf.worker.document.model.Scripts;
 
 import javax.script.ScriptException;
@@ -38,13 +39,13 @@ public class ScriptManager {
         // Add temporary script to the task using the setScriptInline setter.
         final Script tempWorkflowScript = scripts.add();
         tempWorkflowScript.setName("temp-workflow.js");
-        tempWorkflowScript.setScriptInline(workflow.getWorkflowScript());
+        tempWorkflowScript.setScriptInline(workflow.getWorkflowScript(), ScriptEngineType.GRAAL_JS);
         tempWorkflowScript.load();
 
         // Add persistent script to the task using the setScriptByReference setter.
         final Script workflowScript = scripts.add();
         workflowScript.setName("workflow.js");
-        workflowScript.setScriptByReference(workflow.getStorageReferenceForWorkflowScript());
+        workflowScript.setScriptByReference(workflow.getStorageReferenceForWorkflowScript(), ScriptEngineType.GRAAL_JS);
         workflowScript.install();
     }
 }

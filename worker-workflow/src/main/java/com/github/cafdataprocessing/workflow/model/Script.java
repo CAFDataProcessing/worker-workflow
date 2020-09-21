@@ -18,6 +18,7 @@ package com.github.cafdataprocessing.workflow.model;
 public class Script {
     private String name;
     private String script;
+    private String engine;
 
     public String getName() {
         return name;
@@ -33,5 +34,15 @@ public class Script {
 
     public void setScript(final String script) {
         this.script = script;
+    }
+
+    public String getEngine()
+    {
+        return engine;
+    }
+
+    public void setEngine(String engine)
+    {
+        this.engine = engine;
     }
 }

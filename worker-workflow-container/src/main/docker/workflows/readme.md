@@ -44,7 +44,7 @@ arguments:
 An action has 4 fields.
 
 1. name (The name of the action)
-2. conditionFunction (A function that accepts a document and a map of arguments as parameters and returns true if the document meets the conditions of the action)
+2. conditionFunction (A function named `condition` that accepts a document and a map of arguments as parameters and returns true if the document meets the conditions of the action)
 3. customData (Custom data required by the worker executing the action) 
 4. scripts (Additional scripts that will be executed by the worker executing the action)
 
@@ -66,14 +66,15 @@ Additional information about how scripts are executed by a document worker can b
 ```yaml
 - name: lang_detect					# action name					
     conditionFunction: |                           	# condition (if any) for the worker to be actioned
-        function (document, arguments) { 
-        return fieldExists(document, 'CONTENT_PRIMARY'); 
+        function condition (document, arguments) { 
+          return fieldExists(document, 'CONTENT_PRIMARY'); 
         }
     queueName: dataprocessing-langdetect-in		# queue name of the worker
     customData:						# custom_data to be passed to the worker
       fieldSpecs: "'CONTENT_PRIMARY'"
     scripts:						# list of custom scripts that can be passed to the worker
       - name: recordProcessingTimes.js			# script name
+        engine: GRAAL_JS 				# script engine to execute on 
         script: |
           function onProcessTask(e) {
             var startTime = new Date();

@@ -23,7 +23,10 @@ import com.hpe.caf.worker.document.model.*;
 import com.hpe.caf.worker.document.scripting.events.TaskEventObject;
 import com.hpe.caf.worker.document.testing.DocumentBuilder;
 import com.hpe.caf.worker.document.testing.FieldsBuilder;
+import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
 import org.apache.commons.io.FileUtils;
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.HostAccess;
 
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
@@ -174,7 +177,14 @@ public class WorkflowTestExecutor {
 
         assertEquals("temp-workflow.js", inlineScript.getName());
 
-        final ScriptEngine scriptEngine = new ScriptEngineManager().getEngineByName("nashorn");
+        final ScriptEngine scriptEngine = GraalJSScriptEngine.create(
+                null,
+                Context.newBuilder("js")
+                    .allowExperimentalOptions(true) // Needed for loading from classpath
+                    .allowHostAccess(HostAccess.ALL) // Allow JS access to public Java methods/members
+                    .allowHostClassLookup(s -> true) // Allow JS access to public Java classes
+                    .allowIO(true)
+                    .option("js.load-from-classpath", "true"));
         final Invocable invocable = (Invocable) scriptEngine;
 
         //Write the js to disk so you can set a breakpoint

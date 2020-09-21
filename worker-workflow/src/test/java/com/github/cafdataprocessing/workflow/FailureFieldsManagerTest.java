@@ -102,7 +102,7 @@ public final class FailureFieldsManagerTest
     {
         final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl(
             "function extractSource(failure){return \"kv\"}",
-            "function testDocument(document, failures, source){thisScriptObject.addFailures(document, failures, extractSource, source);}");
+            "function testDocument(document, failures, source){eval(thisScriptObject); addFailures(document, failures, extractSource, source);}");
 
         // doc with one original failure
         final Document builderDoc = DocumentBuilder.fromFile(
@@ -130,8 +130,8 @@ public final class FailureFieldsManagerTest
     {
         final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl(
             "function extractSource(failure){return \"KV:13\"}",
-            "function isWarning(failure) {var warnings = [\"KV:7\", \"KV:8\", \"KV:10\", \"KV:11\", \"KV:13\"]; return warnings.indexOf(failure.failureId) !== -1;}",
-            "function testDocument(document, failures, source){thisScriptObject.addFailures(document, failures, extractSource, source);}");
+            "function isWarning(failure) {var warnings = [\"KV:7\", \"KV:8\", \"KV:10\", \"KV:11\", \"KV:13\"]; return warnings.indexOf(failure.getFailureId()) !== -1;}",
+            "function testDocument(document, failures, source){eval(thisScriptObject); addFailures(document, failures, extractSource, source);}");
 
         // doc with one original failure
         final Document builderDoc = DocumentBuilder.fromFile(

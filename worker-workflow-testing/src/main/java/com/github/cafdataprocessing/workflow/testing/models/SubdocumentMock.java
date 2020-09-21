@@ -15,6 +15,7 @@
  */
 package com.github.cafdataprocessing.workflow.testing.models;
 
+import com.hpe.caf.worker.document.impl.SubdocumentsImpl;
 import com.hpe.caf.worker.document.model.Application;
 import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.model.Failures;
@@ -46,7 +47,7 @@ public class SubdocumentMock implements Subdocument
         this.task = task;
         this.customData = customData;
         this.failures = failures;
-        this.subdocuments = subdocuments;
+        this.subdocuments = subdocuments == null ? new SubdocumentsMock() : subdocuments;
         this.application = application;
         this.parentDocument = parentDocument;
         this.rootDocument = rootDocument;
