@@ -24,7 +24,7 @@
     <parent>
         <groupId>com.github.cafapi</groupId>
         <artifactId>caf-common-parent</artifactId>
-        <version>2.1.0-129</version>
+        <version>2.3.0-SNAPSHOT</version>
     </parent>
 
     <groupId>com.github.cafdataprocessing</groupId>
@@ -41,7 +41,7 @@
     <properties>
         <copyrightYear>2020</copyrightYear>
         <corePolicyElasticsearchContainerName>
-            cafdataprocessing/policy-admin-elasticsearch:1.2.0
+            ${dockerHubPublic}/cafdataprocessing/policy-admin-elasticsearch:1.2.0
         </corePolicyElasticsearchContainerName>
         <dockerHubOrganization>cafdataprocessing</dockerHubOrganization>
         <dockerCafDataProcessingOrg>
@@ -50,9 +50,9 @@
         <dockerProjectVersion>${dockerVersionSeperator}${project.version}</dockerProjectVersion>
         <fabric8.docker.maven.version>0.28.0</fabric8.docker.maven.version>
         <processingServiceContainerName>
-            cafdataprocessing/processing-service:1
+            ${dockerHubPublic}/cafdataprocessing/processing-service:1
         </processingServiceContainerName>
-        <settingsServiceContainerName>cafinternal/settings-service:1</settingsServiceContainerName>
+        <settingsServiceContainerName>${dockerHubPrivate}/cafinternal/settings-service:1</settingsServiceContainerName>
         <gitRepo>https://github.com/CAFDataProcessing/worker-workflow</gitRepo>
         <enforceBannedDependencies>true</enforceBannedDependencies>
         <enforceCorrectDependencies>true</enforceCorrectDependencies>
