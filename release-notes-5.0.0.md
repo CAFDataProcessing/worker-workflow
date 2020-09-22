@@ -9,6 +9,7 @@ The worker has been enhanced to support Graal.js scripts in Workflows. This allo
 to be included in customization scripts. Existing Nashorn scripts continue to be supported. 
 
 #### Known Issues
+- None
 
 #### Breaking Changes
 * Due to moving to Graal.js all `conditionFunction` elements in Workflows must be updated so that the function is named 
