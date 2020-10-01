@@ -24,10 +24,17 @@ function addFailures (document, failures, extractSourceCallback, action) {
         return JSON.parse(failureSubfieldsJson);
     }
 
+    function getWorkflowAction(document) {
+        var actionField = document.getRootDocument().getField("CAF_WORKFLOW_ACTION");
+        if (actionField && actionField.hasValues()) {
+            return actionField.getStringValues().get(0);
+        } else {
+            return 'UNKNOWN'
+        }
+    }
+
     var extraFailureFields = extractFailureSubfields(document);
-    var workflowAction = action !== undefined
-        ? action
-        : document.getRootDocument().getField("CAF_WORKFLOW_ACTION").getStringValues().get(0);
+    var workflowAction = action !== undefined ? action : getWorkflowAction(document);
     failures.stream().forEach(function(f){
         var component = extractSourceCallback !== undefined
             ? extractSourceCallback(f)
