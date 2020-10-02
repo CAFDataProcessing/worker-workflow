@@ -26,7 +26,7 @@ function addFailures (document, failures, extractSourceCallback, action) {
 
     function getWorkflowAction(document) {
         var actionField = document.getRootDocument().getField("CAF_WORKFLOW_ACTION");
-        if (actionField && actionField.hasValues()) {
+        if (actionField.hasValues()) {
             return actionField.getStringValues().get(0);
         } else {
             return 'UNKNOWN'
