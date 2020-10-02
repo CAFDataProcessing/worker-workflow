@@ -26,6 +26,7 @@ import com.hpe.caf.worker.document.config.DocumentWorkerConfiguration;
 import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.model.Failure;
 import com.hpe.caf.worker.document.model.Failures;
+import com.hpe.caf.worker.document.model.Field;
 import com.hpe.caf.worker.document.model.Subdocument;
 import com.hpe.caf.worker.document.model.Subdocuments;
 import com.hpe.caf.worker.document.scripting.events.DocumentEventObject;
@@ -53,6 +54,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.core.IsNull.nullValue;
 
+import com.hpe.caf.worker.document.views.ReadOnlyDocument;
 import org.graalvm.polyglot.PolyglotException;
 import org.junit.Assert;
 import org.junit.Test;
@@ -379,9 +381,8 @@ public class WorkflowControlTest
     }
 
     @Test
-    public void failuresNegativeNoWorkflowActionFieldTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
+    public void failuresStillAddedIfNoWorkflowAction() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
-        // this method fails because there is not a CAF_WORKFLOW_ACTION field
         final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
 
         final Document builderDoc = DocumentBuilder.configure().withFields()
@@ -404,12 +405,14 @@ public class WorkflowControlTest
             invocable.invokeFunction("processFailures", document);
         } catch (final ScriptException e) {
             final String message = e.getMessage();
-            //Error msg changes between java 8 and 11
-            Assert.assertTrue(message.contains("Index 0 out of bounds for length 0") ||
-                    message.contains("Index: 0, Size: 0"));
-            return;
+            Assert.fail("Exception thrown");
         }
-        Assert.fail("Exception not thrown");
+        final Field failuresField = document.getField("FAILURES");
+        Assert.assertTrue(failuresField.hasChanges());
+        final List<String> failures = failuresField.getStringValues().stream().filter(s -> !s.isEmpty()).collect(toList());
+        Assert.assertEquals(2, failures.size());
+        Assert.assertTrue(failures.get(0).contains("error_id_1"));
+        Assert.assertTrue(failures.get(1).contains("error_id_2"));
     }
 
     @Test
