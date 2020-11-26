@@ -122,6 +122,7 @@ function setWorkerVersion(document) {
 }
 
 function onError(errorEventObj) {
+    thisScript.install();
     var rootDoc = errorEventObj.rootDocument;
     var message = errorEventObj.error.getMessage();
     rootDoc.getFailures().add("UNHANDLED_ERROR", message, errorEventObj.error);
