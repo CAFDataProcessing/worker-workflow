@@ -1,12 +1,14 @@
-!not-ready-for-release!
-
 #### Version Number
 ${version-number}
 
 #### New Features
-* [SCMOD-10362](https://portal.digitalsafe.net/browse/SCMOD-10362) - GraalVM JavaScript engine added  
+* SCMOD-10362: GraalVM JavaScript engine added  
 The worker has been enhanced to support Graal.js scripts in Workflows. This allows ECMAScript 2020 features
-to be included in customization scripts. Existing Nashorn scripts continue to be supported. 
+to be included in customization scripts. Existing Nashorn scripts continue to be supported.
+
+#### Bug Fixes
+* SCMOD-9981: Fix for index out of bounds exception when the `CAF_WORKFLOW_ACTION` field was missing  
+* SCMOD-10917: Fix for some script errors not being recorded in the index when there were errors in multiple actions
 
 #### Known Issues
 - None
