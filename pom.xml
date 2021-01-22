@@ -43,16 +43,19 @@
         <corePolicyElasticsearchContainerName>
             ${dockerHubPublic}/cafdataprocessing/policy-admin-elasticsearch:1.2.0
         </corePolicyElasticsearchContainerName>
+        <corporateRepositoryManager>svsartifactory.swinfra.net</corporateRepositoryManager>
         <dockerHubOrganization>cafdataprocessing</dockerHubOrganization>
         <dockerCafDataProcessingOrg>
             ${dockerImagePrefix}${dockerHubOrganization}${dockerOrgSeperator}
         </dockerCafDataProcessingOrg>
         <dockerProjectVersion>${dockerVersionSeperator}${project.version}</dockerProjectVersion>
         <fabric8.docker.maven.version>0.28.0</fabric8.docker.maven.version>
+        <homeDockerPrereleaseRegistry>saas-docker-prerelease.${corporateRepositoryManager}</homeDockerPrereleaseRegistry>
+        <homeDockerReleaseRegistry>saas-docker-release.${corporateRepositoryManager}</homeDockerReleaseRegistry>
         <processingServiceContainerName>
             ${dockerHubPublic}/cafdataprocessing/processing-service:1
         </processingServiceContainerName>
-        <settingsServiceContainerName>${dockerHubPrivate}/cafinternal/settings-service:1</settingsServiceContainerName>
+        <settingsServiceContainerName>${homeDockerReleaseRegistry}/caf/settings-service:1</settingsServiceContainerName>
         <enforceBannedDependencies>true</enforceBannedDependencies>
         <enforceCorrectDependencies>true</enforceCorrectDependencies>
     </properties>
