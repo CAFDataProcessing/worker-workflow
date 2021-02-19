@@ -77,6 +77,11 @@ public class WorkerTaskDataMock implements WorkerTaskData
     }
 
     @Override
+    public String getCorrelationId() {
+        return null;
+    }
+
+    @Override
     public TrackingInfo getTrackingInfo()
     {
         return trackingInfo;
