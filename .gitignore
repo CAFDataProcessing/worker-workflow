@@ -26,3 +26,11 @@ target/
 # IntelliJ
 **/.idea/*
 *.iml
+
+# Eclipse
+.settings/
+.settings
+.project
+.classpath
+bin
+target/
