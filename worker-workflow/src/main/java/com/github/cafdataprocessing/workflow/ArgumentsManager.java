@@ -124,7 +124,7 @@ public class ArgumentsManager {
         }
 
         final String jsonArgs = gson.toJson(arguments);
-        LOG.info("Adding CAF_WORKFLOW_SETTINGS to document : {}", jsonArgs);
+
         document.getField("CAF_WORKFLOW_SETTINGS").set(jsonArgs);
     }
 
@@ -135,42 +135,37 @@ public class ArgumentsManager {
         final List<String> scopes = new ArrayList<>();
         final List<String> priorities = new ArrayList<>();
         final String[] scopesToProcess = options.split(",");
-
+        int priority = 1;
         for(final String scope:scopesToProcess) {
             final Matcher matcher = pattern.matcher(scope);
             if (matcher.matches()){
-                final String type = matcher.group("type");
                 final String prefix = matcher.group("prefix");
+                final String type = matcher.group("type");
+                final String fieldName = matcher.group("name");
                 final String suffix = matcher.group("suffix");
-                String value = null;
                 if (type.equals("f")){
-                    final String fieldName = matcher.group("name");
                     final Field field = document.getField(fieldName);
                     if(field.hasValues()){
-                        final List<String> values = field.getStringValues();
-                        // TODO: Should a priority not be set if field has single value?
-                        LOG.info("Join all values of {} : {}", fieldName, values);
-                        for(final String val : values) {
-                            if (!Strings.isNullOrEmpty(val)){
-                                scopes.add(String.format("%s%s%s",
-                                        prefix,
-                                        val,
-                                        suffix));
-                                // TODO: pick arbitrary priority?
-                                priorities.add("1");
+                        boolean fldScopeValueAdded = false;
+                        final List<String> fldValues = field.getStringValues();
+                        for (final String fldValue : fldValues) {
+                            if (!Strings.isNullOrEmpty(fldValue)) {
+                                fldScopeValueAdded = true;
+                                scopes.add(String.format("%s%s%s", prefix, fldValue, suffix));
+                                priorities.add(String.valueOf(priority));
                             }
+                        }
+                        if (fldScopeValueAdded) {
+                            priority++;
                         }
                     }
                 }
                 else if (type.equals("cd")){
-                    value = document.getCustomData(matcher.group("name"));
-                    if (!Strings.isNullOrEmpty(value)){
-                        scopes.add(String.format("%s%s%s",
-                                prefix,
-                                value,
-                                suffix));
-                        // TODO: if the scope only has a customdata value (no field values), then should a priority not be set?
-                        priorities.add("1");
+                    final String value = document.getCustomData(fieldName);
+                    if (!Strings.isNullOrEmpty(value)) {
+                        scopes.add(String.format("%s%s%s", prefix, value, suffix));
+                        priorities.add(String.valueOf(priority));
+                        priority++;
                     }
                 }
             }
@@ -178,7 +173,7 @@ public class ArgumentsManager {
                 scopes.add(scope);
             }
         }
-        LOG.info("--- Scopes: {}, priorities: {}", scopes, priorities);
+
         final ResolvedSetting resolvedSetting;
         try {
             if(priorities.isEmpty()) {
@@ -198,7 +193,6 @@ public class ArgumentsManager {
             return null;
         }
         final String resolvedSettingVal = resolvedSetting.getValue();
-        LOG.info("Resolved value: {}", resolvedSettingVal);
         return resolvedSettingVal;
     }
 

@@ -4,5 +4,6 @@
 ${version-number}
 
 #### New Features
+- SCMOD-14252: Added support resolving workflow argument values which use multivalue fields. When looking up argument values from the `settings-service`, the multiple values of a field are all passed with equal priority.
 
 #### Known Issues
