@@ -190,8 +190,7 @@ public class ArgumentsManager {
         if(resolvedSetting==null){
             return null;
         }
-        final String resolvedSettingVal = resolvedSetting.getValue();
-        return resolvedSettingVal;
+        return resolvedSetting.getValue();
     }
 
     @SuppressWarnings("unused")
