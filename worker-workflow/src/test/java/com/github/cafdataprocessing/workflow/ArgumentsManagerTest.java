@@ -34,8 +34,11 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ArgumentsManagerTest {
+    private static final Logger LOG = LoggerFactory.getLogger(ArgumentsManagerTest.class);
 
     @Test
     public void argumentFromFieldTest() throws Exception {
@@ -128,7 +131,7 @@ public class ArgumentsManagerTest {
 
         final ResolvedSetting resolvedSetting = new ResolvedSetting();
         resolvedSetting.setValue("valueFromSettingsService");
-        when(settingsApi.getResolvedSetting("exampleSetting", "repository-rId,tenantId-tId-some-suffix"))
+        when(settingsApi.getResolvedSetting("exampleSetting", "repository-rId,tenantId-tId-some-suffix", "1,1"))
                 .thenReturn(resolvedSetting);
 
         final Document document = DocumentBuilder.configure().withServices(TestServices.createDefault())
@@ -161,7 +164,7 @@ public class ArgumentsManagerTest {
 
         final ResolvedSetting resolvedSetting = new ResolvedSetting();
         resolvedSetting.setValue("valueFromSettingsService");
-        when(settingsApi.getResolvedSetting("exampleSetting", "repository-rId,tenantId-tId-some-suffix"))
+        when(settingsApi.getResolvedSetting("exampleSetting", "repository-rId,tenantId-tId-some-suffix", "1,1"))
                 .thenReturn(resolvedSetting);
 
         final Document document = DocumentBuilder.configure().withServices(TestServices.createDefault())
@@ -186,6 +189,39 @@ public class ArgumentsManagerTest {
     }
 
     @Test
+    public void argumentFromSettingsServiceUsingMVFieldTest() throws Exception {
+        LOG.info("Running argumentFromSettingsServiceUsingMVFieldTest...");
+        final List<ArgumentDefinition> argumentDefinitions = getArgumentDefinitions();
+
+        final SettingsApi settingsApi = mock(SettingsApi.class);
+
+        final ResolvedSetting resolvedSetting = new ResolvedSetting();
+        resolvedSetting.setValue("valueFromSettingsService");
+        when(settingsApi.getResolvedSetting("exampleSetting", "repository-rId1,repository-rId2,tenantId-tId-some-suffix", "1,1,1"))
+                .thenReturn(resolvedSetting);
+
+        final Document document = DocumentBuilder.configure().withServices(TestServices.createDefault())
+                .withCustomData()
+                .add("workflowName", "sample-workflow")
+                .add("tenantId", "tId")
+                .documentBuilder()
+                .withFields()
+                .addFieldValue("repositoryId", "rId1")
+                .addFieldValue("repositoryId", "rId2")
+                .documentBuilder()
+                .build();
+        final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, "");
+        argumentsManager.addArgumentsToDocument(argumentDefinitions, document);
+
+        final Gson gson = new Gson();
+        final Type type = new TypeToken<Map<String, String>>() {}.getType();
+        final Map<String, String> arguments = gson.fromJson(
+                document.getField("CAF_WORKFLOW_SETTINGS").getStringValues().stream().findFirst().get(), type);
+        LOG.info("argumentFromSettingsServiceUsingMVFieldTest arguments: {}", arguments);
+        assertEquals("valueFromSettingsService", arguments.get("example"));
+    }
+
+    @Test
     public void poisonDocumentHandlingTest() throws Exception {
         
         // If processing a poison document (a document that a downstream worker has redirected
@@ -201,7 +237,7 @@ public class ArgumentsManagerTest {
         
         final ResolvedSetting resolvedSetting = new ResolvedSetting();
         resolvedSetting.setValue("valueFromSettingsService");
-        when(settingsApi.getResolvedSetting("exampleSetting", "repository-rId,tenantId-tId-some-suffix"))
+        when(settingsApi.getResolvedSetting("exampleSetting", "repository-rId,tenantId-tId-some-suffix", "1,1"))
                 .thenReturn(resolvedSetting);
 
         final Gson gson = new Gson();

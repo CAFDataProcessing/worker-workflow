@@ -22,11 +22,11 @@ A source has 3 fields.
 
 1. name (The name of a document field, custom data key or setting key from the settings service)
 2. type (`FIELD` or `CUSTOM_DATA` or `SETTINGS_SERVICE`)
-3. options (When source type is `SETTINGS_SERVICE` options are supplied as the scopes argument to the settings service)
+3. options (When source type is `SETTINGS_SERVICE` options are supplied as the scopes argument to the settings service.)
 
 The following patterns will be substituted in an options string.
 
-1. `%f:FIELD_NAME%` will be replaced by the first value of the document field called `FIELD_NAME`
+1. `%f:FIELD_NAME%` will be replaced by the first value of the document field called `FIELD_NAME`. If the field has multiple values then they are all passed with equal priority.
 2. `%cd:CUSTOM_DATA_NAME%` will be replaced by the value of the custom data key `CUSTOM_DATA_NAME`
 
 ```yaml

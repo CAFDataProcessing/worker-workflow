@@ -123,7 +123,9 @@ public class ArgumentsManager {
             }
         }
 
-        document.getField("CAF_WORKFLOW_SETTINGS").set(gson.toJson(arguments));
+        final String jsonArgs = gson.toJson(arguments);
+        LOG.info("Adding CAF_WORKFLOW_SETTINGS to document : {}", jsonArgs);
+        document.getField("CAF_WORKFLOW_SETTINGS").set(jsonArgs);
     }
 
     private String getFromSettingService(final String name, final String options, final Document document)
@@ -131,36 +133,60 @@ public class ArgumentsManager {
 
         final Pattern pattern = Pattern.compile("(?<prefix>[a-zA-Z-_.]*)%(?<type>f|cd):(?<name>[a-zA-Z-_.]*)%(?<suffix>[a-zA-Z-_.]*)");
         final List<String> scopes = new ArrayList<>();
+        final List<String> priorities = new ArrayList<>();
         final String[] scopesToProcess = options.split(",");
 
         for(final String scope:scopesToProcess) {
             final Matcher matcher = pattern.matcher(scope);
             if (matcher.matches()){
+                final String type = matcher.group("type");
+                final String prefix = matcher.group("prefix");
+                final String suffix = matcher.group("suffix");
                 String value = null;
-                if (matcher.group("type").equals("f")){
-                    final Field field = document.getField(matcher.group("name"));
+                if (type.equals("f")){
+                    final String fieldName = matcher.group("name");
+                    final Field field = document.getField(fieldName);
                     if(field.hasValues()){
-                        value = field.getStringValues().get(0);
+                        final List<String> values = field.getStringValues();
+                        // TODO: Should a priority not be set if field has single value?
+                        LOG.info("Join all values of {} : {}", fieldName, values);
+                        for(final String val : values) {
+                            if (!Strings.isNullOrEmpty(val)){
+                                scopes.add(String.format("%s%s%s",
+                                        prefix,
+                                        val,
+                                        suffix));
+                                // TODO: pick arbitrary priority?
+                                priorities.add("1");
+                            }
+                        }
                     }
                 }
-                else if (matcher.group("type").equals("cd")){
+                else if (type.equals("cd")){
                     value = document.getCustomData(matcher.group("name"));
-                }
-                if (!Strings.isNullOrEmpty(value)){
-                    scopes.add(String.format("%s%s%s",
-                            matcher.group("prefix"),
-                            value,
-                            matcher.group("suffix")));
+                    if (!Strings.isNullOrEmpty(value)){
+                        scopes.add(String.format("%s%s%s",
+                                prefix,
+                                value,
+                                suffix));
+                        // TODO: if the scope only has a customdata value (no field values), then should a priority not be set?
+                        priorities.add("1");
+                    }
                 }
             }
             else {
                 scopes.add(scope);
             }
         }
-
+        LOG.info("--- Scopes: {}, priorities: {}", scopes, priorities);
         final ResolvedSetting resolvedSetting;
         try {
-            resolvedSetting = settingsApi.getResolvedSetting(name, String.join(",", scopes));
+            if(priorities.isEmpty()) {
+                resolvedSetting = settingsApi.getResolvedSetting(name, String.join(",", scopes), null);
+            }
+            else {
+                resolvedSetting = settingsApi.getResolvedSetting(name, String.join(",", scopes), String.join(",", priorities));
+            }
         } catch (final ApiException e) {
             if(e.getCode()==404){
                 LOG.warn(String.format("Setting [%s] was not found in the settings service.", name));
@@ -171,7 +197,9 @@ public class ArgumentsManager {
         if(resolvedSetting==null){
             return null;
         }
-        return resolvedSetting.getValue();
+        final String resolvedSettingVal = resolvedSetting.getValue();
+        LOG.info("Resolved value: {}", resolvedSettingVal);
+        return resolvedSettingVal;
     }
 
     @SuppressWarnings("unused")
