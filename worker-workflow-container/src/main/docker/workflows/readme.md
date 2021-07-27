@@ -22,7 +22,7 @@ A source has 3 fields.
 
 1. name (The name of a document field, custom data key or setting key from the settings service)
 2. type (`FIELD` or `CUSTOM_DATA` or `SETTINGS_SERVICE`)
-3. options (When source type is `SETTINGS_SERVICE` options are supplied as the scopes argument to the settings service.)
+3. options (When source type is `SETTINGS_SERVICE` options are supplied as the scopes argument to the settings service)
 
 The following patterns will be substituted in an options string.
 

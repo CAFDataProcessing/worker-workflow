@@ -123,9 +123,7 @@ public class ArgumentsManager {
             }
         }
 
-        final String jsonArgs = gson.toJson(arguments);
-
-        document.getField("CAF_WORKFLOW_SETTINGS").set(jsonArgs);
+        document.getField("CAF_WORKFLOW_SETTINGS").set(gson.toJson(arguments));
     }
 
     private String getFromSettingService(final String name, final String options, final Document document)
