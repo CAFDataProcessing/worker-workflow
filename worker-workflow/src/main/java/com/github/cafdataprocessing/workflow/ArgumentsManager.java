@@ -169,17 +169,14 @@ public class ArgumentsManager {
             }
             else {
                 scopes.add(scope);
+                priorities.add(String.valueOf(priority));
+                priority++;
             }
         }
 
         final ResolvedSetting resolvedSetting;
         try {
-            if(priorities.isEmpty()) {
-                resolvedSetting = settingsApi.getResolvedSetting(name, String.join(",", scopes), null);
-            }
-            else {
-                resolvedSetting = settingsApi.getResolvedSetting(name, String.join(",", scopes), String.join(",", priorities));
-            }
+            resolvedSetting = settingsApi.getResolvedSetting(name, String.join(",", scopes), String.join(",", priorities));
         } catch (final ApiException e) {
             if(e.getCode()==404){
                 LOG.warn(String.format("Setting [%s] was not found in the settings service.", name));

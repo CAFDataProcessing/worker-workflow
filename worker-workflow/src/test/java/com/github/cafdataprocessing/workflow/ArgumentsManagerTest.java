@@ -292,6 +292,80 @@ public class ArgumentsManagerTest {
     }
 
     @Test
+    public void argumentFromSettingsServiceUsingPreSetValueCVMVFieldTest() throws Exception {
+        LOG.info("Running argumentFromSettingsServiceUsingPreSetValueCVMVFieldTest...");
+        final List<ArgumentDefinition> argumentDefinitions = getArgumentDefinitions();
+
+        final SettingsApi settingsApi = mock(SettingsApi.class);
+
+        final ResolvedSetting resolvedSetting = new ResolvedSetting();
+        resolvedSetting.setValue("testPreValCDMVValueFromSettingsService");
+        when(settingsApi.getResolvedSetting("exampleValCustomDataAndFld",
+            "not-a-repo,shouldIdx-true,tenantId-tId-some-suffix,workbook-wId1-somewkbk-suffix,workbook-wId2-somewkbk-suffix,case-cId",
+            "1,2,3,4,4,5"))
+        .thenReturn(resolvedSetting);
+
+        final Document document = DocumentBuilder.configure().withServices(TestServices.createDefault())
+                .withCustomData()
+                .add("workflowName", "sample-workflow")
+                .add("tenantId", "tId")
+                .add("shouldIdxCD", "true")
+                .documentBuilder()
+                .withFields()
+                .addFieldValue("wkbkId", "wId1")
+                .addFieldValue("wkbkId", "wId2")
+                .addFieldValue("caseId", "cId")
+                .documentBuilder()
+                .build();
+        final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, "");
+        argumentsManager.addArgumentsToDocument(argumentDefinitions, document);
+
+        final Gson gson = new Gson();
+        final Type type = new TypeToken<Map<String, String>>() {}.getType();
+        final Map<String, String> arguments = gson.fromJson(
+                document.getField("CAF_WORKFLOW_SETTINGS").getStringValues().stream().findFirst().get(), type);
+        LOG.info("argumentFromSettingsServiceUsingPreSetValueCVMVFieldTest arguments: {}", arguments);
+        assertEquals("testPreValCDMVValueFromSettingsService", arguments.get("example"));
+    }
+
+    @Test
+    public void argumentFromSettingsServiceUsingPreSetOnlyTest() throws Exception {
+        LOG.info("Running argumentFromSettingsServiceUsingPreSetOnlyTest...");
+        final List<ArgumentDefinition> argumentDefinitions = getArgumentDefinitions();
+
+        final SettingsApi settingsApi = mock(SettingsApi.class);
+
+        final ResolvedSetting resolvedSetting = new ResolvedSetting();
+        resolvedSetting.setValue("testPreValFromSettingsService");
+        when(settingsApi.getResolvedSetting("examplePreSetVal",
+            "not-a-repo1,not-a-repo2",
+            "1,2"))
+        .thenReturn(resolvedSetting);
+
+        final Document document = DocumentBuilder.configure().withServices(TestServices.createDefault())
+                .withCustomData()
+                .add("workflowName", "sample-workflow")
+                .add("tenantId", "tId")
+                .add("shouldIdxCD", "true")
+                .documentBuilder()
+                .withFields()
+                .addFieldValue("wkbkId", "wId1")
+                .addFieldValue("wkbkId", "wId2")
+                .addFieldValue("caseId", "cId")
+                .documentBuilder()
+                .build();
+        final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, "");
+        argumentsManager.addArgumentsToDocument(argumentDefinitions, document);
+
+        final Gson gson = new Gson();
+        final Type type = new TypeToken<Map<String, String>>() {}.getType();
+        final Map<String, String> arguments = gson.fromJson(
+                document.getField("CAF_WORKFLOW_SETTINGS").getStringValues().stream().findFirst().get(), type);
+        LOG.info("argumentFromSettingsServiceUsingPreSetOnlyTest arguments: {}", arguments);
+        assertEquals("testPreValFromSettingsService", arguments.get("example"));
+    }
+
+    @Test
     public void poisonDocumentHandlingTest() throws Exception {
         
         // If processing a poison document (a document that a downstream worker has redirected
@@ -396,6 +470,28 @@ public class ArgumentsManagerTest {
                             "tenantId-%cd:tenantId%-some-suffix," +
                             "workbook-%f:wkbkId%-somewkbk-suffix," +
                             "case-%f:caseId%");
+            argumentDefinition.getSources().add(settingsServiceSource);
+        }
+
+        {
+            final ArgumentDefinition.Source settingsServiceSource = new ArgumentDefinition.Source();
+            settingsServiceSource.setName("exampleValCustomDataAndFld");
+            settingsServiceSource.setType(ArgumentDefinition.SourceType.SETTINGS_SERVICE);
+            settingsServiceSource
+                    .setOptions("not-a-repo," +
+                            "shouldIdx-%cd:shouldIdxCD%," +
+                            "tenantId-%cd:tenantId%-some-suffix," +
+                            "workbook-%f:wkbkId%-somewkbk-suffix," +
+                            "case-%f:caseId%");
+            argumentDefinition.getSources().add(settingsServiceSource);
+        }
+
+        {
+            final ArgumentDefinition.Source settingsServiceSource = new ArgumentDefinition.Source();
+            settingsServiceSource.setName("examplePreSetVal");
+            settingsServiceSource.setType(ArgumentDefinition.SourceType.SETTINGS_SERVICE);
+            settingsServiceSource
+                    .setOptions("not-a-repo1,not-a-repo2");
             argumentDefinition.getSources().add(settingsServiceSource);
         }
 
