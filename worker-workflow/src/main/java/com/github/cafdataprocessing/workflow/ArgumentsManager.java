@@ -131,36 +131,52 @@ public class ArgumentsManager {
 
         final Pattern pattern = Pattern.compile("(?<prefix>[a-zA-Z-_.]*)%(?<type>f|cd):(?<name>[a-zA-Z-_.]*)%(?<suffix>[a-zA-Z-_.]*)");
         final List<String> scopes = new ArrayList<>();
+        final List<String> priorities = new ArrayList<>();
         final String[] scopesToProcess = options.split(",");
-
+        int priority = 1;
         for(final String scope:scopesToProcess) {
             final Matcher matcher = pattern.matcher(scope);
             if (matcher.matches()){
-                String value = null;
-                if (matcher.group("type").equals("f")){
-                    final Field field = document.getField(matcher.group("name"));
+                final String prefix = matcher.group("prefix");
+                final String type = matcher.group("type");
+                final String fieldName = matcher.group("name");
+                final String suffix = matcher.group("suffix");
+                if (type.equals("f")){
+                    final Field field = document.getField(fieldName);
                     if(field.hasValues()){
-                        value = field.getStringValues().get(0);
+                        boolean fldScopeValueAdded = false;
+                        final List<String> fldValues = field.getStringValues();
+                        for (final String fldValue : fldValues) {
+                            if (!Strings.isNullOrEmpty(fldValue)) {
+                                fldScopeValueAdded = true;
+                                scopes.add(String.format("%s%s%s", prefix, fldValue, suffix));
+                                priorities.add(String.valueOf(priority));
+                            }
+                        }
+                        if (fldScopeValueAdded) {
+                            priority++;
+                        }
                     }
                 }
-                else if (matcher.group("type").equals("cd")){
-                    value = document.getCustomData(matcher.group("name"));
-                }
-                if (!Strings.isNullOrEmpty(value)){
-                    scopes.add(String.format("%s%s%s",
-                            matcher.group("prefix"),
-                            value,
-                            matcher.group("suffix")));
+                else if (type.equals("cd")){
+                    final String value = document.getCustomData(fieldName);
+                    if (!Strings.isNullOrEmpty(value)) {
+                        scopes.add(String.format("%s%s%s", prefix, value, suffix));
+                        priorities.add(String.valueOf(priority));
+                        priority++;
+                    }
                 }
             }
             else {
                 scopes.add(scope);
+                priorities.add(String.valueOf(priority));
+                priority++;
             }
         }
 
         final ResolvedSetting resolvedSetting;
         try {
-            resolvedSetting = settingsApi.getResolvedSetting(name, String.join(",", scopes));
+            resolvedSetting = settingsApi.getResolvedSetting(name, String.join(",", scopes), String.join(",", priorities));
         } catch (final ApiException e) {
             if(e.getCode()==404){
                 LOG.warn(String.format("Setting [%s] was not found in the settings service.", name));

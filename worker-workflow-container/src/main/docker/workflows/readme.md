@@ -26,7 +26,7 @@ A source has 3 fields.
 
 The following patterns will be substituted in an options string.
 
-1. `%f:FIELD_NAME%` will be replaced by the first value of the document field called `FIELD_NAME`
+1. `%f:FIELD_NAME%` will be replaced by the value(s) of the document field called `FIELD_NAME`. If the field has multiple values then they are all passed with equal priority.
 2. `%cd:CUSTOM_DATA_NAME%` will be replaced by the value of the custom data key `CUSTOM_DATA_NAME`
 
 ```yaml
