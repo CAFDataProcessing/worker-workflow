@@ -23,6 +23,9 @@ import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.model.Field;
 import com.microfocus.darwin.settings.client.*;
 import com.squareup.okhttp.*;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +38,8 @@ import java.util.regex.Pattern;
 public class ArgumentsManager {
 
     private final static Logger LOG = LoggerFactory.getLogger(ArgumentsManager.class);
+    private static final int SETTINGS_SERVICE_CACHE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MiB
+    private static final String SETTINGS_SERVICE_CACHE_TEMP_DIRECTORY_PREFIX = "settings-service-http-cache";
 
     private final Gson gson = new Gson();
     private final SettingsApi settingsApi;
@@ -45,12 +50,22 @@ public class ArgumentsManager {
     }
 
     public ArgumentsManager(final SettingsApi settingsApi, final String settingsServiceUrl){
-        this.settingsApi = settingsApi;
-        final ApiClient apiClient = new ApiClient();
-        final OkHttpClient client = new OkHttpClient();
-        client.interceptors().add(getCacheControlInterceptor());
+        Objects.requireNonNull(settingsApi);
         Objects.requireNonNull(settingsServiceUrl);
+        this.settingsApi = settingsApi;
+        final OkHttpClient okHttpClient = new OkHttpClient();
+        final File settingsServiceCacheDirectory;
+        try {
+            settingsServiceCacheDirectory = Files.createTempDirectory(SETTINGS_SERVICE_CACHE_TEMP_DIRECTORY_PREFIX).toFile();
+        } catch (final IOException ex) {
+            throw new RuntimeException("Unable to create a temporary directory for the Settings Service cache", ex);
+        }
+        final Cache cache = new Cache(settingsServiceCacheDirectory, SETTINGS_SERVICE_CACHE_SIZE_BYTES);
+        okHttpClient.setCache(cache);
+        okHttpClient.networkInterceptors().add(getCacheControlInterceptor());
+        final ApiClient apiClient = new ApiClient();
         apiClient.setBasePath(settingsServiceUrl);
+        apiClient.setHttpClient(okHttpClient);
         settingsApi.setApiClient(apiClient);
     }
 
