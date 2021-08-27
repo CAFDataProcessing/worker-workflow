@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -57,7 +58,7 @@ public class ArgumentsManagerTest {
                 .build();
 
         final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, "");
-        argumentsManager.addArgumentsToDocument(argumentDefinitions, document);
+        argumentsManager.addArgumentsToDocument(argumentDefinitions, document, Optional.empty());
 
         final Gson gson = new Gson();
         final Type type = new TypeToken<Map<String, String>>() {}.getType();
@@ -85,7 +86,7 @@ public class ArgumentsManagerTest {
                 .build();
 
         final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, "");
-        argumentsManager.addArgumentsToDocument(argumentDefinitions, document);
+        argumentsManager.addArgumentsToDocument(argumentDefinitions, document, Optional.empty());
 
         final Gson gson = new Gson();
         final Type type = new TypeToken<Map<String, String>>() {}.getType();
@@ -112,7 +113,7 @@ public class ArgumentsManagerTest {
                 .build();
 
         final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, "");
-        argumentsManager.addArgumentsToDocument(argumentDefinitions, document);
+        argumentsManager.addArgumentsToDocument(argumentDefinitions, document, Optional.empty());
 
         final Gson gson = new Gson();
         final Type type = new TypeToken<Map<String, String>>() {}.getType();
@@ -145,7 +146,7 @@ public class ArgumentsManagerTest {
                 .build();
 
         final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, "");
-        argumentsManager.addArgumentsToDocument(argumentDefinitions, document);
+        argumentsManager.addArgumentsToDocument(argumentDefinitions, document, Optional.empty());
 
         final Gson gson = new Gson();
         final Type type = new TypeToken<Map<String, String>>() {}.getType();
@@ -178,7 +179,7 @@ public class ArgumentsManagerTest {
                 .build();
 
         final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, "");
-        argumentsManager.addArgumentsToDocument(argumentDefinitions, document);
+        argumentsManager.addArgumentsToDocument(argumentDefinitions, document, Optional.empty());
 
         final Gson gson = new Gson();
         final Type type = new TypeToken<Map<String, String>>() {}.getType();
@@ -211,7 +212,7 @@ public class ArgumentsManagerTest {
                 .documentBuilder()
                 .build();
         final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, "");
-        argumentsManager.addArgumentsToDocument(argumentDefinitions, document);
+        argumentsManager.addArgumentsToDocument(argumentDefinitions, document, Optional.empty());
 
         final Gson gson = new Gson();
         final Type type = new TypeToken<Map<String, String>>() {}.getType();
@@ -245,7 +246,7 @@ public class ArgumentsManagerTest {
                 .documentBuilder()
                 .build();
         final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, "");
-        argumentsManager.addArgumentsToDocument(argumentDefinitions, document);
+        argumentsManager.addArgumentsToDocument(argumentDefinitions, document, Optional.empty());
 
         final Gson gson = new Gson();
         final Type type = new TypeToken<Map<String, String>>() {}.getType();
@@ -281,7 +282,7 @@ public class ArgumentsManagerTest {
                 .documentBuilder()
                 .build();
         final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, "");
-        argumentsManager.addArgumentsToDocument(argumentDefinitions, document);
+        argumentsManager.addArgumentsToDocument(argumentDefinitions, document, Optional.empty());
 
         final Gson gson = new Gson();
         final Type type = new TypeToken<Map<String, String>>() {}.getType();
@@ -318,7 +319,7 @@ public class ArgumentsManagerTest {
                 .documentBuilder()
                 .build();
         final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, "");
-        argumentsManager.addArgumentsToDocument(argumentDefinitions, document);
+        argumentsManager.addArgumentsToDocument(argumentDefinitions, document, Optional.empty());
 
         final Gson gson = new Gson();
         final Type type = new TypeToken<Map<String, String>>() {}.getType();
@@ -355,7 +356,7 @@ public class ArgumentsManagerTest {
                 .documentBuilder()
                 .build();
         final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, "");
-        argumentsManager.addArgumentsToDocument(argumentDefinitions, document);
+        argumentsManager.addArgumentsToDocument(argumentDefinitions, document, Optional.empty());
 
         final Gson gson = new Gson();
         final Type type = new TypeToken<Map<String, String>>() {}.getType();
@@ -404,7 +405,7 @@ public class ArgumentsManagerTest {
                 .build();
 
         final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, "");
-        argumentsManager.addArgumentsToDocument(argumentDefinitions, document);
+        argumentsManager.addArgumentsToDocument(argumentDefinitions, document, Optional.empty());
   
         final Type type = new TypeToken<Map<String, String>>() {}.getType();
         final Map<String, String> cafWorkflowSettings = gson.fromJson(

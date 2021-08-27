@@ -82,7 +82,10 @@ public class ArgumentsManager {
         };
     }
 
-    public void addArgumentsToDocument(final List<ArgumentDefinition> argumentDefinitions, final Document document)
+    public void addArgumentsToDocument(
+        final List<ArgumentDefinition> argumentDefinitions,
+        final Document document,
+        final Optional<Long> settingsServiceLastUpdateTimeMillisOpt)
             throws DocumentWorkerTransientException {
           
         // If processing a poison document (a document that a downstream worker has redirected
@@ -115,7 +118,8 @@ public class ArgumentsManager {
                             break;
                         }
                         case SETTINGS_SERVICE: {
-                            value = getFromSettingService(source.getName(), source.getOptions(), document);
+                            value = getFromSettingService(
+                                source.getName(), source.getOptions(), document, settingsServiceLastUpdateTimeMillisOpt);
                             break;
                         }
                         default: {
@@ -141,7 +145,11 @@ public class ArgumentsManager {
         document.getField("CAF_WORKFLOW_SETTINGS").set(gson.toJson(arguments));
     }
 
-    private String getFromSettingService(final String name, final String options, final Document document)
+    private String getFromSettingService(
+        final String name,
+        final String options,
+        final Document document,
+        final Optional<Long> settingsServiceLastUpdateTimeMillisOpt)
             throws DocumentWorkerTransientException {
 
         final Pattern pattern = Pattern.compile("(?<prefix>[a-zA-Z-_.]*)%(?<type>f|cd):(?<name>[a-zA-Z-_.]*)%(?<suffix>[a-zA-Z-_.]*)");
