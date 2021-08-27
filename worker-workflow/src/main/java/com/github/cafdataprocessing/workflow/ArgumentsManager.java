@@ -23,6 +23,8 @@ import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.model.Field;
 import com.microfocus.darwin.settings.client.*;
 import com.squareup.okhttp.*;
+import com.squareup.okhttp.logging.HttpLoggingInterceptor;
+import com.squareup.okhttp.logging.HttpLoggingInterceptor.Level;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -40,9 +42,11 @@ public class ArgumentsManager {
     private final static Logger LOG = LoggerFactory.getLogger(ArgumentsManager.class);
     private static final int SETTINGS_SERVICE_CACHE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MiB
     private static final String SETTINGS_SERVICE_CACHE_TEMP_DIRECTORY_PREFIX = "settings-service-http-cache";
+    private static final Interceptor FORCE_CACHE_REFRESH_CACHE_CONTROL_INTERCEPTOR = new ForceCacheRefreshCacheControlInterceptor();
 
     private final Gson gson = new Gson();
     private final SettingsApi settingsApi;
+    private final OkHttpClient okHttpClient;
 
     public ArgumentsManager(final String settingsServiceUrl)
     {
@@ -53,7 +57,7 @@ public class ArgumentsManager {
         Objects.requireNonNull(settingsApi);
         Objects.requireNonNull(settingsServiceUrl);
         this.settingsApi = settingsApi;
-        final OkHttpClient okHttpClient = new OkHttpClient();
+        okHttpClient = new OkHttpClient();
         final File settingsServiceCacheDirectory;
         try {
             settingsServiceCacheDirectory = Files.createTempDirectory(SETTINGS_SERVICE_CACHE_TEMP_DIRECTORY_PREFIX).toFile();
@@ -63,6 +67,10 @@ public class ArgumentsManager {
         final Cache cache = new Cache(settingsServiceCacheDirectory, SETTINGS_SERVICE_CACHE_SIZE_BYTES);
         okHttpClient.setCache(cache);
         okHttpClient.networkInterceptors().add(getCacheControlInterceptor());
+        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
+        logging.setLevel(Level.BODY);
+        okHttpClient.interceptors().add(logging);
+        
         final ApiClient apiClient = new ApiClient();
         apiClient.setBasePath(settingsServiceUrl);
         apiClient.setHttpClient(okHttpClient);
@@ -80,6 +88,21 @@ public class ArgumentsManager {
                     .header("Cache-Control", cacheControl.toString())
                     .build();
         };
+    }
+
+    private final static class ForceCacheRefreshCacheControlInterceptor implements Interceptor
+    {
+        @Override
+        public Response intercept(Interceptor.Chain chain) throws IOException
+        {
+            final CacheControl cacheControl = new CacheControl.Builder()
+                .noCache()
+                .build();
+
+            final Request originalRequest = chain.request();
+            final Request forceCacheRefreshRequest = originalRequest.newBuilder().cacheControl(cacheControl).build();
+            return chain.proceed(forceCacheRefreshRequest);
+        }
     }
 
     public void addArgumentsToDocument(
@@ -199,7 +222,17 @@ public class ArgumentsManager {
 
         final ResolvedSetting resolvedSetting;
         try {
-            resolvedSetting = settingsApi.getResolvedSetting(name, String.join(",", scopes), String.join(",", priorities));
+            if (settingsServiceLastUpdateTimeMillisOpt.isPresent()) {
+                try {
+                    okHttpClient.interceptors().add(FORCE_CACHE_REFRESH_CACHE_CONTROL_INTERCEPTOR);
+                    resolvedSetting = settingsApi.getResolvedSetting(name, String.join(",", scopes), String.join(",", priorities));
+                } finally {
+                    okHttpClient.interceptors().removeIf(ForceCacheRefreshCacheControlInterceptor.class::isInstance);
+                }
+            } else {
+                resolvedSetting = settingsApi.getResolvedSetting(name, String.join(",", scopes), String.join(",", priorities));
+            }
+            
         } catch (final ApiException e) {
             if(e.getCode()==404){
                 LOG.warn(String.format("Setting [%s] was not found in the settings service.", name));
@@ -216,12 +249,15 @@ public class ArgumentsManager {
     @SuppressWarnings("unused")
     public void checkHealth() {
         try {
-            final Setting setting = settingsApi.getSetting("healthcheck");
+            okHttpClient.interceptors().add(FORCE_CACHE_REFRESH_CACHE_CONTROL_INTERCEPTOR);
+            settingsApi.getSetting("healthcheck");
         }
         catch (final ApiException ex){
             if(ex.getCode()!=404){
                 throw new RuntimeException(ex.getMessage(), ex);
             }
+        } finally {
+            okHttpClient.interceptors().removeIf(ForceCacheRefreshCacheControlInterceptor.class::isInstance);
         }
     }
 }
