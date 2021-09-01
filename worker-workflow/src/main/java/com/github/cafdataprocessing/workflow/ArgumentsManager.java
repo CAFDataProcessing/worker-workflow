@@ -38,8 +38,6 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
-
 
 public class ArgumentsManager {
 
@@ -47,7 +45,7 @@ public class ArgumentsManager {
     private static final int SETTINGS_SERVICE_CACHE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MiB
     private static final String SETTINGS_SERVICE_CACHE_TEMP_DIRECTORY_PREFIX = "settings-service-http-cache";
     private static final Interceptor FORCE_CACHE_REFRESH_CACHE_CONTROL_INTERCEPTOR = new ForceCacheRefreshCacheControlInterceptor();
-    private static final Map<String, Long> SETTINGS_SERVICE_LAST_ACCESS_TIME_MAP = new HashMap<>();
+    private static final Map<SettingsServiceLastAccessTimeMapKey, Long> SETTINGS_SERVICE_LAST_ACCESS_TIME_MAP = new HashMap<>();
 
     private final Gson gson = new Gson();
     private final SettingsApi settingsApi;
@@ -86,7 +84,7 @@ public class ArgumentsManager {
     private Interceptor getCacheControlInterceptor() {
         return chain -> {
             final Request request = chain.request();
-            if (shouldCacheSettingsServiceResponse(request)) {
+            if (isCacheableRequest(request)) {
                 final Response response = chain.proceed(request);
                 final CacheControl cacheControl = new CacheControl.Builder()
                     .maxAge(5, TimeUnit.MINUTES)
@@ -100,8 +98,8 @@ public class ArgumentsManager {
             }
         };
     }
-
-    // Important that this is added as an application interceptor (as opposed to a network interceptor), otherwise it has no affect.
+ 
+    // Make sure this is added as an application interceptor (NOT a network interceptor) for it to have any affect.
     private final static class ForceCacheRefreshCacheControlInterceptor implements Interceptor
     {
         @Override
@@ -110,50 +108,30 @@ public class ArgumentsManager {
             final CacheControl cacheControl = new CacheControl.Builder()
                 .noCache()
                 .build();
-
             final Request originalRequest = chain.request();
             final Request forceCacheRefreshRequest = originalRequest.newBuilder().cacheControl(cacheControl).build();
             return chain.proceed(forceCacheRefreshRequest);
         }
     }
 
-    // Important that this is added as a network interceptor (as opposed to an application interceptor), to ensure it won't be invoked
-    // for cached responses.
+    // Make sure this is added as a network interceptor (NOT an application interceptor), to ensure it won't be invoked for
+    // cached responses, i.e. we only want to update the last access time when a setting is fetched from the Settings Service, rather
+    // than fetched from the cache.
     private final static class RecordLastAccessTimeInterceptor implements Interceptor
     {
         @Override
         public Response intercept(Interceptor.Chain chain) throws IOException
         {
             final Request request = chain.request();
-            if (shouldCacheSettingsServiceResponse(request)) {
-                LOG.warn("RORY updating map. Before: " + Arrays.toString(SETTINGS_SERVICE_LAST_ACCESS_TIME_MAP.entrySet().toArray()));
-                //   request.uri()
-                LOG.warn("RORY URL PATH " + request.url().getPath());
-                LOG.warn("RORY uri PATH " + request.uri().getPath());
-                LOG.warn("RORY uri raw path " + request.uri().getRawPath());
-                LOG.warn("RORY httpurl encoded path " + request.httpUrl().encodedPath());
-
-                /**
-                 * RORY URL PATH /settings/ee.grammarmap/resolved RORY uri PATH /settings/ee.grammarmap/resolved RORY uri raw path
-                 * /settings/ee.grammarmap/resolved RORY httpurl encoded path /settings/ee.grammarmap/resolved
-                 *
-                 */
-                LOG.warn("RORY URL query " + request.url().getQuery());
-                LOG.warn("RORY uri query " + request.uri().getQuery());
-                LOG.warn("RORY uri raw query " + request.uri().getRawQuery());
-                LOG.warn("RORY httpurl encoded query " + request.httpUrl().encodedQuery());
-
-                LOG.warn("RORY URL toString " + request.url().toString());
-                LOG.warn("RORY urlString " + request.urlString());
-
-                final URI uri = request.uri();
-                final String key = String.format("%s?%s", uri.getRawPath(), uri.getRawQuery());
-                SETTINGS_SERVICE_LAST_ACCESS_TIME_MAP.put(key, Instant.now().toEpochMilli());
-                LOG.warn("RORY updated map: After: " + Arrays.toString(SETTINGS_SERVICE_LAST_ACCESS_TIME_MAP.entrySet().toArray()));
-                return chain.proceed(request);
-            } else {
-                return chain.proceed(request);
+            if (isCacheableRequest(request)) {
+                final SettingsServiceLastAccessTimeMapKey key = SettingsServiceLastAccessTimeMapKey.from(request.uri());
+                final long value = Instant.now().toEpochMilli();
+                LOG.warn(String.format("Updating Settings Service last access time map with key=value: %s=%s", key, value)); 
+                SETTINGS_SERVICE_LAST_ACCESS_TIME_MAP.put(key, value);
+                LOG.warn(String.format("Contents of Settings Service last access time map: %s",
+                                       Arrays.toString(SETTINGS_SERVICE_LAST_ACCESS_TIME_MAP.entrySet().toArray())));
             }
+            return chain.proceed(request);
         }
     }
 
@@ -274,19 +252,12 @@ public class ArgumentsManager {
 
         final ResolvedSetting resolvedSetting;
         try {
-            if (shouldForceSettingsServiceCacheRefresh(name, scopes, priorities, settingsServiceLastUpdateTimeMillisOpt)) {
-                 LOG.warn(String.format("RORY number of interceptors before forcing cache refresh" + okHttpClient.interceptors().size()));
-                 LOG.warn(String.format("RORY forcing settings service cache refresh."));
-                    resolvedSetting = forceSettingsServiceCacheRefresh(
-                        () -> settingsApi.getResolvedSetting(name, String.join(",", scopes), String.join(",", priorities)));
-                LOG.warn(String.format("RORY number of interceptors after forcing cache refresh" + okHttpClient.interceptors().size()));
+            if (shouldForceCacheRefresh(name, scopes, priorities, settingsServiceLastUpdateTimeMillisOpt)) {
+                resolvedSetting = forceCacheRefresh(
+                    () -> settingsApi.getResolvedSetting(name, String.join(",", scopes), String.join(",", priorities)));
             } else {
-                LOG.warn(String.format("RORY NOT forcing settings service cache refresh."));
-                LOG.warn(String.format("RORY number of interceptors before NOT forcing cache refresh" + okHttpClient.interceptors().size()));
                 resolvedSetting = settingsApi.getResolvedSetting(name, String.join(",", scopes), String.join(",", priorities));
-                LOG.warn(String.format("RORY number of interceptors after NOT forcing cache refresh" + okHttpClient.interceptors().size()));
             }
-            
         } catch (final ApiException e) {
             if(e.getCode()==404){
                 LOG.warn(String.format("Setting [%s] was not found in the settings service.", name));
@@ -312,60 +283,42 @@ public class ArgumentsManager {
         }
     }
 
-    private static boolean shouldCacheSettingsServiceResponse(final Request request)
+    private static boolean isCacheableRequest(final Request request)
     {
         return !request.urlString().contains("healthcheck");
     }
 
-    private static boolean shouldForceSettingsServiceCacheRefresh(
+    private static boolean shouldForceCacheRefresh(
         final String settingName,
         final List<String> scopes,
         final List<String> priorities,
         final Optional<Long> settingsServiceLastUpdateTimeMillisOpt)
     {
         if (!settingsServiceLastUpdateTimeMillisOpt.isPresent()) {
+            LOG.warn(String.format("NOT forcing Settings Service cache refresh for: %s because customData does not contain the "
+                + "settingsServiceLastUpdateTimeMiliis property", settingName));
             return false;
         }
-        final Long settingsServiceLastUpdateTimeMillis = settingsServiceLastUpdateTimeMillisOpt.get();
-        final String scopesUrlQueryParam = (scopes != null && !scopes.isEmpty()) 
-            ? "scopes=" + String.join(",", scopes)
-            : null;
-        final String prioritiesUrlQueryParam = (priorities != null && !priorities.isEmpty())
-            ? "priorities=" + String.join(",", priorities)
-            : null;
-        final String urlQueryParams = Joiner.on("&").skipNulls().join(
-            scopesUrlQueryParam,
-            prioritiesUrlQueryParam
-        );
-            
-            
-        LOG.warn("RORY in new method urlQueryParams " + urlQueryParams);
-        
-        final String key = urlQueryParams != null ? 
-            String.format("/settings/%s/resolved?%s", settingName, urlQueryParams) :
-            String.format("/settings/%s/resolved", settingName);
-        LOG.warn("RORY in new method key " + key);
-        
-        final Long lastAccessTime = SETTINGS_SERVICE_LAST_ACCESS_TIME_MAP.get(key);
-        if (lastAccessTime == null) {
-            LOG.warn("RORY in new map does not contain key " + key);
+        final SettingsServiceLastAccessTimeMapKey key = SettingsServiceLastAccessTimeMapKey.from(settingName, scopes, priorities);
+        final Long settingsServiceLastAccessTimeMillis = SETTINGS_SERVICE_LAST_ACCESS_TIME_MAP.get(key);
+        if (settingsServiceLastAccessTimeMillis == null) {
+            LOG.warn(String.format("NOT forcing Settings Service cache refresh for: %s because the last access time map does not "
+                + "contain an entry for it (i.e. first time requesting setting so no cache entry yet)", key));
             return false;
         }
-        LOG.warn("RORY in new map does contains key " + key + " + with value " + lastAccessTime);
-        if (settingsServiceLastUpdateTimeMillisOpt.get() > lastAccessTime) {
-            LOG.warn("RORY returning true " + settingsServiceLastUpdateTimeMillis + " > " + lastAccessTime);
+        if (settingsServiceLastUpdateTimeMillisOpt.get() > settingsServiceLastAccessTimeMillis) {
+            LOG.warn(String.format("Forcing Settings Service cache refresh for: %s because the last update time: %s is greater than "
+                + "the last access time: %s", key, settingsServiceLastUpdateTimeMillisOpt.get(), settingsServiceLastAccessTimeMillis));
             return true;
         }  else {
-            LOG.warn("RORY returning false " + settingsServiceLastUpdateTimeMillis + " > " + lastAccessTime);
+            LOG.warn(String.format("NOT forcing Settings Service cache refresh for: %s because the last update time: %s is NOT greater "
+                + "than the last access time: %s", key, settingsServiceLastUpdateTimeMillisOpt.get(),
+                settingsServiceLastAccessTimeMillis));
             return false;
         }
-        
-
-//            .map(s -> "?" + s)
-//            .orElse("");
     }
 
-    private ResolvedSetting forceSettingsServiceCacheRefresh(final SettingsServiceApiCall settingsServiceApiCall) throws ApiException
+    private ResolvedSetting forceCacheRefresh(final SettingsServiceApiCall settingsServiceApiCall) throws ApiException
     {
         try {
             okHttpClient.interceptors().add(FORCE_CACHE_REFRESH_CACHE_CONTROL_INTERCEPTOR);
@@ -379,5 +332,72 @@ public class ArgumentsManager {
     private interface SettingsServiceApiCall
     {
         public ResolvedSetting call() throws ApiException;
+    }
+
+    private static final class SettingsServiceLastAccessTimeMapKey
+    {
+        private final String key;
+
+        private SettingsServiceLastAccessTimeMapKey(final String key)
+        {
+            this.key = key;
+        }
+
+        public static SettingsServiceLastAccessTimeMapKey from(final URI uri)
+        {
+            final String key = String.format("%s?%s", uri.getRawPath(), uri.getRawQuery());
+            return new SettingsServiceLastAccessTimeMapKey(key);
+        }
+
+        public static SettingsServiceLastAccessTimeMapKey from(
+            final String settingName,
+            final List<String> scopes,
+            final List<String> priorities)
+        {
+            final String scopesUrlQueryParam = (scopes != null && !scopes.isEmpty())
+                ? "scopes=" + String.join(",", scopes)
+                : null;
+            final String prioritiesUrlQueryParam = (priorities != null && !priorities.isEmpty())
+                ? "priorities=" + String.join(",", priorities)
+                : null;
+            final String urlQueryParams = Joiner.on("&").skipNulls().join(
+                scopesUrlQueryParam,
+                prioritiesUrlQueryParam
+            );
+            final String key = urlQueryParams != null
+                ? String.format("/settings/%s/resolved?%s", settingName, urlQueryParams)
+                : String.format("/settings/%s/resolved", settingName);
+            return new SettingsServiceLastAccessTimeMapKey(key);
+        }
+
+        @Override
+        public int hashCode()
+        {
+            int hash = 5;
+            hash = 97 * hash + Objects.hashCode(this.key);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj)
+        {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final SettingsServiceLastAccessTimeMapKey other = (SettingsServiceLastAccessTimeMapKey) obj;
+            return Objects.equals(this.key, other.key);
+        }
+
+        @Override
+        public String toString()
+        {
+            return key;
+        }
     }
 }
