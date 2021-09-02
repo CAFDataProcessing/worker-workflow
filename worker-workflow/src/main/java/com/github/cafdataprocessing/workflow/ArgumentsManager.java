@@ -345,7 +345,7 @@ public class ArgumentsManager {
 
         public static SettingsServiceLastAccessTimeMapKey from(final URI uri)
         {
-            final String key = String.format("%s?%s", uri.getRawPath(), uri.getRawQuery());
+            final String key = String.format("%s?%s", uri.getPath(), uri.getQuery());
             return new SettingsServiceLastAccessTimeMapKey(key);
         }
 
