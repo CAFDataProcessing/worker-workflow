@@ -24,8 +24,6 @@ import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.model.Field;
 import com.microfocus.darwin.settings.client.*;
 import com.squareup.okhttp.*;
-import com.squareup.okhttp.logging.HttpLoggingInterceptor;
-import com.squareup.okhttp.logging.HttpLoggingInterceptor.Level;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -77,10 +75,6 @@ public class ArgumentsManager {
         okHttpClient.setCache(cache);
         okHttpClient.networkInterceptors().add(getCacheControlInterceptor());
         okHttpClient.networkInterceptors().add(new RecordLastAccessTimeInterceptor());
-        HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-        logging.setLevel(Level.BODY);
-        okHttpClient.interceptors().add(logging);
-        
         final ApiClient apiClient = new ApiClient();
         apiClient.setBasePath(settingsServiceUrl);
         apiClient.setHttpClient(okHttpClient);
