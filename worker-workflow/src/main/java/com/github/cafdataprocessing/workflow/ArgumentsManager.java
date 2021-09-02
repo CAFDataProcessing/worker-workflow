@@ -105,7 +105,6 @@ public class ArgumentsManager {
         };
     }
  
-    // Make sure this is added as an application interceptor (NOT a network interceptor) for it to have any affect.
     private final static class ForceCacheRefreshCacheControlInterceptor implements Interceptor
     {
         @Override
@@ -120,24 +119,22 @@ public class ArgumentsManager {
         }
     }
 
-    // Make sure this is added as a network interceptor (NOT an application interceptor), to ensure it won't be invoked for
-    // cached responses, i.e. we only want to update the last access time when a setting is fetched from the Settings Service, rather
-    // than fetched from the cache.
     private final static class RecordLastAccessTimeInterceptor implements Interceptor
     {
         @Override
         public Response intercept(Interceptor.Chain chain) throws IOException
         {
             final Request request = chain.request();
-            if (isCacheableRequest(request)) {
+            final Response response = chain.proceed(request);
+            if (isCacheableRequest(request) && response.isSuccessful()) {
                 final SettingsServiceLastAccessTimeMapKey key = SettingsServiceLastAccessTimeMapKey.from(request.uri());
-                final long value = Instant.now().toEpochMilli();
-                LOG.warn(String.format("Updating Settings Service last access time map with key=value: %s=%s", key, value)); 
-                SETTINGS_SERVICE_LAST_ACCESS_TIME_MAP.put(key, value);
-                LOG.warn(String.format("Contents of Settings Service last access time map: %s",
-                                       Arrays.toString(SETTINGS_SERVICE_LAST_ACCESS_TIME_MAP.entrySet().toArray())));
+                final long now = Instant.now().toEpochMilli();
+                SETTINGS_SERVICE_LAST_ACCESS_TIME_MAP.put(key, now);
+                LOG.debug(String.format(
+                    "Recorded last access time for: %s as: %s. Size of SETTINGS_SERVICE_LAST_ACCESS_TIME_MAP is now: %s",
+                    key, now, SETTINGS_SERVICE_LAST_ACCESS_TIME_MAP.size()));
             }
-            return chain.proceed(request);
+            return response;
         }
     }
 
@@ -301,23 +298,19 @@ public class ArgumentsManager {
         final Optional<Long> settingsServiceLastUpdateTimeMillisOpt)
     {
         if (!settingsServiceLastUpdateTimeMillisOpt.isPresent()) {
-            LOG.warn(String.format("NOT forcing Settings Service cache refresh for: %s because customData does not contain the "
-                + "settingsServiceLastUpdateTimeMiliis property", settingName));
             return false;
         }
         final SettingsServiceLastAccessTimeMapKey key = SettingsServiceLastAccessTimeMapKey.from(settingName, scopes, priorities);
         final Long settingsServiceLastAccessTimeMillis = SETTINGS_SERVICE_LAST_ACCESS_TIME_MAP.get(key);
         if (settingsServiceLastAccessTimeMillis == null) {
-            LOG.warn(String.format("NOT forcing Settings Service cache refresh for: %s because the last access time map does not "
-                + "contain an entry for it (i.e. first time requesting setting so no cache entry yet)", key));
-            return false;
+            return true;
         }
         if (settingsServiceLastUpdateTimeMillisOpt.get() > settingsServiceLastAccessTimeMillis) {
-            LOG.warn(String.format("Forcing Settings Service cache refresh for: %s because the last update time: %s is greater than "
+            LOG.debug(String.format("Forcing cache refresh for: %s because the last update time: %s is greater than "
                 + "the last access time: %s", key, settingsServiceLastUpdateTimeMillisOpt.get(), settingsServiceLastAccessTimeMillis));
             return true;
         }  else {
-            LOG.warn(String.format("NOT forcing Settings Service cache refresh for: %s because the last update time: %s is NOT greater "
+            LOG.debug(String.format("NOT forcing cache refresh for: %s because the last update time: %s is NOT greater "
                 + "than the last access time: %s", key, settingsServiceLastUpdateTimeMillisOpt.get(),
                 settingsServiceLastAccessTimeMillis));
             return false;
