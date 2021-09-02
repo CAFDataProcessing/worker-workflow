@@ -49,7 +49,7 @@
             ${dockerImagePrefix}${dockerHubOrganization}${dockerOrgSeperator}
         </dockerCafDataProcessingOrg>
         <dockerProjectVersion>${dockerVersionSeperator}${project.version}</dockerProjectVersion>
-        <fabric8.docker.maven.version>0.28.0</fabric8.docker.maven.version>
+        <fabric8.docker.maven.version>0.36.1</fabric8.docker.maven.version>
         <homeDockerPrereleaseRegistry>saas-docker-prerelease.${corporateRepositoryManager}</homeDockerPrereleaseRegistry>
         <homeDockerReleaseRegistry>saas-docker-release.${corporateRepositoryManager}</homeDockerReleaseRegistry>
         <processingServiceContainerName>
@@ -103,6 +103,11 @@
                 <groupId>com.microfocus.darwin</groupId>
                 <artifactId>settings-service-client</artifactId>
                 <version>1.5.0-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>net.jodah</groupId>
+                <artifactId>expiringmap</artifactId>
+                <version>0.5.10</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

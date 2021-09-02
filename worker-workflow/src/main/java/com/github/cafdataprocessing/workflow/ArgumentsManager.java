@@ -38,14 +38,20 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import net.jodah.expiringmap.ExpiringMap;
 
 public class ArgumentsManager {
 
     private final static Logger LOG = LoggerFactory.getLogger(ArgumentsManager.class);
     private static final int SETTINGS_SERVICE_CACHE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MiB
     private static final String SETTINGS_SERVICE_CACHE_TEMP_DIRECTORY_PREFIX = "settings-service-http-cache";
+    private static final int SETTINGS_SERVICE_CACHE_EXPIRATION_TIME_MINUTES = 5;
     private static final Interceptor FORCE_CACHE_REFRESH_CACHE_CONTROL_INTERCEPTOR = new ForceCacheRefreshCacheControlInterceptor();
-    private static final Map<SettingsServiceLastAccessTimeMapKey, Long> SETTINGS_SERVICE_LAST_ACCESS_TIME_MAP = new HashMap<>();
+    private static final Map<SettingsServiceLastAccessTimeMapKey, Long> SETTINGS_SERVICE_LAST_ACCESS_TIME_MAP
+        = ExpiringMap
+            .builder()
+            .expiration(SETTINGS_SERVICE_CACHE_EXPIRATION_TIME_MINUTES, TimeUnit.MINUTES)
+            .build();
 
     private final Gson gson = new Gson();
     private final SettingsApi settingsApi;
@@ -87,7 +93,7 @@ public class ArgumentsManager {
             if (isCacheableRequest(request)) {
                 final Response response = chain.proceed(request);
                 final CacheControl cacheControl = new CacheControl.Builder()
-                    .maxAge(5, TimeUnit.MINUTES)
+                    .maxAge(SETTINGS_SERVICE_CACHE_EXPIRATION_TIME_MINUTES, TimeUnit.MINUTES)
                     .build();
 
                 return response.newBuilder()
