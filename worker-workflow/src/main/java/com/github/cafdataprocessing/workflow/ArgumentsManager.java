@@ -303,11 +303,11 @@ public class ArgumentsManager {
             return true;
         }
         if (settingsServiceLastUpdateTimeMillisOpt.get() > settingsServiceLastAccessTimeMillis) {
-            LOG.warn(String.format("Forcing cache refresh for: %s because the last update time: %s is greater than "
+            LOG.debug(String.format("Forcing cache refresh for: %s because the last update time: %s is greater than "
                 + "the last access time: %s", key, settingsServiceLastUpdateTimeMillisOpt.get(), settingsServiceLastAccessTimeMillis));
             return true;
         }  else {
-            LOG.warn(String.format("NOT forcing cache refresh for: %s because the last update time: %s is NOT greater "
+            LOG.debug(String.format("NOT forcing cache refresh for: %s because the last update time: %s is NOT greater "
                 + "than the last access time: %s", key, settingsServiceLastUpdateTimeMillisOpt.get(),
                 settingsServiceLastAccessTimeMillis));
             return false;
