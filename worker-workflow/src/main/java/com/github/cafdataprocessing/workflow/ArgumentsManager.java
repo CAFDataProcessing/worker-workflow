@@ -44,16 +44,12 @@ public class ArgumentsManager {
     private static final int SETTINGS_SERVICE_CACHE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MiB
     private static final String SETTINGS_SERVICE_CACHE_TEMP_DIRECTORY_PREFIX = "settings-service-http-cache";
     private static final int SETTINGS_SERVICE_CACHE_EXPIRATION_TIME_MINUTES = 5;
-    private static final Interceptor FORCE_CACHE_REFRESH_CACHE_CONTROL_INTERCEPTOR = new ForceCacheRefreshCacheControlInterceptor();
-    private static final Map<SettingsServiceLastAccessTimeMapKey, Long> SETTINGS_SERVICE_LAST_ACCESS_TIME_MAP
-        = ExpiringMap
-            .builder()
-            .expiration(SETTINGS_SERVICE_CACHE_EXPIRATION_TIME_MINUTES, TimeUnit.MINUTES)
-            .build();
 
     private final Gson gson = new Gson();
     private final SettingsApi settingsApi;
     private final OkHttpClient okHttpClient;
+    private final ForceCacheRefreshInterceptor forceCacheRefreshInterceptor;
+    private final Map<SettingsServiceLastAccessTimeMapKey, Long> settingsServiceLastAccessTimeMap;
 
     public ArgumentsManager(final String settingsServiceUrl)
     {
@@ -73,19 +69,28 @@ public class ArgumentsManager {
         }
         final Cache cache = new Cache(settingsServiceCacheDirectory, SETTINGS_SERVICE_CACHE_SIZE_BYTES);
         okHttpClient.setCache(cache);
-        okHttpClient.networkInterceptors().add(getCacheControlInterceptor());
+        okHttpClient.networkInterceptors().add(new SetCacheMaxAgeInterceptor());
         okHttpClient.networkInterceptors().add(new RecordLastAccessTimeInterceptor());
         final ApiClient apiClient = new ApiClient();
         apiClient.setBasePath(settingsServiceUrl);
         apiClient.setHttpClient(okHttpClient);
         settingsApi.setApiClient(apiClient);
+        forceCacheRefreshInterceptor = new ForceCacheRefreshInterceptor();
+        settingsServiceLastAccessTimeMap
+            = ExpiringMap
+                .builder()
+                .expiration(SETTINGS_SERVICE_CACHE_EXPIRATION_TIME_MINUTES, TimeUnit.MINUTES)
+                .build();
     }
 
-    private Interceptor getCacheControlInterceptor() {
-        return chain -> {
+    private final class SetCacheMaxAgeInterceptor implements Interceptor
+    {
+        @Override
+        public Response intercept(Interceptor.Chain chain) throws IOException
+        {
             final Request request = chain.request();
-            if (isCacheableRequest(request)) {
-                final Response response = chain.proceed(request);
+            final Response response = chain.proceed(request);
+            if (isCacheableResponse(response)) {
                 final CacheControl cacheControl = new CacheControl.Builder()
                     .maxAge(SETTINGS_SERVICE_CACHE_EXPIRATION_TIME_MINUTES, TimeUnit.MINUTES)
                     .build();
@@ -94,12 +99,12 @@ public class ArgumentsManager {
                     .header("Cache-Control", cacheControl.toString())
                     .build();
             } else {
-                return chain.proceed(request); 
+                return response;
             }
-        };
+        }
     }
  
-    private final static class ForceCacheRefreshCacheControlInterceptor implements Interceptor
+    private final class ForceCacheRefreshInterceptor implements Interceptor
     {
         @Override
         public Response intercept(Interceptor.Chain chain) throws IOException
@@ -113,20 +118,18 @@ public class ArgumentsManager {
         }
     }
 
-    private final static class RecordLastAccessTimeInterceptor implements Interceptor
+    private final class RecordLastAccessTimeInterceptor implements Interceptor
     {
         @Override
         public Response intercept(Interceptor.Chain chain) throws IOException
         {
             final Request request = chain.request();
             final Response response = chain.proceed(request);
-            if (isCacheableRequest(request) && response.isSuccessful()) {
+            if (isCacheableResponse(response)) {
                 final SettingsServiceLastAccessTimeMapKey key = SettingsServiceLastAccessTimeMapKey.from(request.uri());
                 final long now = Instant.now().toEpochMilli();
-                SETTINGS_SERVICE_LAST_ACCESS_TIME_MAP.put(key, now);
-                LOG.debug(String.format(
-                    "Recorded last access time for: %s as: %s. Size of SETTINGS_SERVICE_LAST_ACCESS_TIME_MAP is now: %s",
-                    key, now, SETTINGS_SERVICE_LAST_ACCESS_TIME_MAP.size()));
+                settingsServiceLastAccessTimeMap.put(key, now);
+                LOG.debug(String.format("Recorded last access time for: %s as: %s", key, now));
             }
             return response;
         }
@@ -280,12 +283,12 @@ public class ArgumentsManager {
         }
     }
 
-    private static boolean isCacheableRequest(final Request request)
+    private static boolean isCacheableResponse(final Response response)
     {
-        return !request.urlString().contains("healthcheck");
+        return !response.request().urlString().contains("healthcheck") && response.isSuccessful();
     }
 
-    private static boolean shouldForceCacheRefresh(
+    private boolean shouldForceCacheRefresh(
         final String settingName,
         final List<String> scopes,
         final List<String> priorities,
@@ -295,16 +298,16 @@ public class ArgumentsManager {
             return false;
         }
         final SettingsServiceLastAccessTimeMapKey key = SettingsServiceLastAccessTimeMapKey.from(settingName, scopes, priorities);
-        final Long settingsServiceLastAccessTimeMillis = SETTINGS_SERVICE_LAST_ACCESS_TIME_MAP.get(key);
+        final Long settingsServiceLastAccessTimeMillis = settingsServiceLastAccessTimeMap.get(key);
         if (settingsServiceLastAccessTimeMillis == null) {
             return true;
         }
         if (settingsServiceLastUpdateTimeMillisOpt.get() > settingsServiceLastAccessTimeMillis) {
-            LOG.debug(String.format("Forcing cache refresh for: %s because the last update time: %s is greater than "
+            LOG.warn(String.format("Forcing cache refresh for: %s because the last update time: %s is greater than "
                 + "the last access time: %s", key, settingsServiceLastUpdateTimeMillisOpt.get(), settingsServiceLastAccessTimeMillis));
             return true;
         }  else {
-            LOG.debug(String.format("NOT forcing cache refresh for: %s because the last update time: %s is NOT greater "
+            LOG.warn(String.format("NOT forcing cache refresh for: %s because the last update time: %s is NOT greater "
                 + "than the last access time: %s", key, settingsServiceLastUpdateTimeMillisOpt.get(),
                 settingsServiceLastAccessTimeMillis));
             return false;
@@ -314,10 +317,10 @@ public class ArgumentsManager {
     private ResolvedSetting forceCacheRefresh(final SettingsServiceApiCall settingsServiceApiCall) throws ApiException
     {
         try {
-            okHttpClient.interceptors().add(FORCE_CACHE_REFRESH_CACHE_CONTROL_INTERCEPTOR);
+            okHttpClient.interceptors().add(forceCacheRefreshInterceptor);
             return settingsServiceApiCall.call();
         } finally {
-            okHttpClient.interceptors().removeIf(ForceCacheRefreshCacheControlInterceptor.class::isInstance);
+            okHttpClient.interceptors().removeIf(ForceCacheRefreshInterceptor.class::isInstance);
         }
     }
 
