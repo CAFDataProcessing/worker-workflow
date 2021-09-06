@@ -57,7 +57,7 @@ public class ArgumentsManagerTest {
                 .documentBuilder()
                 .build();
 
-        final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, "");
+        final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, settingsApi, "");
         argumentsManager.addArgumentsToDocument(argumentDefinitions, document, Optional.empty());
 
         final Gson gson = new Gson();
@@ -85,7 +85,7 @@ public class ArgumentsManagerTest {
                 .documentBuilder()
                 .build();
 
-        final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, "");
+        final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, settingsApi, "");
         argumentsManager.addArgumentsToDocument(argumentDefinitions, document, Optional.empty());
 
         final Gson gson = new Gson();
@@ -112,7 +112,7 @@ public class ArgumentsManagerTest {
                 .documentBuilder()
                 .build();
 
-        final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, "");
+        final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, settingsApi, "");
         argumentsManager.addArgumentsToDocument(argumentDefinitions, document, Optional.empty());
 
         final Gson gson = new Gson();
@@ -145,7 +145,7 @@ public class ArgumentsManagerTest {
                 .documentBuilder()
                 .build();
 
-        final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, "");
+        final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, settingsApi, "");
         argumentsManager.addArgumentsToDocument(argumentDefinitions, document, Optional.empty());
 
         final Gson gson = new Gson();
@@ -178,7 +178,7 @@ public class ArgumentsManagerTest {
                 .documentBuilder()
                 .build();
 
-        final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, "");
+        final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, settingsApi, "");
         argumentsManager.addArgumentsToDocument(argumentDefinitions, document, Optional.empty());
 
         final Gson gson = new Gson();
@@ -211,7 +211,7 @@ public class ArgumentsManagerTest {
                 .addFieldValue("repositoryId", "rId2")
                 .documentBuilder()
                 .build();
-        final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, "");
+        final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, settingsApi, "");
         argumentsManager.addArgumentsToDocument(argumentDefinitions, document, Optional.empty());
 
         final Gson gson = new Gson();
@@ -245,7 +245,7 @@ public class ArgumentsManagerTest {
                 .addFieldValue("wkbkId", "wId2")
                 .documentBuilder()
                 .build();
-        final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, "");
+        final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, settingsApi, "");
         argumentsManager.addArgumentsToDocument(argumentDefinitions, document, Optional.empty());
 
         final Gson gson = new Gson();
@@ -281,7 +281,7 @@ public class ArgumentsManagerTest {
                 .addFieldValue("caseId", "cId")
                 .documentBuilder()
                 .build();
-        final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, "");
+        final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, settingsApi, "");
         argumentsManager.addArgumentsToDocument(argumentDefinitions, document, Optional.empty());
 
         final Gson gson = new Gson();
@@ -318,7 +318,7 @@ public class ArgumentsManagerTest {
                 .addFieldValue("caseId", "cId")
                 .documentBuilder()
                 .build();
-        final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, "");
+        final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, settingsApi, "");
         argumentsManager.addArgumentsToDocument(argumentDefinitions, document, Optional.empty());
 
         final Gson gson = new Gson();
@@ -355,7 +355,7 @@ public class ArgumentsManagerTest {
                 .addFieldValue("caseId", "cId")
                 .documentBuilder()
                 .build();
-        final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, "");
+        final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, settingsApi, "");
         argumentsManager.addArgumentsToDocument(argumentDefinitions, document, Optional.empty());
 
         final Gson gson = new Gson();
@@ -404,7 +404,7 @@ public class ArgumentsManagerTest {
                 .documentBuilder()
                 .build();
 
-        final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, "");
+        final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, settingsApi, "");
         argumentsManager.addArgumentsToDocument(argumentDefinitions, document, Optional.empty());
   
         final Type type = new TypeToken<Map<String, String>>() {}.getType();

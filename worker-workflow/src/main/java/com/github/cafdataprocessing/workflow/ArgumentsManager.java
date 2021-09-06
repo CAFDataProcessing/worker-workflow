@@ -47,20 +47,45 @@ public class ArgumentsManager {
 
     private final Gson gson = new Gson();
     private final SettingsApi settingsApi;
-    private final OkHttpClient okHttpClient;
-    private final ForceCacheRefreshInterceptor forceCacheRefreshInterceptor;
+    private final SettingsApi forceCacheRefreshSettingsApi;
     private final Map<SettingsServiceLastAccessTimeMapKey, Long> settingsServiceLastAccessTimeMap;
 
     public ArgumentsManager(final String settingsServiceUrl)
     {
-        this(new SettingsApi(), settingsServiceUrl);
+        this(new SettingsApi(), new SettingsApi(), settingsServiceUrl);
     }
 
-    public ArgumentsManager(final SettingsApi settingsApi, final String settingsServiceUrl){
+    public ArgumentsManager(
+        final SettingsApi settingsApi,
+        final SettingsApi forceCacheRefreshSettingsApi,
+        final String settingsServiceUrl){
         Objects.requireNonNull(settingsApi);
+        Objects.requireNonNull(forceCacheRefreshSettingsApi);
         Objects.requireNonNull(settingsServiceUrl);
+
+        // Client that will cache responses
         this.settingsApi = settingsApi;
-        okHttpClient = new OkHttpClient();
+        final OkHttpClient okHttpClient = createOkHttpClient();
+        final ApiClient apiClient = createApiClient(settingsServiceUrl, okHttpClient);
+        this.settingsApi.setApiClient(apiClient);
+
+        // Client that will force a cache refresh
+        this.forceCacheRefreshSettingsApi = forceCacheRefreshSettingsApi;
+        final OkHttpClient forceCacheRefreshOkHttpClient = okHttpClient.clone(); // Cache is shared between both clients
+        forceCacheRefreshOkHttpClient.interceptors().add(new ForceCacheRefreshInterceptor());
+        final ApiClient forceCacheRefreshApiClient = createApiClient(settingsServiceUrl, forceCacheRefreshOkHttpClient);
+        this.forceCacheRefreshSettingsApi.setApiClient(forceCacheRefreshApiClient);
+
+        this.settingsServiceLastAccessTimeMap
+            = ExpiringMap
+                .builder()
+                .expiration(SETTINGS_SERVICE_CACHE_EXPIRATION_TIME_MINUTES, TimeUnit.MINUTES)
+                .build();
+    }
+
+    private OkHttpClient createOkHttpClient() throws RuntimeException
+    {
+        final OkHttpClient okHttpClient = new OkHttpClient();
         final File settingsServiceCacheDirectory;
         try {
             settingsServiceCacheDirectory = Files.createTempDirectory(SETTINGS_SERVICE_CACHE_TEMP_DIRECTORY_PREFIX).toFile();
@@ -71,22 +96,21 @@ public class ArgumentsManager {
         okHttpClient.setCache(cache);
         okHttpClient.networkInterceptors().add(new SetCacheMaxAgeInterceptor());
         okHttpClient.networkInterceptors().add(new RecordLastAccessTimeInterceptor());
+        return okHttpClient;
+    }
+
+    private static ApiClient createApiClient(final String settingsServiceUrl, final OkHttpClient okHttpClient)
+    {
         final ApiClient apiClient = new ApiClient();
         apiClient.setBasePath(settingsServiceUrl);
         apiClient.setHttpClient(okHttpClient);
-        settingsApi.setApiClient(apiClient);
-        forceCacheRefreshInterceptor = new ForceCacheRefreshInterceptor();
-        settingsServiceLastAccessTimeMap
-            = ExpiringMap
-                .builder()
-                .expiration(SETTINGS_SERVICE_CACHE_EXPIRATION_TIME_MINUTES, TimeUnit.MINUTES)
-                .build();
+        return apiClient;
     }
 
-    private final class SetCacheMaxAgeInterceptor implements Interceptor
+    private static final class SetCacheMaxAgeInterceptor implements Interceptor
     {
         @Override
-        public Response intercept(Interceptor.Chain chain) throws IOException
+        public Response intercept(final Interceptor.Chain chain) throws IOException
         {
             final Request request = chain.request();
             final Response response = chain.proceed(request);
@@ -104,7 +128,7 @@ public class ArgumentsManager {
         }
     }
  
-    private final class ForceCacheRefreshInterceptor implements Interceptor
+    private static final class ForceCacheRefreshInterceptor implements Interceptor
     {
         @Override
         public Response intercept(Interceptor.Chain chain) throws IOException
@@ -252,12 +276,9 @@ public class ArgumentsManager {
 
         final ResolvedSetting resolvedSetting;
         try {
-            if (shouldForceCacheRefresh(name, scopes, priorities, settingsServiceLastUpdateTimeMillisOpt)) {
-                resolvedSetting = forceCacheRefresh(
-                    () -> settingsApi.getResolvedSetting(name, String.join(",", scopes), String.join(",", priorities)));
-            } else {
-                resolvedSetting = settingsApi.getResolvedSetting(name, String.join(",", scopes), String.join(",", priorities));
-            }
+            resolvedSetting = shouldForceCacheRefresh(name, scopes, priorities, settingsServiceLastUpdateTimeMillisOpt)
+                ? forceCacheRefreshSettingsApi.getResolvedSetting(name, String.join(",", scopes), String.join(",", priorities))
+                : settingsApi.getResolvedSetting(name, String.join(",", scopes), String.join(",", priorities));
         } catch (final ApiException e) {
             if(e.getCode()==404){
                 LOG.warn(String.format("Setting [%s] was not found in the settings service.", name));
@@ -274,7 +295,7 @@ public class ArgumentsManager {
     @SuppressWarnings("unused")
     public void checkHealth() {
         try {
-            settingsApi.getSetting("healthcheck");
+            final Setting setting = settingsApi.getSetting("healthcheck");
         }
         catch (final ApiException ex){
             if(ex.getCode()!=404){
@@ -312,22 +333,6 @@ public class ArgumentsManager {
                 settingsServiceLastAccessTimeMillis));
             return false;
         }
-    }
-
-    private ResolvedSetting forceCacheRefresh(final SettingsServiceApiCall settingsServiceApiCall) throws ApiException
-    {
-        try {
-            okHttpClient.interceptors().add(forceCacheRefreshInterceptor);
-            return settingsServiceApiCall.call();
-        } finally {
-            okHttpClient.interceptors().removeIf(ForceCacheRefreshInterceptor.class::isInstance);
-        }
-    }
-
-    @FunctionalInterface
-    private interface SettingsServiceApiCall
-    {
-        public ResolvedSetting call() throws ApiException;
     }
 
     private static final class SettingsServiceLastAccessTimeMapKey
@@ -369,13 +374,11 @@ public class ArgumentsManager {
         @Override
         public int hashCode()
         {
-            int hash = 5;
-            hash = 97 * hash + Objects.hashCode(this.key);
-            return hash;
+            return key.hashCode();
         }
 
         @Override
-        public boolean equals(Object obj)
+        public boolean equals(final Object obj)
         {
             if (this == obj) {
                 return true;
@@ -383,7 +386,7 @@ public class ArgumentsManager {
             if (obj == null) {
                 return false;
             }
-            if (getClass() != obj.getClass()) {
+            if (!(obj instanceof SettingsServiceLastAccessTimeMapKey)) {
                 return false;
             }
             final SettingsServiceLastAccessTimeMapKey other = (SettingsServiceLastAccessTimeMapKey) obj;

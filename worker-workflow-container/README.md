@@ -24,6 +24,13 @@ A tenant ID that can be used in the evaluation of the workflow. This is required
 
 The name of the workflow to script to use. This is required.
 
+#### settingsServiceLastUpdateTimeMillis
+
+The last time (in milliseconds, of type `long`) the Settings Service was updated, for example `1630591453107`. When a setting is fetched
+from the Settings Service, the Workflow Worker caches it for a maximum time of 5 minutes. This optional property can be supplied in order
+to force a refresh of the Settings Service cache, in the scenario where a setting has been updated after it has been cached and before
+the normal cache expiration time.
+
 ### Output Task Scripts
 
 The worker adds the following script to the document task of its response.

@@ -49,7 +49,7 @@ public class WorkflowWorkerTest
         workflowWorkerConfiguration.setWorkflowsDirectory(WorkflowDirectoryProvider.getWorkflowDirectory("workflow-worker-test"));
         workflowWorkerConfiguration.setSettingsServiceUrl("mocked service");
 
-        final ArgumentsManager argumentsManager = new ArgumentsManager(mock(SettingsApi.class),
+        final ArgumentsManager argumentsManager = new ArgumentsManager(mock(SettingsApi.class), mock(SettingsApi.class),
                 workflowWorkerConfiguration.getSettingsServiceUrl());
         try {
             final Document document = DocumentBuilder.configure().build();
