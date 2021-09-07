@@ -131,7 +131,7 @@ public class ArgumentsManager {
     private static final class ForceCacheRefreshInterceptor implements Interceptor
     {
         @Override
-        public Response intercept(Interceptor.Chain chain) throws IOException
+        public Response intercept(final Interceptor.Chain chain) throws IOException
         {
             final CacheControl cacheControl = new CacheControl.Builder()
                 .noCache()
@@ -145,7 +145,7 @@ public class ArgumentsManager {
     private final class RecordLastAccessTimeInterceptor implements Interceptor
     {
         @Override
-        public Response intercept(Interceptor.Chain chain) throws IOException
+        public Response intercept(final Interceptor.Chain chain) throws IOException
         {
             final Request request = chain.request();
             final Response response = chain.proceed(request);
@@ -276,9 +276,9 @@ public class ArgumentsManager {
 
         final ResolvedSetting resolvedSetting;
         try {
-            resolvedSetting = shouldForceCacheRefresh(name, scopes, priorities, settingsServiceLastUpdateTimeMillisOpt)
-                ? forceCacheRefreshSettingsApi.getResolvedSetting(name, String.join(",", scopes), String.join(",", priorities))
-                : settingsApi.getResolvedSetting(name, String.join(",", scopes), String.join(",", priorities));
+            resolvedSetting = (shouldForceCacheRefresh(name, scopes, priorities, settingsServiceLastUpdateTimeMillisOpt)
+                ? forceCacheRefreshSettingsApi : settingsApi)
+                .getResolvedSetting(name, String.join(",", scopes), String.join(",", priorities));
         } catch (final ApiException e) {
             if(e.getCode()==404){
                 LOG.warn(String.format("Setting [%s] was not found in the settings service.", name));
