@@ -25,6 +25,7 @@ import com.hpe.caf.worker.document.model.Field;
 import com.hpe.caf.worker.document.model.HealthMonitor;
 import com.hpe.caf.worker.document.model.ResponseCustomData;
 import com.hpe.caf.worker.document.model.Task;
+import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +42,7 @@ public final class WorkflowWorker implements DocumentWorker
     private static final Logger LOG = LoggerFactory.getLogger(WorkflowWorker.class);
     private static final String TENANT_ID_KEY = "tenantId";
     private static final String CORRELATION_ID_KEY = "correlationId";
+    private static final String SETTINGS_SERVICE_LAST_UPDATE_TIME_MILLIS_KEY = "settingsServiceLastUpdateTimeMillis";
     private final WorkflowManager workflowManager;
     private final ScriptManager scriptManager;
     private final ArgumentsManager argumentsManager;
@@ -141,8 +143,20 @@ public final class WorkflowWorker implements DocumentWorker
             return;
         }
 
+        final Optional<Long> settingsServiceLastUpdateTimeMillisOpt;
+        try {
+            settingsServiceLastUpdateTimeMillisOpt = getSettingsServiceLastUpdateTimeMillis(document);
+        } catch (final NumberFormatException e) {
+            final String errorMessage = String.format(
+                "Custom data property [%s] for document [%s] could not be converted to an instance of Long [%s]",
+                SETTINGS_SERVICE_LAST_UPDATE_TIME_MILLIS_KEY, document.getReference(), e.getMessage());
+            LOG.error(errorMessage);
+            document.addFailure("WORKFLOW_CUSTOM_DATA_INVALID", errorMessage);
+            return;
+        }
+
         failureFieldsManager.handleExtraFailureSubFields(document);
-        argumentsManager.addArgumentsToDocument(workflow.getArguments(), document);
+        argumentsManager.addArgumentsToDocument(workflow.getArguments(), document, settingsServiceLastUpdateTimeMillisOpt);
 
         try {
             scriptManager.applyScriptToDocument(workflow, document);
@@ -188,5 +202,14 @@ public final class WorkflowWorker implements DocumentWorker
         return (correlationId == null)
             ? UUID.randomUUID().toString()
             : correlationId;
+    }
+
+    private static Optional<Long> getSettingsServiceLastUpdateTimeMillis(final Document document) throws NumberFormatException
+    {
+        final String settingsServiceLastUpdateTimeString = document.getCustomData(SETTINGS_SERVICE_LAST_UPDATE_TIME_MILLIS_KEY);
+        if (Strings.isNullOrEmpty(settingsServiceLastUpdateTimeString)) {
+            return Optional.empty();
+        }
+        return Optional.of(Long.parseLong(settingsServiceLastUpdateTimeString));
     }
 }

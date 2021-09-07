@@ -16,6 +16,7 @@
 package com.github.cafdataprocessing.workflow;
 
 import com.github.cafdataprocessing.workflow.model.ArgumentDefinition;
+import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.hpe.caf.worker.document.exceptions.DocumentWorkerTransientException;
@@ -25,7 +26,9 @@ import com.microfocus.darwin.settings.client.*;
 import com.squareup.okhttp.*;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
+import java.time.Instant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,26 +36,55 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
+import net.jodah.expiringmap.ExpiringMap;
 
 public class ArgumentsManager {
 
     private final static Logger LOG = LoggerFactory.getLogger(ArgumentsManager.class);
     private static final int SETTINGS_SERVICE_CACHE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MiB
     private static final String SETTINGS_SERVICE_CACHE_TEMP_DIRECTORY_PREFIX = "settings-service-http-cache";
+    private static final int SETTINGS_SERVICE_CACHE_EXPIRATION_TIME_MINUTES = 5;
 
     private final Gson gson = new Gson();
     private final SettingsApi settingsApi;
+    private final SettingsApi forceCacheRefreshSettingsApi;
+    private final Map<SettingsServiceLastAccessTimeMapKey, Long> settingsServiceLastAccessTimeMap;
 
     public ArgumentsManager(final String settingsServiceUrl)
     {
-        this(new SettingsApi(), settingsServiceUrl);
+        this(new SettingsApi(), new SettingsApi(), settingsServiceUrl);
     }
 
-    public ArgumentsManager(final SettingsApi settingsApi, final String settingsServiceUrl){
+    public ArgumentsManager(
+        final SettingsApi settingsApi,
+        final SettingsApi forceCacheRefreshSettingsApi,
+        final String settingsServiceUrl){
         Objects.requireNonNull(settingsApi);
+        Objects.requireNonNull(forceCacheRefreshSettingsApi);
         Objects.requireNonNull(settingsServiceUrl);
+
+        // Client that will cache responses
         this.settingsApi = settingsApi;
+        final OkHttpClient okHttpClient = createOkHttpClient();
+        final ApiClient apiClient = createApiClient(settingsServiceUrl, okHttpClient);
+        this.settingsApi.setApiClient(apiClient);
+
+        // Client that will force a cache refresh
+        this.forceCacheRefreshSettingsApi = forceCacheRefreshSettingsApi;
+        final OkHttpClient forceCacheRefreshOkHttpClient = okHttpClient.clone(); // Cache is shared between both clients
+        forceCacheRefreshOkHttpClient.interceptors().add(new ForceCacheRefreshInterceptor());
+        final ApiClient forceCacheRefreshApiClient = createApiClient(settingsServiceUrl, forceCacheRefreshOkHttpClient);
+        this.forceCacheRefreshSettingsApi.setApiClient(forceCacheRefreshApiClient);
+
+        this.settingsServiceLastAccessTimeMap
+            = ExpiringMap
+                .builder()
+                .expiration(SETTINGS_SERVICE_CACHE_EXPIRATION_TIME_MINUTES, TimeUnit.MINUTES)
+                .build();
+    }
+
+    private OkHttpClient createOkHttpClient() throws RuntimeException
+    {
         final OkHttpClient okHttpClient = new OkHttpClient();
         final File settingsServiceCacheDirectory;
         try {
@@ -62,27 +94,75 @@ public class ArgumentsManager {
         }
         final Cache cache = new Cache(settingsServiceCacheDirectory, SETTINGS_SERVICE_CACHE_SIZE_BYTES);
         okHttpClient.setCache(cache);
-        okHttpClient.networkInterceptors().add(getCacheControlInterceptor());
+        okHttpClient.networkInterceptors().add(new SetCacheMaxAgeInterceptor());
+        okHttpClient.networkInterceptors().add(new RecordLastAccessTimeInterceptor());
+        return okHttpClient;
+    }
+
+    private static ApiClient createApiClient(final String settingsServiceUrl, final OkHttpClient okHttpClient)
+    {
         final ApiClient apiClient = new ApiClient();
         apiClient.setBasePath(settingsServiceUrl);
         apiClient.setHttpClient(okHttpClient);
-        settingsApi.setApiClient(apiClient);
+        return apiClient;
     }
 
-    private Interceptor getCacheControlInterceptor() {
-        return chain -> {
-            final Response response = chain.proceed(chain.request());
-            final CacheControl cacheControl = new CacheControl.Builder()
-                    .maxAge(5, TimeUnit.MINUTES)
+    private static final class SetCacheMaxAgeInterceptor implements Interceptor
+    {
+        @Override
+        public Response intercept(final Interceptor.Chain chain) throws IOException
+        {
+            final Request request = chain.request();
+            final Response response = chain.proceed(request);
+            if (isCacheableResponse(response)) {
+                final CacheControl cacheControl = new CacheControl.Builder()
+                    .maxAge(SETTINGS_SERVICE_CACHE_EXPIRATION_TIME_MINUTES, TimeUnit.MINUTES)
                     .build();
 
-            return response.newBuilder()
+                return response.newBuilder()
                     .header("Cache-Control", cacheControl.toString())
                     .build();
-        };
+            } else {
+                return response;
+            }
+        }
+    }
+ 
+    private static final class ForceCacheRefreshInterceptor implements Interceptor
+    {
+        @Override
+        public Response intercept(final Interceptor.Chain chain) throws IOException
+        {
+            final CacheControl cacheControl = new CacheControl.Builder()
+                .noCache()
+                .build();
+            final Request originalRequest = chain.request();
+            final Request forceCacheRefreshRequest = originalRequest.newBuilder().cacheControl(cacheControl).build();
+            return chain.proceed(forceCacheRefreshRequest);
+        }
     }
 
-    public void addArgumentsToDocument(final List<ArgumentDefinition> argumentDefinitions, final Document document)
+    private final class RecordLastAccessTimeInterceptor implements Interceptor
+    {
+        @Override
+        public Response intercept(final Interceptor.Chain chain) throws IOException
+        {
+            final Request request = chain.request();
+            final Response response = chain.proceed(request);
+            if (isCacheableResponse(response)) {
+                final SettingsServiceLastAccessTimeMapKey key = SettingsServiceLastAccessTimeMapKey.from(request.uri());
+                final long now = Instant.now().toEpochMilli();
+                settingsServiceLastAccessTimeMap.put(key, now);
+                LOG.debug(String.format("Recorded last access time for: %s as: %s", key, now));
+            }
+            return response;
+        }
+    }
+
+    public void addArgumentsToDocument(
+        final List<ArgumentDefinition> argumentDefinitions,
+        final Document document,
+        final Optional<Long> settingsServiceLastUpdateTimeMillisOpt)
             throws DocumentWorkerTransientException {
           
         // If processing a poison document (a document that a downstream worker has redirected
@@ -115,7 +195,8 @@ public class ArgumentsManager {
                             break;
                         }
                         case SETTINGS_SERVICE: {
-                            value = getFromSettingService(source.getName(), source.getOptions(), document);
+                            value = getFromSettingService(
+                                source.getName(), source.getOptions(), document, settingsServiceLastUpdateTimeMillisOpt);
                             break;
                         }
                         default: {
@@ -141,7 +222,11 @@ public class ArgumentsManager {
         document.getField("CAF_WORKFLOW_SETTINGS").set(gson.toJson(arguments));
     }
 
-    private String getFromSettingService(final String name, final String options, final Document document)
+    private String getFromSettingService(
+        final String name,
+        final String options,
+        final Document document,
+        final Optional<Long> settingsServiceLastUpdateTimeMillisOpt)
             throws DocumentWorkerTransientException {
 
         final Pattern pattern = Pattern.compile("(?<prefix>[a-zA-Z-_.]*)%(?<type>f|cd):(?<name>[a-zA-Z-_.]*)%(?<suffix>[a-zA-Z-_.]*)");
@@ -191,7 +276,9 @@ public class ArgumentsManager {
 
         final ResolvedSetting resolvedSetting;
         try {
-            resolvedSetting = settingsApi.getResolvedSetting(name, String.join(",", scopes), String.join(",", priorities));
+            resolvedSetting = (shouldForceCacheRefresh(name, scopes, priorities, settingsServiceLastUpdateTimeMillisOpt)
+                ? forceCacheRefreshSettingsApi : settingsApi)
+                .getResolvedSetting(name, String.join(",", scopes), String.join(",", priorities));
         } catch (final ApiException e) {
             if(e.getCode()==404){
                 LOG.warn(String.format("Setting [%s] was not found in the settings service.", name));
@@ -214,6 +301,102 @@ public class ArgumentsManager {
             if(ex.getCode()!=404){
                 throw new RuntimeException(ex.getMessage(), ex);
             }
+        }
+    }
+
+    private static boolean isCacheableResponse(final Response response)
+    {
+        return !response.request().urlString().contains("healthcheck") && response.isSuccessful();
+    }
+
+    private boolean shouldForceCacheRefresh(
+        final String settingName,
+        final List<String> scopes,
+        final List<String> priorities,
+        final Optional<Long> settingsServiceLastUpdateTimeMillisOpt)
+    {
+        if (!settingsServiceLastUpdateTimeMillisOpt.isPresent()) {
+            return false;
+        }
+        final SettingsServiceLastAccessTimeMapKey key = SettingsServiceLastAccessTimeMapKey.from(settingName, scopes, priorities);
+        final Long settingsServiceLastAccessTimeMillis = settingsServiceLastAccessTimeMap.get(key);
+        if (settingsServiceLastAccessTimeMillis == null) {
+            return true;
+        }
+        if (settingsServiceLastUpdateTimeMillisOpt.get() > settingsServiceLastAccessTimeMillis) {
+            LOG.debug(String.format("Forcing cache refresh for: %s because the last update time: %s is greater than "
+                + "the last access time: %s", key, settingsServiceLastUpdateTimeMillisOpt.get(), settingsServiceLastAccessTimeMillis));
+            return true;
+        }  else {
+            LOG.debug(String.format("NOT forcing cache refresh for: %s because the last update time: %s is NOT greater "
+                + "than the last access time: %s", key, settingsServiceLastUpdateTimeMillisOpt.get(),
+                settingsServiceLastAccessTimeMillis));
+            return false;
+        }
+    }
+
+    private static final class SettingsServiceLastAccessTimeMapKey
+    {
+        private final String key;
+
+        private SettingsServiceLastAccessTimeMapKey(final String key)
+        {
+            this.key = key;
+        }
+
+        public static SettingsServiceLastAccessTimeMapKey from(final URI uri)
+        {
+            final String key = String.format("%s?%s", uri.getPath(), uri.getQuery());
+            return new SettingsServiceLastAccessTimeMapKey(key);
+        }
+
+        public static SettingsServiceLastAccessTimeMapKey from(
+            final String settingName,
+            final List<String> scopes,
+            final List<String> priorities)
+        {
+            final String scopesUrlQueryParam = (scopes != null && !scopes.isEmpty())
+                ? "scopes=" + String.join(",", scopes)
+                : null;
+            final String prioritiesUrlQueryParam = (priorities != null && !priorities.isEmpty())
+                ? "priorities=" + String.join(",", priorities)
+                : null;
+            final String urlQueryParams = Joiner.on("&").skipNulls().join(
+                scopesUrlQueryParam,
+                prioritiesUrlQueryParam
+            );
+            final String key = urlQueryParams != null
+                ? String.format("/settings/%s/resolved?%s", settingName, urlQueryParams)
+                : String.format("/settings/%s/resolved", settingName);
+            return new SettingsServiceLastAccessTimeMapKey(key);
+        }
+
+        @Override
+        public int hashCode()
+        {
+            return key.hashCode();
+        }
+
+        @Override
+        public boolean equals(final Object obj)
+        {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (!(obj instanceof SettingsServiceLastAccessTimeMapKey)) {
+                return false;
+            }
+            final SettingsServiceLastAccessTimeMapKey other = (SettingsServiceLastAccessTimeMapKey) obj;
+            return Objects.equals(this.key, other.key);
+        }
+
+        @Override
+        public String toString()
+        {
+            return key;
         }
     }
 }
