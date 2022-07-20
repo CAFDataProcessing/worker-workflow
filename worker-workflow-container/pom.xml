@@ -274,7 +274,7 @@
                         <!-- Settings database -->
                         <image>
                             <alias>settings-db</alias>
-                            <name>${dockerHubPublic}/library/postgres:11</name>
+                            <name>${dockerHubPublic}/library/postgres:14</name>
                             <run>
                                 <ports>
                                     <port>${settings.postgres.db.port}:5432</port>
