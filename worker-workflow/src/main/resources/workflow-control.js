@@ -385,3 +385,17 @@ function fieldHasStringValue(document, fieldName, value) {
 
     return false;
 }
+
+function fieldHasAnyStringValue(document, fieldName, values) {
+    var valueFound = false;
+
+    if(fieldValues)
+    {
+        values.forEach(currentValue => {
+            if(fieldHasStringValue(fieldValues, currentValue)) {
+                valueFound = true;
+            }
+        });
+    }
+    return valueFound;
+}
