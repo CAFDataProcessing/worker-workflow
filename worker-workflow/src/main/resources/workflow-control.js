@@ -371,31 +371,34 @@ function isEmptyMap(mapValue) {
     return jsonString === '{}';
 }
 
+function searchFieldsForValue(fieldValues, value) {
+    for (var fieldValue of fieldValues) {
+        if (fieldValue.isStringValue() && fieldValue.getStringValue() === value) {
+            return true;
+        }
+    }
+    return false;
+}
+
 function fieldHasStringValue(document, fieldName, value) {
 
     var fieldValues = document.getField(fieldName).getValues();
     if (fieldValues)
     {
-        for (var fieldValue of fieldValues) {
-            if (fieldValue.isStringValue() && fieldValue.getStringValue() === value) {
-                return true;
-            }
-        }
+        return searchFieldsForValue(fieldValues, value);
     }
-
-    return false;
 }
 
 function fieldHasAnyStringValue(document, fieldName, values) {
     var valueFound = false;
+    var fieldValues = document.getField(fieldName).getValues();
 
-    if(fieldValues)
-    {
-        values.forEach(currentValue => {
-            if(fieldHasStringValue(fieldValues, currentValue)) {
-                valueFound = true;
+    if(fieldValues && values) {
+        for (var value of values) {
+                if(searchFieldsForValue(fieldValues, value)) {
+                    valueFound = true;
             }
-        });
+        }
     }
     return valueFound;
 }
