@@ -380,7 +380,7 @@ function isFieldValueEqualToValue(fieldValue, value) {
 
 function fieldHasStringValue(document, fieldName, value) {
     var fieldValues = document.getField(fieldName).getValues();
-    for(fieldValue of fieldValues) {
+    for(const fieldValue of fieldValues) {
         return isFieldValueEqualToValue(fieldValue, value);
     }
 }
@@ -388,7 +388,7 @@ function fieldHasStringValue(document, fieldName, value) {
 function fieldHasAnyStringValue(document, fieldName, values) {
     var fieldValues = document.getField(fieldName).getValues();
 
-    for(fieldValue of fieldValues) {
+    for(const fieldValue of fieldValues) {
         for (var value of values) {
             if(isFieldValueEqualToValue(fieldValue, value)) {
                 return true;
