@@ -389,7 +389,7 @@ function fieldHasAnyStringValue(document, fieldName, values) {
     var fieldValues = document.getField(fieldName).getValues();
 
     for(const fieldValue of fieldValues) {
-        for (var value of values) {
+        for (const value of values) {
             if(isFieldValueEqualToValue(fieldValue, value)) {
                 return true;
             }
