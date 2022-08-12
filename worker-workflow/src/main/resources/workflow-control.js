@@ -383,21 +383,17 @@ function searchFieldsForValue(fieldValues, value) {
 function fieldHasStringValue(document, fieldName, value) {
 
     var fieldValues = document.getField(fieldName).getValues();
-    if (fieldValues)
-    {
-        return searchFieldsForValue(fieldValues, value);
-    }
+
+    return searchFieldsForValue(fieldValues, value);
 }
 
 function fieldHasAnyStringValue(document, fieldName, values) {
     var valueFound = false;
     var fieldValues = document.getField(fieldName).getValues();
 
-    if(fieldValues && values) {
-        for (var value of values) {
-                if(searchFieldsForValue(fieldValues, value)) {
-                    valueFound = true;
-            }
+    for (var value of values) {
+            if(searchFieldsForValue(fieldValues, value)) {
+                valueFound = true;
         }
     }
     return valueFound;
