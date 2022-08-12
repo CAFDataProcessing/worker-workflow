@@ -1426,8 +1426,6 @@ public class WorkflowControlTest
     @Test
     public void fieldHasAnyStringValueTestReturnsTrue() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
-        // test processFailures() function with multiple failures and no original ones
-
         final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
 
         final Document document = DocumentBuilder.configure().withFields()

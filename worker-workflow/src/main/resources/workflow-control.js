@@ -371,7 +371,7 @@ function isEmptyMap(mapValue) {
     return jsonString === '{}';
 }
 
-function searchFieldsForValue(fieldValues, value) {
+function isFieldValueEqualToValue(fieldValue, value) {
     if (fieldValue.isStringValue() && fieldValue.getStringValue() === value) {
         return true;
     }
@@ -381,7 +381,7 @@ function searchFieldsForValue(fieldValues, value) {
 function fieldHasStringValue(document, fieldName, value) {
     var fieldValues = document.getField(fieldName).getValues();
     for(fieldValue of fieldValues) {
-        return searchFieldsForValue(fieldValues, value);
+        return isFieldValueEqualToValue(fieldValue, value);
     }
 }
 
@@ -390,7 +390,7 @@ function fieldHasAnyStringValue(document, fieldName, values) {
 
     for(fieldValue of fieldValues) {
         for (var value of values) {
-            if(searchFieldsForValue(fieldValues, value)) {
+            if(isFieldValueEqualToValue(fieldValue, value)) {
                 return true;
             }
         }
