@@ -372,28 +372,28 @@ function isEmptyMap(mapValue) {
 }
 
 function searchFieldsForValue(fieldValues, value) {
-    for (var fieldValue of fieldValues) {
-        if (fieldValue.isStringValue() && fieldValue.getStringValue() === value) {
-            return true;
-        }
+    if (fieldValue.isStringValue() && fieldValue.getStringValue() === value) {
+        return true;
     }
     return false;
 }
 
 function fieldHasStringValue(document, fieldName, value) {
-
     var fieldValues = document.getField(fieldName).getValues();
-
-    return searchFieldsForValue(fieldValues, value);
+    for(fieldValue of fieldValues) {
+        return searchFieldsForValue(fieldValues, value);
+    }
 }
 
 function fieldHasAnyStringValue(document, fieldName, values) {
     var valueFound = false;
     var fieldValues = document.getField(fieldName).getValues();
 
-    for (var value of values) {
+    for(fieldValue of fieldValues) {
+        for (var value of values) {
             if(searchFieldsForValue(fieldValues, value)) {
                 valueFound = true;
+            }
         }
     }
     return valueFound;
