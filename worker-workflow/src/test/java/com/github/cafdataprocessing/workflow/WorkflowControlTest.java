@@ -1385,4 +1385,79 @@ public class WorkflowControlTest
         final String result2 = (String) invocable.invokeFunction("getCurrentWorkerVersion", document2);
         assertThat(result2, is(equalTo(("5.6.2-SNAPSHOT"))));
     }
+
+    @Test
+    public void fieldHasStringValueTestReturnsTrue() throws ScriptException, NoSuchMethodException, WorkerException, IOException
+    {
+        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+
+        final Document document = DocumentBuilder.configure().withFields()
+                .addFieldValue("CONTENT_PRIMARY", "Some content")
+                .addFieldValue("TYPE", "1")
+                .documentBuilder().build();
+
+        String value = "1";
+
+        final boolean functionResult = (boolean) invocable.invokeFunction("fieldHasStringValue", document, "TYPE", value);
+
+        Assert.assertTrue(functionResult);
+
+    }
+
+    @Test
+    public void fieldHasStringValueTestReturnsFalse() throws ScriptException, NoSuchMethodException, WorkerException, IOException
+    {
+
+        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+
+        final Document document = DocumentBuilder.configure().withFields()
+                .addFieldValue("CONTENT_PRIMARY", "Some content")
+                .addFieldValue("TYPE", "1")
+                .documentBuilder().build();
+
+        String value = "100";
+
+        final boolean functionResult = (boolean) invocable.invokeFunction("fieldHasStringValue", document, "TYPE", value);
+
+        Assert.assertFalse(functionResult);
+
+    }
+
+    @Test
+    public void fieldHasAnyStringValueTestReturnsTrue() throws ScriptException, NoSuchMethodException, WorkerException, IOException
+    {
+        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+
+        final Document document = DocumentBuilder.configure().withFields()
+                .addFieldValue("CONTENT_PRIMARY", "Some content")
+                .addFieldValue("TYPE", "1")
+                .documentBuilder().build();
+
+        String[] values = new String[] {"1", "2", "3", "4", "5"};
+
+        final boolean functionResult = (boolean) invocable.invokeFunction("fieldHasAnyStringValue", document, "TYPE", values);
+
+        Assert.assertTrue(functionResult);
+
+    }
+
+    @Test
+    public void fieldHasAnyStringValueTestReturnsFalse() throws ScriptException, NoSuchMethodException, WorkerException, IOException
+    {
+        // test processFailures() function with multiple failures and no original ones
+
+        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+
+        final Document document = DocumentBuilder.configure().withFields()
+                .addFieldValue("CONTENT_PRIMARY", "Some content")
+                .addFieldValue("TYPE", "1")
+                .documentBuilder().build();
+
+        String[] values = new String[] {"2", "3", "4", "5"};
+
+        final boolean functionResult = (boolean) invocable.invokeFunction("fieldHasAnyStringValue", document, "TYPE", values);
+
+        Assert.assertFalse(functionResult);
+
+    }
 }

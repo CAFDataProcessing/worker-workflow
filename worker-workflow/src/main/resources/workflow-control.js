@@ -371,17 +371,29 @@ function isEmptyMap(mapValue) {
     return jsonString === '{}';
 }
 
-function fieldHasStringValue(document, fieldName, value) {
+function isFieldValueEqualToValue(fieldValue, value) {
+    if (fieldValue.isStringValue() && fieldValue.getStringValue() === value) {
+        return true;
+    }
+    return false;
+}
 
+function fieldHasStringValue(document, fieldName, value) {
     var fieldValues = document.getField(fieldName).getValues();
-    if (fieldValues)
-    {
-        for (var fieldValue of fieldValues) {
-            if (fieldValue.isStringValue() && fieldValue.getStringValue() === value) {
+    for(const fieldValue of fieldValues) {
+        return isFieldValueEqualToValue(fieldValue, value);
+    }
+}
+
+function fieldHasAnyStringValue(document, fieldName, values) {
+    var fieldValues = document.getField(fieldName).getValues();
+
+    for(const fieldValue of fieldValues) {
+        for (const value of values) {
+            if(isFieldValueEqualToValue(fieldValue, value)) {
                 return true;
             }
         }
     }
-
     return false;
 }
