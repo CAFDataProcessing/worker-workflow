@@ -386,15 +386,14 @@ function fieldHasStringValue(document, fieldName, value) {
 }
 
 function fieldHasAnyStringValue(document, fieldName, values) {
-    var valueFound = false;
     var fieldValues = document.getField(fieldName).getValues();
 
     for(fieldValue of fieldValues) {
         for (var value of values) {
             if(searchFieldsForValue(fieldValues, value)) {
-                valueFound = true;
+                return true;
             }
         }
     }
-    return valueFound;
+    return false;
 }
