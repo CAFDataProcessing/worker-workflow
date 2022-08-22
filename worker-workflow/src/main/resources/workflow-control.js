@@ -371,6 +371,15 @@ function isEmptyMap(mapValue) {
     return jsonString === '{}';
 }
 
+function isValidGrammarSet(grammarSet) {
+    if(typeof grammarSet === 'string') {
+        if(grammarSet) {
+            return true;
+        }
+    }
+    return false;
+}
+
 function isFieldValueEqualToValue(fieldValue, value) {
     if (fieldValue.isStringValue() && fieldValue.getStringValue() === value) {
         return true;
