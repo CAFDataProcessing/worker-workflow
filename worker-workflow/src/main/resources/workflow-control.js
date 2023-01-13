@@ -21,7 +21,7 @@ var URL = Java.type("java.net.URL");
 var MDC = Java.type("org.slf4j.MDC");
 var UUID = Java.type("java.util.UUID");
 var ScriptEngineType = Java.type("com.hpe.caf.worker.document.model.ScriptEngineType");
-var MessageRouterSingleton = Java.type("com.microfocus.apollo.worker.prioritization.rerouting.MessageRouterSingleton");
+var MessageRouterSingleton;
 
 if(!ACTIONS){
     throw new UnsupportedOperationException ("Workflow script must define an ACTIONS object.");
@@ -154,7 +154,11 @@ function routeTask(rootDocument) {
 
                 rootDocument.getField('CAF_WORKFLOW_ACTION').add(action.name);
                 applyActionDetails(rootDocument, actionDetails, terminateOnFailure);
-                if(action.applyMessagePrioritization && MessageRouterSingleton) {
+                if(action.applyMessagePrioritization) {
+                    if(!MessageRouterSingleton) {
+                        MessageRouterSingleton = 
+                            Java.type("com.microfocus.apollo.worker.prioritization.rerouting.MessageRouterSingleton");
+                    }
                     MessageRouterSingleton.init();
                     MessageRouterSingleton.route(rootDocument);
                 }
