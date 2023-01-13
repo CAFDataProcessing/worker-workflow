@@ -158,8 +158,8 @@ function routeTask(rootDocument) {
                     if(!MessageRouterSingleton) {
                         MessageRouterSingleton = 
                             Java.type("com.microfocus.apollo.worker.prioritization.rerouting.MessageRouterSingleton");
+                        MessageRouterSingleton.init();
                     }
-                    MessageRouterSingleton.init();
                     MessageRouterSingleton.route(rootDocument);
                 }
                 break;
