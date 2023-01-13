@@ -25,6 +25,7 @@ public class Action {
     private Map<String, String> customData;
     private Script[] scripts;
     private boolean terminateOnFailure;
+    private boolean applyMessagePrioritization;
 
     public String getName() {
         return name;
@@ -68,4 +69,11 @@ public class Action {
         this.terminateOnFailure = terminateOnFailure;
     }
 
+    public boolean isApplyMessagePrioritization() {
+        return applyMessagePrioritization;
+    }
+
+    public void setApplyMessagePrioritization(boolean applyMessagePrioritization) {
+        this.applyMessagePrioritization = applyMessagePrioritization;
+    }
 }
