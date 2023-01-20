@@ -157,7 +157,7 @@ function routeTask(rootDocument) {
                 if(action.applyMessagePrioritization) {
                     if(!MessageRouterSingleton) {
                         var mrs = 
-                            Java.type("com.microfocus.apollo.worker.prioritization.rerouting.MessageRouterSingleton");
+                            Java.type("com.github.workerframework.workermessageprioritization.rerouting.MessageRouterSingleton");
                         mrs.init();
                         MessageRouterSingleton = mrs;
                     }
