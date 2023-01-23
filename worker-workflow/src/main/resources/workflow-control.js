@@ -148,7 +148,7 @@ function routeTask(e, rootDocument) {
 
     console.log("RORY TEMP DEBUG LOG - ACTIONS.length " + ACTIONS.length);
     for (var index = 0; index < ACTIONS.length; index++) {
-        console.log("RORY TEMP DEBUG LOG - ACTIONS[ " + index + "] is " + action.name);
+        console.log("RORY TEMP DEBUG LOG - ACTIONS[ " + index + "] is " + ACTIONS[index].name);
     }
     
     for (var index = 0; index < ACTIONS.length; index ++ ) {
