@@ -146,9 +146,11 @@ function routeTask(e, rootDocument) {
     console.log("RORY TEMP DEBUG LOG - previousAction " + previousAction);
     console.log("RORY TEMP DEBUG LOG - terminateOnFailure " + terminateOnFailure);
 
+    console.log("RORY TEMP DEBUG LOG - ACTIONS.length " + ACTIONS.length);
+    console.log("RORY TEMP DEBUG LOG - ACTIONS " + ACTIONS);
     for (var index = 0; index < ACTIONS.length; index ++ ) {
         var action = ACTIONS[index];
-        console.log("RORY TEMP DEBUG LOG - insode for loop, action is " + action.name);
+        console.log("RORY TEMP DEBUG LOG - Inside for loop, action is " + action.name);
         if (!isActionCompleted(rootDocument, action.name)) {
             console.log("RORY TEMP DEBUG LOG - action " + action.name + " is not completed");
             if(!action.conditionFunction || anyDocumentMatches(action.conditionFunction, rootDocument, args)) {
@@ -185,10 +187,10 @@ function routeTask(e, rootDocument) {
                 }
                 break;
             } else {
-                console.log("RORY TEMP DEBUG LOG - else block of !action.conditionFunction || anyDocumentMatches(action.conditionFunction, rootDocument, args)");
+                console.log("RORY TEMP DEBUG LOG - Not calling MessageRouter.route because !action.conditionFunction || anyDocumentMatches(action.conditionFunction, rootDocument, args) for action " + action.name);
             }
         } else {
-            console.log("RORY TEMP DEBUG LOG - action " + action.name + " is completed");
+            console.log("RORY TEMP DEBUG LOG - Not calling MessageRouter.route because " + action.name + " is completed");
         }
     }
 }
