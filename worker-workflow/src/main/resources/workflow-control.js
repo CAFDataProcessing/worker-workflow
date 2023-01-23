@@ -147,7 +147,10 @@ function routeTask(e, rootDocument) {
     console.log("RORY TEMP DEBUG LOG - terminateOnFailure " + terminateOnFailure);
 
     console.log("RORY TEMP DEBUG LOG - ACTIONS.length " + ACTIONS.length);
-    console.log("RORY TEMP DEBUG LOG - ACTIONS " + ACTIONS);
+    for (var index = 0; index < ACTIONS.length; index++) {
+        console.log("RORY TEMP DEBUG LOG - ACTIONS[ " + index + "] is " + action.name);
+    }
+    
     for (var index = 0; index < ACTIONS.length; index ++ ) {
         var action = ACTIONS[index];
         console.log("RORY TEMP DEBUG LOG - Inside for loop, action is " + action.name);
