@@ -137,22 +137,32 @@ function onError(errorEventObj) {
 
 function routeTask(e, rootDocument) {
 
+    console.log("RORY TEMP DEBUG LOG - Start of routeTask");
+    
     var args = extractArguments(rootDocument);
 
     var previousAction = markPreviousActionAsCompleted(rootDocument);
     var terminateOnFailure = getTerminateOnFailure(previousAction);	
+    console.log("RORY TEMP DEBUG LOG - previousAction " + previousAction);
+    console.log("RORY TEMP DEBUG LOG - terminateOnFailure " + terminateOnFailure);
 
     for (var index = 0; index < ACTIONS.length; index ++ ) {
         var action = ACTIONS[index];
+        console.log("RORY TEMP DEBUG LOG - insode for loop, action is " + action.name);
         if (!isActionCompleted(rootDocument, action.name)) {
+            console.log("RORY TEMP DEBUG LOG - action " + action.name + " is not completed");
             if(!action.conditionFunction || anyDocumentMatches(action.conditionFunction, rootDocument, args)) {
                 var actionDetails = {
                     queueName: action.queueName,
                     scripts: action.scripts,
                     customData: evalCustomData(args, action.customData)
                 };
+                
+                console.log("RORY TEMP DEBUG LOG - actionDetails.queueName " + actionDetails.queueName);
 
                 rootDocument.getField('CAF_WORKFLOW_ACTION').add(action.name);
+                
+                console.log("RORY TEMP DEBUG LOG - CAF_WORKFLOW_ACTION " + action.name);
                 applyActionDetails(rootDocument, actionDetails, terminateOnFailure);
                 if(action.applyMessagePrioritization) {
                     console.log("RORY TEMP DEBUG LOG - action.applyMessagePrioritization=true for " + action.name);
@@ -174,7 +184,11 @@ function routeTask(e, rootDocument) {
                     console.log("RORY TEMP DEBUG LOG - action.applyMessagePrioritization=false for " + action.name);
                 }
                 break;
+            } else {
+                console.log("RORY TEMP DEBUG LOG - else block of !action.conditionFunction || anyDocumentMatches(action.conditionFunction, rootDocument, args)");
             }
+        } else {
+            console.log("RORY TEMP DEBUG LOG - action " + action.name + " is completed");
         }
     }
 }
