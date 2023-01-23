@@ -166,10 +166,10 @@ function routeTask(e, rootDocument) {
                         console.log("RORY TEMP DEBUG LOG - MessageRouterSingleton=true for " + action.name + " so not calling init");
                     }
                     console.log("RORY TEMP DEBUG LOG - Calling MessageRouterSingleton.route(rootDocument) for " + action.name);
-                    console.log("RORY TEMP DEBUG LOG - e.task.getResponse().getSuccessQueue() before calling MessageRouterSingleton.route(rootDocument)" + e.task.getResponse().getSuccessQueue());
+                    console.log("RORY TEMP DEBUG LOG - e.task.getResponse().getSuccessQueue() before calling MessageRouterSingleton.route(rootDocument)" + e.task.getResponse().getSuccessQueue().getName());
                     MessageRouterSingleton.route(rootDocument);
                     console.log("RORY TEMP DEBUG LOG - Finished calling MessageRouterSingleton.route(rootDocument) for " + action.name);
-                    console.log("RORY TEMP DEBUG LOG - e.task.getResponse().getSuccessQueue() after calling MessageRouterSingleton.route(rootDocument) " + e.task.getResponse().getSuccessQueue());
+                    console.log("RORY TEMP DEBUG LOG - e.task.getResponse().getSuccessQueue() after calling MessageRouterSingleton.route(rootDocument) " + e.task.getResponse().getSuccessQueue().getName());
                 } else {
                     console.log("RORY TEMP DEBUG LOG - action.applyMessagePrioritization=false for " + action.name);
                 }
