@@ -75,7 +75,7 @@ function isBulkWorker(e) {
 }
 
 function onAfterProcessTask(eventObj) {
-    routeTask(eventObj.rootDocument);
+    routeTask(eventObj, eventObj.rootDocument);
     removeMdcLoggingData();
 }
 
@@ -132,10 +132,10 @@ function onError(errorEventObj) {
         errorEventObj.handled = true;
         traverseDocumentForFailures(rootDoc);
     }
-    routeTask(errorEventObj.rootDocument);
+    routeTask(errorEventObj, errorEventObj.rootDocument);
 }
 
-function routeTask(rootDocument) {
+function routeTask(e, rootDocument) {
 
     var args = extractArguments(rootDocument);
 
@@ -155,13 +155,23 @@ function routeTask(rootDocument) {
                 rootDocument.getField('CAF_WORKFLOW_ACTION').add(action.name);
                 applyActionDetails(rootDocument, actionDetails, terminateOnFailure);
                 if(action.applyMessagePrioritization) {
+                    console.log("RORY TEMP DEBUG LOG - action.applyMessagePrioritization=true for " + action.name);
                     if(!MessageRouterSingleton) {
+                        console.log("RORY TEMP DEBUG LOG - MessageRouterSingleton=false for " + action.name + " so calling init");
                         var mrs = 
                             Java.type("com.github.workerframework.workermessageprioritization.rerouting.MessageRouterSingleton");
                         mrs.init();
                         MessageRouterSingleton = mrs;
+                    } else {
+                        console.log("RORY TEMP DEBUG LOG - MessageRouterSingleton=true for " + action.name + " so not calling init");
                     }
+                    console.log("RORY TEMP DEBUG LOG - Calling MessageRouterSingleton.route(rootDocument) for " + action.name);
+                    console.log("RORY TEMP DEBUG LOG - e.task.getResponse().getSuccessQueue() before calling MessageRouterSingleton.route(rootDocument)" + e.task.getResponse().getSuccessQueue());
                     MessageRouterSingleton.route(rootDocument);
+                    console.log("RORY TEMP DEBUG LOG - Finished calling MessageRouterSingleton.route(rootDocument) for " + action.name);
+                    console.log("RORY TEMP DEBUG LOG - e.task.getResponse().getSuccessQueue() after calling MessageRouterSingleton.route(rootDocument) " + e.task.getResponse().getSuccessQueue());
+                } else {
+                    console.log("RORY TEMP DEBUG LOG - action.applyMessagePrioritization=false for " + action.name);
                 }
                 break;
             }
