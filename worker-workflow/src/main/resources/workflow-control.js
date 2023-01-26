@@ -75,7 +75,7 @@ function isBulkWorker(e) {
 }
 
 function onAfterProcessTask(eventObj) {
-    routeTask(eventObj, eventObj.rootDocument);
+    routeTask(eventObj.rootDocument);
     removeMdcLoggingData();
 }
 
@@ -132,68 +132,39 @@ function onError(errorEventObj) {
         errorEventObj.handled = true;
         traverseDocumentForFailures(rootDoc);
     }
-    routeTask(errorEventObj, errorEventObj.rootDocument);
+    routeTask(errorEventObj.rootDocument);
 }
 
-function routeTask(e, rootDocument) {
+function routeTask(rootDocument) {
 
-    console.log("RORY TEMP DEBUG LOG - Start of routeTask");
-    
     var args = extractArguments(rootDocument);
 
     var previousAction = markPreviousActionAsCompleted(rootDocument);
     var terminateOnFailure = getTerminateOnFailure(previousAction);	
-    console.log("RORY TEMP DEBUG LOG - previousAction " + previousAction);
-    console.log("RORY TEMP DEBUG LOG - terminateOnFailure " + terminateOnFailure);
 
-    console.log("RORY TEMP DEBUG LOG - ACTIONS.length " + ACTIONS.length);
-    for (var index = 0; index < ACTIONS.length; index++) {
-        console.log("RORY TEMP DEBUG LOG - ACTIONS[ " + index + "] is " + ACTIONS[index].name);
-    }
-    
     for (var index = 0; index < ACTIONS.length; index ++ ) {
         var action = ACTIONS[index];
-        console.log("RORY TEMP DEBUG LOG - Inside for loop, action is " + action.name);
         if (!isActionCompleted(rootDocument, action.name)) {
-            console.log("RORY TEMP DEBUG LOG - action " + action.name + " is not completed");
             if(!action.conditionFunction || anyDocumentMatches(action.conditionFunction, rootDocument, args)) {
                 var actionDetails = {
                     queueName: action.queueName,
                     scripts: action.scripts,
                     customData: evalCustomData(args, action.customData)
                 };
-                
-                console.log("RORY TEMP DEBUG LOG - actionDetails.queueName " + actionDetails.queueName);
 
                 rootDocument.getField('CAF_WORKFLOW_ACTION').add(action.name);
-                
-                console.log("RORY TEMP DEBUG LOG - CAF_WORKFLOW_ACTION " + action.name);
                 applyActionDetails(rootDocument, actionDetails, terminateOnFailure);
                 if(action.applyMessagePrioritization) {
-                    console.log("RORY TEMP DEBUG LOG - action.applyMessagePrioritization=true for " + action.name);
                     if(!MessageRouterSingleton) {
-                        console.log("RORY TEMP DEBUG LOG - MessageRouterSingleton=false for " + action.name + " so calling init");
                         var mrs = 
                             Java.type("com.github.workerframework.workermessageprioritization.rerouting.MessageRouterSingleton");
                         mrs.init();
                         MessageRouterSingleton = mrs;
-                    } else {
-                        console.log("RORY TEMP DEBUG LOG - MessageRouterSingleton=true for " + action.name + " so not calling init");
                     }
-                    console.log("RORY TEMP DEBUG LOG - Calling MessageRouterSingleton.route(rootDocument) for " + action.name);
-                    console.log("RORY TEMP DEBUG LOG - e.task.getResponse().getSuccessQueue() before calling MessageRouterSingleton.route(rootDocument)" + e.task.getResponse().getSuccessQueue().getName());
                     MessageRouterSingleton.route(rootDocument);
-                    console.log("RORY TEMP DEBUG LOG - Finished calling MessageRouterSingleton.route(rootDocument) for " + action.name);
-                    console.log("RORY TEMP DEBUG LOG - e.task.getResponse().getSuccessQueue() after calling MessageRouterSingleton.route(rootDocument) " + e.task.getResponse().getSuccessQueue().getName());
-                } else {
-                    console.log("RORY TEMP DEBUG LOG - action.applyMessagePrioritization=false for " + action.name);
                 }
                 break;
-            } else {
-                console.log("RORY TEMP DEBUG LOG - Not calling MessageRouter.route because !action.conditionFunction || anyDocumentMatches(action.conditionFunction, rootDocument, args) for action " + action.name);
             }
-        } else {
-            console.log("RORY TEMP DEBUG LOG - Not calling MessageRouter.route because " + action.name + " is completed");
         }
     }
 }
