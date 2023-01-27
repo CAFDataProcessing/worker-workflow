@@ -21,7 +21,7 @@ var URL = Java.type("java.net.URL");
 var MDC = Java.type("org.slf4j.MDC");
 var UUID = Java.type("java.util.UUID");
 var ScriptEngineType = Java.type("com.hpe.caf.worker.document.model.ScriptEngineType");
-var MessageRouterSingleton;
+var System = Java.type("java.lang.System");
 
 if(!ACTIONS){
     throw new UnsupportedOperationException ("Workflow script must define an ACTIONS object.");
@@ -154,14 +154,12 @@ function routeTask(rootDocument) {
 
                 rootDocument.getField('CAF_WORKFLOW_ACTION').add(action.name);
                 applyActionDetails(rootDocument, actionDetails, terminateOnFailure);
-                if(action.applyMessagePrioritization) {
-                    if(!MessageRouterSingleton) {
-                        var mrs = 
-                            Java.type("com.github.workerframework.workermessageprioritization.rerouting.MessageRouterSingleton");
-                        mrs.init();
-                        MessageRouterSingleton = mrs;
-                    }
-                    MessageRouterSingleton.route(rootDocument);
+
+                if (System.getenv("CAF_WMP_ENABLED") && action.applyMessagePrioritization) {
+                    var messageRouterSingleton =
+                        Java.type("com.github.workerframework.workermessageprioritization.rerouting.MessageRouterSingleton");
+                    messageRouterSingleton.init();
+                    messageRouterSingleton.route(rootDocument);
                 }
                 break;
             }
