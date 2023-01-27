@@ -155,7 +155,7 @@ function routeTask(rootDocument) {
                 rootDocument.getField('CAF_WORKFLOW_ACTION').add(action.name);
                 applyActionDetails(rootDocument, actionDetails, terminateOnFailure);
 
-                if (System.getenv("CAF_WMP_ENABLED") && action.applyMessagePrioritization) {
+                if (action.applyMessagePrioritization && System.getenv("CAF_WMP_ENABLED")) {
                     var messageRouterSingleton =
                         Java.type("com.github.workerframework.workermessageprioritization.rerouting.MessageRouterSingleton");
                     messageRouterSingleton.init();
