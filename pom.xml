@@ -84,7 +84,7 @@
             <dependency>
                 <groupId>com.github.cafapi</groupId>
                 <artifactId>caf-dependency-management-bom</artifactId>
-                <version>3.4.0-614207-temp-SNAPSHOT</version>
+                <version>3.4.0-612407-temp-SNAPSHOT</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
