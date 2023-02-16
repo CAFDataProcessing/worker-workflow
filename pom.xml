@@ -84,7 +84,7 @@
             <dependency>
                 <groupId>com.github.cafapi</groupId>
                 <artifactId>caf-dependency-management-bom</artifactId>
-                <version>3.4.0-US616155-SNAPSHOT</version>
+                <version>3.4.0-614207-temp-SNAPSHOT</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -106,7 +106,7 @@
             <dependency>
                 <groupId>com.github.workerframework</groupId>
                 <artifactId>worker-api</artifactId>
-                <version>6.0.0-US616155-SNAPSHOT</version>
+                <version>6.0.0-614207-temp-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>com.github.cafdataprocessing</groupId>
