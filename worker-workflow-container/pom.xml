@@ -67,6 +67,11 @@
             <artifactId>worker-document-testing</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.github.workerframework</groupId>
+            <artifactId>worker-message-prioritization-rerouting</artifactId>
+            <scope>runtime</scope>
+        </dependency>
     </dependencies>
 
     <build>
