@@ -24,7 +24,7 @@
     <parent>
         <groupId>com.github.cafapi</groupId>
         <artifactId>caf-common-parent</artifactId>
-        <version>4.1.0-380</version>
+        <version>2.3.0-212</version>
     </parent>
 
     <groupId>com.github.cafdataprocessing</groupId>
@@ -40,6 +40,7 @@
 
     <properties>
         <copyrightYear>2023</copyrightYear>
+        <copyrightNotice>Copyright ${project.inceptionYear}-${copyrightYear} Open Text.</copyrightNotice>
         <corePolicyElasticsearchContainerName>
             ${dockerHubPublic}/cafdataprocessing/policy-admin-elasticsearch:1.2.0
         </corePolicyElasticsearchContainerName>

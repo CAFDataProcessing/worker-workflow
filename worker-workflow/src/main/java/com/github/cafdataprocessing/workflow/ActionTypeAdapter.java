@@ -26,7 +26,7 @@ import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 
 public class ActionTypeAdapter extends TypeAdapter<Action>
-{//test comment to trigger build with changes
+{
     private final Gson gson= new GsonBuilder().setPrettyPrinting().create();
     @Override
     public void write(JsonWriter out, Action action) throws IOException
