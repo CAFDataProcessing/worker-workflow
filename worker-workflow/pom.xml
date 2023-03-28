@@ -55,6 +55,10 @@
             <artifactId>worker-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.github.workerframework</groupId>
+            <artifactId>worker-message-prioritization-rerouting</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
         </dependency>
