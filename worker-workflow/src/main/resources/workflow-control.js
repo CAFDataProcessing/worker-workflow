@@ -296,7 +296,6 @@ function applyActionDetails(document, actionDetails, terminateOnFailure) {
 
 function isCafWmpEnabled() {
     var cafWmpEnabledString = System.getenv("CAF_WMP_ENABLED");
-    console.log("(RORY TEMP LOG) CAF_WMP_ENABLED: " + cafWmpEnabledString);
     return cafWmpEnabledString !== null && cafWmpEnabledString.toLowerCase() === "true";
 }
 
