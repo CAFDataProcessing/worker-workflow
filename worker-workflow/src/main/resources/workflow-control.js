@@ -155,7 +155,7 @@ function routeTask(rootDocument) {
                 rootDocument.getField('CAF_WORKFLOW_ACTION').add(action.name);
                 applyActionDetails(rootDocument, actionDetails, terminateOnFailure);
 
-                if (action.applyMessagePrioritization && System.getenv("CAF_WMP_ENABLED")) {
+                if (action.applyMessagePrioritization && isCafWmpEnabled()) {
                     var messageRouterSingleton =
                         Java.type("com.github.workerframework.workermessageprioritization.rerouting.MessageRouterSingleton");
                     messageRouterSingleton.init();
@@ -292,6 +292,11 @@ function applyActionDetails(document, actionDetails, terminateOnFailure) {
             scriptObjectAdded.install();
         }
     }
+}
+
+function isCafWmpEnabled() {
+    var cafWmpEnabledString = System.getenv("CAF_WMP_ENABLED");
+    return cafWmpEnabledString !== null && cafWmpEnabledString.toLowerCase() === "true";
 }
 
 function onAfterProcessDocument(e) {
