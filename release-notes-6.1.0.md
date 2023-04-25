@@ -1,5 +1,3 @@
-!not-ready-for-release!
-
 #### Version Number
 ${version-number}
 
@@ -8,3 +6,4 @@ ${version-number}
   environment variable is true.
 
 #### Known Issues
+- None.
