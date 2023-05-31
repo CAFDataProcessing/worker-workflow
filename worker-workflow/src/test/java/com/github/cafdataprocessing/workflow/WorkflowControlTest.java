@@ -27,6 +27,7 @@ import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.model.Failure;
 import com.hpe.caf.worker.document.model.Failures;
 import com.hpe.caf.worker.document.model.Field;
+import com.hpe.caf.worker.document.model.FieldValue;
 import com.hpe.caf.worker.document.model.Subdocument;
 import com.hpe.caf.worker.document.model.Subdocuments;
 import com.hpe.caf.worker.document.scripting.events.DocumentEventObject;
@@ -119,6 +120,61 @@ public class WorkflowControlTest
         assertThat(mainFailure,
                    isJsonStringMatching(jsonObject().where("CORRELATION_ID", is(jsonMissing()))));
     }
+
+    @Test
+    public void processFailuresRemoveWarningSuffixTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
+    {
+        // test the processFailures() function with a single failure and no original ones
+
+        // get an invocable Nashorn engine
+        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+
+        // get a base document used to fill in the basic structure
+        final Document builderDoc = DocumentBuilder.configure().withFields()
+                .addFieldValues("CAF_WORKFLOW_ACTION", "archive_cleanup")
+                .addFieldValue("CAF_WORKFLOW_NAME", "example_workflow")
+                .addFieldValue("FAILURES", "")
+                .documentBuilder()
+                .build();
+        // add one failure
+        builderDoc.addFailure("KV:1-WARNING", "Failed to open KV stream: DLL or shared library not found");
+
+        // create the various mocked objects to create the document that will be processed
+        final Document document = WorkflowHelper.createDocument("ref_2", builderDoc.getFields(), builderDoc.getFailures(), null,
+                null, null, builderDoc, true, false);
+
+        invocable.invokeFunction("processFailures", document);
+
+        assertThat(document.getFailures().size(), is(equalTo((0))));
+
+        assertThat(document.getField("FAILURES").getValues()
+                .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((1L))));
+
+        final String mainFailure = document.getField("FAILURES").getValues()
+                .stream()
+                .map(FieldValue::getStringValue)
+                .filter(stringValue -> !stringValue.isEmpty())
+                .findFirst()
+                .get();
+
+        assertThat(mainFailure,
+                isJsonStringMatching(jsonObject().where("ID", is(jsonText("KV:1")))));
+        assertThat(mainFailure,
+                isJsonStringMatching(jsonObject().where("STACK", is(jsonMissing()))));
+        assertThat(mainFailure,
+                isJsonStringMatching(jsonObject().where("WORKFLOW_ACTION", is(jsonText("archive_cleanup")))));
+        assertThat(mainFailure,
+                isJsonStringMatching(jsonObject().where("COMPONENT", is(jsonText("application-worker-base 1.0.0-SNAPSHOT-APPLICATION")))));
+        assertThat(mainFailure,
+                isJsonStringMatching(jsonObject().where("WORKFLOW_NAME", is(jsonText("example_workflow")))));
+        assertThat(mainFailure,
+                isJsonStringMatching(jsonObject().where("MESSAGE", is(jsonText("Failed to open KV stream: DLL or shared library not found")))));
+        assertThat(mainFailure,
+                isJsonStringMatching(jsonObject().where("DATE", is(not(jsonNull())))));
+        assertThat(mainFailure,
+                isJsonStringMatching(jsonObject().where("CORRELATION_ID", is(jsonMissing()))));
+    }
+
 
     @Test
     public void processFailuresWithExtraSubfieldsTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException

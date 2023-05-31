@@ -40,8 +40,14 @@ function addFailures (document, failures, extractSourceCallback, action) {
             ? extractSourceCallback(f)
             : getCurrentWorkerName(document) + " " + getCurrentWorkerVersion(document);
         var isWarningFlag = (typeof isWarning === 'function') ? isWarning(f): false;
+        var failureId = f.getFailureId();
+        if(failureId !== null) {
+            var indexOfWarning = failureId.indexOf("-WARNING");
+            if(indexOfWarning !== -1)
+                failureId = failureId.substring(0, indexOfWarning);
+        }
         var errorObject = {
-            ID: f.getFailureId(),
+            ID: failureId,
             WORKFLOW_ACTION: workflowAction,
             COMPONENT: component,
             WORKFLOW_NAME: document.getRootDocument().getField("CAF_WORKFLOW_NAME").getStringValues().get(0),
