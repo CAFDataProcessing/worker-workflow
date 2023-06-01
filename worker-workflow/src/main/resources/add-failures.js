@@ -43,8 +43,10 @@ function addFailures (document, failures, extractSourceCallback, action) {
         var failureId = f.getFailureId();
         if(failureId !== null) {
             var indexOfWarning = failureId.indexOf("-WARNING");
-            if(indexOfWarning !== -1)
+            if(indexOfWarning !== -1) {
+                isWarningFlag = true;
                 failureId = failureId.substring(0, indexOfWarning);
+            }
         }
         var errorObject = {
             ID: failureId,
