@@ -42,10 +42,9 @@ function addFailures (document, failures, extractSourceCallback, action) {
         var isWarningFlag = (typeof isWarning === 'function') ? isWarning(f): false;
         var failureId = f.getFailureId();
         if(failureId !== null) {
-            var indexOfWarning = failureId.indexOf("-WARNING");
-            if(indexOfWarning !== -1) {
+            if(failureId.endsWith("-WARNING")) {
                 isWarningFlag = true;
-                failureId = failureId.substring(0, indexOfWarning);
+                failureId = failureId.substring(0, failureId.length-8);
             }
         }
         var errorObject = {

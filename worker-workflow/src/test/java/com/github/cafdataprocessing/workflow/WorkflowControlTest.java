@@ -147,10 +147,7 @@ public class WorkflowControlTest
 
         assertThat(document.getFailures().size(), is(equalTo((0))));
 
-        assertThat(document.getField("FAILURES").getValues()
-                .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((1L))));
-
-        final String mainFailure = document.getField("FAILURES").getValues()
+        final String mainFailure = document.getField("WARNINGS").getValues()
                 .stream()
                 .map(FieldValue::getStringValue)
                 .filter(stringValue -> !stringValue.isEmpty())
