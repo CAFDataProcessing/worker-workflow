@@ -39,13 +39,13 @@ function addFailures (document, failures, extractSourceCallback, action) {
         var component = extractSourceCallback !== undefined
             ? extractSourceCallback(f)
             : getCurrentWorkerName(document) + " " + getCurrentWorkerVersion(document);
-        var isWarningFlag = (typeof isWarning === 'function') ? isWarning(f): false;
+        var isWarningFlag;
         var failureId = f.getFailureId();
-        if(failureId !== null) {
-            if(failureId.endsWith("-WARNING")) {
-                isWarningFlag = true;
-                failureId = failureId.substring(0, failureId.length-8);
-            }
+        if(failureId !== null && failureId.endsWith("-WARNING")) {
+            isWarningFlag = true;
+            failureId = failureId.substring(0, failureId.length-8);
+        } else {
+            isWarningFlag = (typeof isWarning === 'function') ? isWarning(f): false;
         }
         var errorObject = {
             ID: failureId,
