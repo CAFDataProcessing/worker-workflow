@@ -1,3 +1,6 @@
+#### Version Number
+${version-number}
+
 #### New Features
 - US720013: Remove -WARNING suffix before indexing
 
