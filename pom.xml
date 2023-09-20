@@ -127,7 +127,13 @@
             <dependency>
                 <groupId>com.microfocus.darwin</groupId>
                 <artifactId>settings-service-client</artifactId>
-                <version>2.2.3-830</version>
+                <version>1.5.0-610</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.squareup.okio</groupId>
+                        <artifactId>okio-jvm</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>com.google.guava</groupId>
