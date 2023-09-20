@@ -131,7 +131,7 @@
                 <exclusions>
                     <exclusion>
                         <groupId>com.squareup.okio</groupId>
-                        <artifactId>okio-jvm</artifactId>
+                        <artifactId>okio</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
