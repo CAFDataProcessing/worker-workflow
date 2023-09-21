@@ -56,7 +56,7 @@
         <processingServiceContainerName>
             ${dockerHubPublic}/cafdataprocessing/processing-service:1
         </processingServiceContainerName>
-        <settingsServiceContainerName>${homeDockerReleaseRegistry}/caf/settings-service:1</settingsServiceContainerName>
+        <settingsServiceContainerName>${homeDockerReleaseRegistry}/caf/settings-service:2</settingsServiceContainerName>
         <enforceBannedDependencies>true</enforceBannedDependencies>
         <enforceCorrectDependencies>true</enforceCorrectDependencies>
     </properties>
