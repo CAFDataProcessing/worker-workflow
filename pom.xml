@@ -56,7 +56,7 @@
         <processingServiceContainerName>
             ${dockerHubPublic}/cafdataprocessing/processing-service:1
         </processingServiceContainerName>
-        <settingsServiceContainerName>${homeDockerReleaseRegistry}/caf/settings-service:1</settingsServiceContainerName>
+        <settingsServiceContainerName>${homeDockerReleaseRegistry}/caf/settings-service:2</settingsServiceContainerName>
         <enforceBannedDependencies>true</enforceBannedDependencies>
         <enforceCorrectDependencies>true</enforceCorrectDependencies>
     </properties>
@@ -127,7 +127,7 @@
             <dependency>
                 <groupId>com.microfocus.darwin</groupId>
                 <artifactId>settings-service-client</artifactId>
-                <version>1.5.0-610</version>
+                <version>2.2.3-830</version>
             </dependency>
             <dependency>
                 <groupId>com.google.guava</groupId>
