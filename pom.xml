@@ -50,7 +50,6 @@
             ${dockerImagePrefix}${dockerHubOrganization}${dockerOrgSeperator}
         </dockerCafDataProcessingOrg>
         <dockerProjectVersion>${dockerVersionSeperator}${project.version}</dockerProjectVersion>
-        <fabric8.docker.maven.version>0.37.0</fabric8.docker.maven.version>
         <homeDockerPrereleaseRegistry>saas-docker-prerelease.${corporateRepositoryManager}</homeDockerPrereleaseRegistry>
         <homeDockerReleaseRegistry>saas-docker-release.${corporateRepositoryManager}</homeDockerReleaseRegistry>
         <processingServiceContainerName>
