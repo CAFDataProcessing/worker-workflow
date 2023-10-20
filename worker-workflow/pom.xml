@@ -165,9 +165,13 @@
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
                 <configuration>
-                    <excludes combine.children="append">
-                        <exclude>src/test/resources/workflow-manager-test/expected-script.js</exclude>
-                    </excludes>
+                    <licenseSets>
+                        <licenseSet>
+                            <excludes combine.children="append">
+                                <exclude>src/test/resources/workflow-manager-test/expected-script.js</exclude>
+                            </excludes>
+                        </licenseSet>
+                    </licenseSets>
                 </configuration>
             </plugin>
             <plugin>
