@@ -371,6 +371,63 @@ function getCurrentWorkerVersion(document) {
             .getConfiguration(com.hpe.caf.worker.document.config.DocumentWorkerConfiguration.class).getWorkerVersion();
 }
 
+function getContentSize(e) {
+    var dataStore = e.application.getService(com.hpe.caf.api.worker.DataStore.class);
+    var contentField = e.document.getField('CONTENT_PRIMARY');
+    var contentSize = 0;
+    contentField.getValues().stream().forEach(function (field) {
+        if (!field.isReference()) {
+            contentSize += field.getValue().length;
+        } else {
+            contentSize += dataStore.size(field.getReference());
+        }
+    });
+    return contentSize + getFieldContentSize(e, 'EMBEDDED') + getFieldContentSize(e, 'OCR') + getFieldContentSize(e, 'METADATA_FILES');
+}
+
+function getFieldContentSize(e, fieldName) {
+    var fieldContentSize = 0;
+    var embeddedOrOCROrMetadataFilesField = e.document.getField(fieldName);
+    embeddedOrOCROrMetadataFilesField.getValues().stream().forEach(function (field) {
+        if (field.isStringValue()) {
+            var jsonObject = JSON.parse(field.getStringValue());
+            fieldContentSize += getContentPrimaryOrContentSize(jsonObject);
+            if (jsonObject.OCR) {
+                for (var i = 0; i < jsonObject.OCR.length; i++) {
+                    fieldContentSize += getContentPrimaryOrContentSize(jsonObject.OCR[i]);
+                }
+            }
+        }
+    });
+    return fieldContentSize;
+}
+
+function getContentPrimaryOrContentSize(jsonObject) {
+    let totalSize = 0;
+    if (jsonObject.CONTENT_PRIMARY) {
+        totalSize += getByteLength(jsonObject.CONTENT_PRIMARY);
+    }
+    if (jsonObject.CONTENT) {
+        totalSize += getByteLength(jsonObject.CONTENT);
+    }
+    return totalSize;
+}
+
+function getByteLength(string) {
+    // Force string type
+    string = String(string);
+    var byteLen = 0;
+    for (var i = 0; i < string.length; i++) {
+        var c = string.charCodeAt(i);
+        byteLen +=
+            c < 0x007F ? 1 :
+                c < 0x07FF ? 2 :
+                    c < 0xFFFF ? 3 :
+                        c < 0x10FFFF ? 4 : Number.NaN;
+    }
+    return byteLen;
+}
+
 //Field Conditions
 
 function fieldExists(document, fieldName) {
