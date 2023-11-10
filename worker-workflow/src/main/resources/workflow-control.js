@@ -98,6 +98,8 @@ function onBeforeProcessDocument(e) {
     }
 
     var args = extractArguments(e.rootDocument);
+    globalThis.WORKFLOW_ARGS = args;
+
     eval(action.conditionFunction);
     e.cancel = ! condition(e.document, args);
 }
