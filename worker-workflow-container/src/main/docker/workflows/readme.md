@@ -69,7 +69,6 @@ Additional information about how scripts are executed by a document worker can b
         function condition (document, arguments) { 
           return fieldExists(document, 'CONTENT_PRIMARY'); 
         }
-    queueName: dataprocessing-langdetect-in		# queue name of the worker
     customData:						# custom_data to be passed to the worker
       fieldSpecs: "'CONTENT_PRIMARY'"
     scripts:						# list of custom scripts that can be passed to the worker
