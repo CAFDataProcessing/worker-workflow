@@ -53,8 +53,6 @@ If the environment variable is null or an empty string then the target queue nam
  
 `eg for environment variable: CAF_WORKFLOW_ACTION_LANG_DETECT_INPUT_QUEUE=dataprocessing-langdetect-in`
 
-`eg for default value: action name :lang_detect so queueName: lang_detect-in`
-
 ### customData
 
 Custom data is comprised of keys and values, each key and value is added to the custom data of the document queued for a document worker. The value of a custom data key can be a string literal `"'My value'"` or the name of an argument `OPERATION_MODE` defined in the arguments section.
@@ -69,7 +67,6 @@ Additional information about how scripts are executed by a document worker can b
         function condition (document, arguments) { 
           return fieldExists(document, 'CONTENT_PRIMARY'); 
         }
-    queueName: dataprocessing-langdetect-in		# queue name of the worker
     customData:						# custom_data to be passed to the worker
       fieldSpecs: "'CONTENT_PRIMARY'"
     scripts:						# list of custom scripts that can be passed to the worker
