@@ -48,6 +48,7 @@ actions:
       tenantId: tenantId
     scripts:
       - name: recordProcessingTimes.js
+        engine: GRAAL_JS
         script: |
           function onProcessTask(e) {
             var startTime = new Date();

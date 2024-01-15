@@ -27,6 +27,7 @@ import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
 import org.apache.commons.io.FileUtils;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.HostAccess;
+import org.graalvm.polyglot.io.IOAccess;
 
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
@@ -183,7 +184,7 @@ public class WorkflowTestExecutor {
                     .allowExperimentalOptions(true) // Needed for loading from classpath
                     .allowHostAccess(HostAccess.ALL) // Allow JS access to public Java methods/members
                     .allowHostClassLookup(s -> true) // Allow JS access to public Java classes
-                    .allowIO(true)
+                    .allowIO(IOAccess.ALL)
                     .option("js.load-from-classpath", "true"));
         final Invocable invocable = (Invocable) scriptEngine;
 

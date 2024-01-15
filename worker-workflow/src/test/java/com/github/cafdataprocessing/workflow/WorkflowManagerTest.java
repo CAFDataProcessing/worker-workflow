@@ -18,16 +18,13 @@ package com.github.cafdataprocessing.workflow;
 import com.github.cafdataprocessing.workflow.model.Action;
 import com.github.cafdataprocessing.workflow.model.ArgumentDefinition;
 import com.github.cafdataprocessing.workflow.model.Workflow;
-import com.github.cafdataprocessing.workflow.testing.WorkflowTestExecutor;
 import com.hpe.caf.api.ConfigurationException;
 import com.hpe.caf.api.worker.WorkerException;
 import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.testing.DocumentBuilder;
 import com.hpe.caf.worker.document.testing.TestServices;
 import com.google.common.io.Resources;
-import com.hpe.caf.worker.document.model.Failure;
 import com.hpe.caf.worker.document.scripting.events.CancelableDocumentEventObject;
-import com.microfocus.darwin.settings.client.SettingsApi;
 import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
 import org.apache.commons.io.IOUtils;
 import org.graalvm.polyglot.Context;
@@ -38,13 +35,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import org.junit.Assert;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.mock;
 
 public class WorkflowManagerTest {
 

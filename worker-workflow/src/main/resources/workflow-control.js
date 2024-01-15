@@ -269,15 +269,17 @@ function applyActionDetails(document, actionDetails, terminateOnFailure) {
     response.getCustomData().putAll(responseCustomData);
 
     // Add any scripts specified on the action
-    if (actionDetails.scripts && actionDetails.scripts.length != 0) {
+    if (actionDetails.scripts && actionDetails.scripts.length !== 0) {
         for (var scriptToAdd of actionDetails.scripts) {
             var scriptObjectAdded = document.getTask().getScripts().add();
             scriptObjectAdded.setName(scriptToAdd.name);
 
-            var scriptEngine = ScriptEngineType.NASHORN;
-            if (scriptToAdd.engine !== undefined) {
-                scriptEngine = ScriptEngineType.valueOf(scriptToAdd.engine);
+            const strScriptEngine = scriptToAdd.engine;
+            if (!strScriptEngine) {
+                throw new RuntimeException("Invalid script definition on action. Script engine not specified.");
             }
+
+            const scriptEngine = ScriptEngineType.valueOf(strScriptEngine);
 
             if (scriptToAdd.script !== undefined) {
                 scriptObjectAdded.setScriptInline(scriptToAdd.script, scriptEngine);
