@@ -16,13 +16,13 @@
 package com.github.cafdataprocessing.workflow;
 
 import com.github.cafdataprocessing.workflow.model.ArgumentDefinition;
+import com.github.cafdataprocessing.workflow.restclients.settings_service.api.SettingsApi;
+import com.github.cafdataprocessing.workflow.restclients.settings_service.model.ResolvedSetting;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.testing.DocumentBuilder;
 import com.hpe.caf.worker.document.testing.TestServices;
-import com.microfocus.darwin.settings.client.ResolvedSetting;
-import com.microfocus.darwin.settings.client.SettingsApi;
 import org.junit.Test;
 
 import java.lang.reflect.Type;

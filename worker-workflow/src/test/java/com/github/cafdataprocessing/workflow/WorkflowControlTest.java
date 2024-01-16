@@ -52,11 +52,9 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.isEmptyString;
+import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.core.IsNull.nullValue;
 
-import com.hpe.caf.worker.document.views.ReadOnlyDocument;
-import org.graalvm.polyglot.PolyglotException;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -67,8 +65,8 @@ public class WorkflowControlTest
     {
         // test the processFailures() function with a single failure and no original ones
 
-        // get an invocable Nashorn engine
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+        // get an invocable Javascript engine
+        final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl();
 
         // get a base document used to fill in the basic structure
         final Document builderDoc = DocumentBuilder.configure().withFields()
@@ -126,8 +124,8 @@ public class WorkflowControlTest
     {
         // test the processFailures() function with a single failure and no original ones
 
-        // get an invocable Nashorn engine
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+        // get an invocable Javascript engine
+        final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl();
 
         // get a base document used to fill in the basic structure
         final Document builderDoc = DocumentBuilder.configure().withFields()
@@ -178,8 +176,8 @@ public class WorkflowControlTest
     {
         // test the processFailures() function with a single failure and no original ones
 
-        // get an invocable Nashorn engine
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+        // get an invocable Javascript engine
+        final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl();
 
         // get a base document used to fill in the basic structure
         final Document builderDoc = DocumentBuilder.configure().withFields()
@@ -242,7 +240,7 @@ public class WorkflowControlTest
     {
         // test processFailures() function with multiple failures and no original ones
 
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+        final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl();
 
         final Document builderDoc = DocumentBuilder.configure().withFields()
             .addFieldValues("CAF_WORKFLOW_ACTION", "family_hashing")
@@ -328,7 +326,7 @@ public class WorkflowControlTest
     public void noFailuresFieldTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
         // this method does not have the FAILURES field present
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+        final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl();
 
         final Document builderDoc = DocumentBuilder.configure().withFields()
             .addFieldValues("CAF_WORKFLOW_ACTION", "family_hashing")
@@ -404,7 +402,7 @@ public class WorkflowControlTest
     public void failuresNegativeNoWorkflowNameFieldTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
         // this method fails because there is not the CAF_WORKFLOW_NAME field
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+        final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl();
 
         final Document builderDoc = DocumentBuilder.configure().withFields()
             .addFieldValues("CAF_WORKFLOW_ACTION", "family_hashing")
@@ -436,7 +434,7 @@ public class WorkflowControlTest
     @Test
     public void failuresStillAddedIfNoWorkflowAction() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+        final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl();
 
         final Document builderDoc = DocumentBuilder.configure().withFields()
             .addFieldValue("FAILURES", "")
@@ -472,7 +470,7 @@ public class WorkflowControlTest
     public void failuresNegativeNoIdFieldTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
         // this method shows what happens when there is not an ID field
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+        final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl();
 
         final Document builderDoc = DocumentBuilder.configure().withFields()
             .addFieldValues("CAF_WORKFLOW_ACTION", "family_hashing")
@@ -525,7 +523,7 @@ public class WorkflowControlTest
     public void failuresNegativeNoMessageFieldTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
         // this method shows what happens when there is not a MESSAGE field
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+        final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl();
 
         final Document builderDoc = DocumentBuilder.configure().withFields()
             .addFieldValues("CAF_WORKFLOW_ACTION", "family_hashing")
@@ -578,7 +576,7 @@ public class WorkflowControlTest
     public void isFailureInOriginalTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
         // test for the isFailureInOriginal() function
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+        final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl();
 
         final Document builderDoc = DocumentBuilder.configure().withFields()
             .addFieldValue("FAILURES", "")
@@ -604,7 +602,7 @@ public class WorkflowControlTest
     public void isFailureInOriginalFalseTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
         // the function return false, because the failure is not in the original list
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+        final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl();
 
         final Document builderDoc = DocumentBuilder.configure().withFields()
             .addFieldValue("FAILURES", "")
@@ -646,7 +644,7 @@ public class WorkflowControlTest
     {
         // checks that isFailureInOriginal() returns false even if the ids are the same (but the messages are different)
 
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+        final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl();
 
         // doc with one original failure an no subdocuments
         final Document document = DocumentBuilder.fromFile(
@@ -700,7 +698,7 @@ public class WorkflowControlTest
     {
         // checks that isFailureInOriginal() returns false even if the ids and the messages are the same (but the stacks are different)
 
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+        final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl();
 
         // doc with one original failure an no subdocuments
         final Document document = DocumentBuilder.fromFile(
@@ -733,7 +731,7 @@ public class WorkflowControlTest
     public void onAfterProcessDocumentSingleDocTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
         // test onAfterProcessDocument() with a single document, no need to call processSubdocumentFailures() and a single failure
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+        final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl();
 
         final Document builderDoc = DocumentBuilder.configure().withFields()
             .addFieldValues("CAF_WORKFLOW_ACTION", "family_hashing")
@@ -764,7 +762,7 @@ public class WorkflowControlTest
         assertThat(failureMessage.getComponent(), is(equalTo("application-worker-base 1.0.0-SNAPSHOT-APPLICATION")));
         assertThat(failureMessage.getWorkflowName(), is(equalTo("example_workflow")));
         assertThat(failureMessage.getWorkflowAction(), is(equalTo("family_hashing")));
-        assertThat(failureMessage.getDate(), is(not(isEmptyString())));
+        assertThat(failureMessage.getDate(), is(not(emptyString())));
         assertThat(failureMessage.getCorrelationId(), is(nullValue()));
     }
 
@@ -774,7 +772,7 @@ public class WorkflowControlTest
     {
         // test onAfterProcessDocument() with a single document, no need to call processSubdocumentFailures(), a single failure and an
         // original one
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+        final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl();
 
         // doc with one original failure an no subdocuments
         final Document builderDoc = DocumentBuilder.fromFile(
@@ -828,7 +826,7 @@ public class WorkflowControlTest
     {
         // test onAfterProcessDocument() with a document with subdocuments, no need to call processSubdocumentFailures(),
         // a single failure and an original one
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+        final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl();
 
         // doc with one original failure and subdocuments
         final Document builderDoc = DocumentBuilder.fromFile(
@@ -899,7 +897,7 @@ public class WorkflowControlTest
     {
         // test onAfterProcessDocument() with a document with subdocuments, no need to call processSubdocumentFailures(),
         // some original failures at various levels and new ones added at all levels
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+        final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl();
 
         // doc with one original failure subdocuments
         final Document builderDoc = DocumentBuilder.fromFile(
@@ -1059,7 +1057,7 @@ public class WorkflowControlTest
     {
         // test onAfterProcessDocument() with a document with subdocuments, it WILL call processSubdocumentFailures(),
         // some original failures at various levels and new ones added at all levels
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+        final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl();
 
         // doc with one original failure and NO subdos
         final Document builderDoc = DocumentBuilder.fromFile(
@@ -1214,7 +1212,7 @@ public class WorkflowControlTest
     {
         // test onAfterProcessDocument() with a document WITHOUT subdocuments, it WILL call processSubdocumentFailures(),
         // some original failures at various levels and new ones added at all levels
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+        final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl();
 
         // doc with one original failure and NO subdos
         final Document builderDoc = DocumentBuilder.fromFile(
@@ -1265,7 +1263,7 @@ public class WorkflowControlTest
     @Test
     public void getTerminateOnFailureTest() throws IOException, ScriptException, NoSuchMethodException
     {
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+        final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl();
         boolean result = (boolean) invocable.invokeFunction("getTerminateOnFailure", "family_hashing");
         assertThat(result, is(equalTo(false)));
         boolean result2 = (boolean) invocable.invokeFunction("getTerminateOnFailure", "elastic");
@@ -1278,7 +1276,7 @@ public class WorkflowControlTest
     public void terminalActionTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
         // test that no FAILUES are added if the current worker has terminal action == true, 
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+        final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl();
 
         final Document builderDoc = DocumentBuilder.configure().withFields()
             .addFieldValues("CAF_WORKFLOW_ACTION", "bulk_indexer")
@@ -1308,7 +1306,7 @@ public class WorkflowControlTest
                                                                                            WorkerException, IOException
     {
         // this method checks that the FAILURES field is not populated because the WORKFLOW_ACTION is not set
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+        final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl();
 
         final Document builderDoc = DocumentBuilder.configure().withFields()
             .addFieldValue("FAILURES", "")
@@ -1339,7 +1337,7 @@ public class WorkflowControlTest
     @Test
     public void negativeIsLastActionTest() throws IOException, ScriptException, NoSuchMethodException
     {
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+        final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl();
         final boolean result = (boolean) invocable.invokeFunction("isLastAction", "no_elastic");
         assertThat(result, is(equalTo(false)));
     }
@@ -1347,7 +1345,7 @@ public class WorkflowControlTest
     @Test
     public void isLastActionTest() throws IOException, ScriptException, NoSuchMethodException
     {
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+        final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl();
         final boolean result = (boolean) invocable.invokeFunction("isLastAction", "elastic");
         assertThat(result, is(equalTo(true)));
         final boolean result2 = (boolean) invocable.invokeFunction("isLastAction", "family_hashing");
@@ -1360,7 +1358,7 @@ public class WorkflowControlTest
     public void lastActionTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
         // test that no FAILUES are added if the current worker is the last action
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+        final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl();
 
         final Document builderDoc = DocumentBuilder.configure().withFields()
             .addFieldValues("CAF_WORKFLOW_ACTION", "elastic")
@@ -1389,7 +1387,7 @@ public class WorkflowControlTest
     public void getCurrentWorkerNameTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException,
                                                   ConfigurationException
     {
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+        final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl();
         final Document builderDoc = DocumentBuilder.fromFile(
             Paths.get("src", "test", "resources", "input-document-no-subdoc.json")
                 .toString()).build();
@@ -1416,7 +1414,7 @@ public class WorkflowControlTest
     public void getCurrentWorkerVersionTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException,
                                                      ConfigurationException
     {
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+        final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl();
         final Document builderDoc = DocumentBuilder.fromFile(
             Paths.get("src", "test", "resources", "input-document-no-subdoc.json")
                 .toString()).build();
@@ -1442,7 +1440,7 @@ public class WorkflowControlTest
     @Test
     public void fieldHasStringValueTestReturnsTrue() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+        final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl();
 
         final Document document = DocumentBuilder.configure().withFields()
                 .addFieldValue("CONTENT_PRIMARY", "Some content")
@@ -1461,7 +1459,7 @@ public class WorkflowControlTest
     public void fieldHasStringValueTestReturnsFalse() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
 
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+        final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl();
 
         final Document document = DocumentBuilder.configure().withFields()
                 .addFieldValue("CONTENT_PRIMARY", "Some content")
@@ -1479,7 +1477,7 @@ public class WorkflowControlTest
     @Test
     public void fieldHasAnyStringValueTestReturnsTrue() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+        final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl();
 
         final Document document = DocumentBuilder.configure().withFields()
                 .addFieldValue("CONTENT_PRIMARY", "Some content")
@@ -1499,7 +1497,7 @@ public class WorkflowControlTest
     {
         // test processFailures() function with multiple failures and no original ones
 
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl();
+        final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl();
 
         final Document document = DocumentBuilder.configure().withFields()
                 .addFieldValue("CONTENT_PRIMARY", "Some content")

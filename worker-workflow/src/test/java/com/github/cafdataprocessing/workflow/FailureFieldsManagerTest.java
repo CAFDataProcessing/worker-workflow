@@ -100,7 +100,7 @@ public final class FailureFieldsManagerTest
     @Test
     public void callingAddFailuresFromOutsideScript() throws Exception
     {
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl(
+        final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl(
             "function extractSource(failure){return \"kv\"}",
             "function testDocument(document, failures, source){eval(thisScriptObject); addFailures(document, failures, extractSource, source);}");
 
@@ -128,7 +128,7 @@ public final class FailureFieldsManagerTest
     @Test
     public void callingAddFailuresFromOutsideScriptForWarnings() throws Exception
     {
-        final Invocable invocable = WorkflowHelper.createInvocableNashornEngineWithActionsAndWorkflowControl(
+        final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl(
             "function extractSource(failure){return \"KV:13\"}",
             "function isWarning(failure) {var warnings = [\"KV:7\", \"KV:8\", \"KV:10\", \"KV:11\", \"KV:13\"]; return warnings.indexOf(failure.getFailureId()) !== -1;}",
             "function testDocument(document, failures, source){eval(thisScriptObject); addFailures(document, failures, extractSource, source);}");

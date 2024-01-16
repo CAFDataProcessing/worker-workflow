@@ -16,19 +16,28 @@
 package com.github.cafdataprocessing.workflow;
 
 import com.github.cafdataprocessing.workflow.model.ArgumentDefinition;
+import com.github.cafdataprocessing.workflow.restclients.settings_service.api.SettingsApi;
+import com.github.cafdataprocessing.workflow.restclients.settings_service.client.ApiClient;
+import com.github.cafdataprocessing.workflow.restclients.settings_service.client.ApiException;
+import com.github.cafdataprocessing.workflow.restclients.settings_service.model.ResolvedSetting;
+import com.github.cafdataprocessing.workflow.restclients.settings_service.model.Setting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.hpe.caf.worker.document.exceptions.DocumentWorkerTransientException;
 import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.model.Field;
-import com.microfocus.darwin.settings.client.*;
-import com.squareup.okhttp.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.time.Instant;
+import okhttp3.Cache;
+import okhttp3.CacheControl;
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,9 +80,9 @@ public class ArgumentsManager {
 
         // Client that will force a cache refresh
         this.forceCacheRefreshSettingsApi = forceCacheRefreshSettingsApi;
-        final OkHttpClient forceCacheRefreshOkHttpClient = okHttpClient.clone(); // Cache is shared between both clients
-        forceCacheRefreshOkHttpClient.interceptors().add(new ForceCacheRefreshInterceptor());
-        final ApiClient forceCacheRefreshApiClient = createApiClient(settingsServiceUrl, forceCacheRefreshOkHttpClient);
+        final OkHttpClient.Builder forceCacheRefreshClientBuilder = okHttpClient.newBuilder(); // Cache is shared between both clients
+        forceCacheRefreshClientBuilder.addInterceptor(new ForceCacheRefreshInterceptor());
+        final ApiClient forceCacheRefreshApiClient = createApiClient(settingsServiceUrl, forceCacheRefreshClientBuilder.build());
         this.forceCacheRefreshSettingsApi.setApiClient(forceCacheRefreshApiClient);
 
         this.settingsServiceLastAccessTimeMap
@@ -85,7 +94,6 @@ public class ArgumentsManager {
 
     private OkHttpClient createOkHttpClient() throws RuntimeException
     {
-        final OkHttpClient okHttpClient = new OkHttpClient();
         final File settingsServiceCacheDirectory;
         try {
             settingsServiceCacheDirectory = Files.createTempDirectory(SETTINGS_SERVICE_CACHE_TEMP_DIRECTORY_PREFIX).toFile();
@@ -93,10 +101,11 @@ public class ArgumentsManager {
             throw new RuntimeException("Unable to create a temporary directory for the Settings Service cache", ex);
         }
         final Cache cache = new Cache(settingsServiceCacheDirectory, SETTINGS_SERVICE_CACHE_SIZE_BYTES);
-        okHttpClient.setCache(cache);
-        okHttpClient.networkInterceptors().add(new SetCacheMaxAgeInterceptor());
-        okHttpClient.networkInterceptors().add(new RecordLastAccessTimeInterceptor());
-        return okHttpClient;
+        return new OkHttpClient.Builder()
+            .cache(cache)
+            .addNetworkInterceptor(new SetCacheMaxAgeInterceptor())
+            .addNetworkInterceptor(new RecordLastAccessTimeInterceptor())
+            .build();
     }
 
     private static ApiClient createApiClient(final String settingsServiceUrl, final OkHttpClient okHttpClient)
@@ -150,7 +159,7 @@ public class ArgumentsManager {
             final Request request = chain.request();
             final Response response = chain.proceed(request);
             if (isCacheableResponse(response)) {
-                final SettingsServiceLastAccessTimeMapKey key = SettingsServiceLastAccessTimeMapKey.from(request.uri());
+                final SettingsServiceLastAccessTimeMapKey key = SettingsServiceLastAccessTimeMapKey.from(request.url().uri());
                 final long now = Instant.now().toEpochMilli();
                 settingsServiceLastAccessTimeMap.put(key, now);
                 LOG.debug(String.format("Recorded last access time for: %s as: %s", key, now));
@@ -306,7 +315,7 @@ public class ArgumentsManager {
 
     private static boolean isCacheableResponse(final Response response)
     {
-        return !response.request().urlString().contains("healthcheck") && response.isSuccessful();
+        return !response.request().url().toString().contains("healthcheck") && response.isSuccessful();
     }
 
     private boolean shouldForceCacheRefresh(

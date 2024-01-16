@@ -34,6 +34,7 @@ actions:
       valueFromLiteral: "'literalExample'"
     scripts:
       - name: example.js
+        engine: GRAAL_JS
         script: |
           function onProcessTask(e) {
           }

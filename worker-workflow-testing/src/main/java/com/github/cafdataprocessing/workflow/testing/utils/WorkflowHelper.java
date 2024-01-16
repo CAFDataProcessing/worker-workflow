@@ -44,7 +44,6 @@ import java.util.List;
 import java.util.Map;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
 import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
@@ -60,23 +59,23 @@ public class WorkflowHelper
     }
 
     /**
-     * Utility method to create a Nashorn engine with a predefined set of actions and the workflow-control.js loaded.
+     * Utility method to create a Javascript engine with a predefined set of actions and the workflow-control.js loaded.
      *
-     * @return an Invocable nashorn engine
+     * @return an Invocable Javascript engine
      * @throws IOException
      * @throws ScriptException
      */
-    public static Invocable createInvocableNashornEngineWithActionsAndWorkflowControl() throws IOException, ScriptException
+    public static Invocable createInvocableJavascriptEngineWithActionsAndWorkflowControl() throws IOException, ScriptException
     {
-        final ScriptEngine nashorn = getScriptEngine();
-        nashorn.eval("var actionFamilyHashing = {name: \"family_hashing\", terminateOnFailure: false};\n"
+        final ScriptEngine graalJs = getScriptEngine();
+        graalJs.eval("var actionFamilyHashing = {name: \"family_hashing\", terminateOnFailure: false};\n"
             + "var actionBulkIndexer = {name: \"bulk_indexer\", terminateOnFailure: true};\n"
             + "var actionElastic = {name: \"elastic\", terminateOnFailure: false};\n"
             + "var ACTIONS = [actionFamilyHashing, actionBulkIndexer, actionElastic];");
-        nashorn.eval(new InputStreamReader(new FileInputStream(Paths.get("src", "main", "resources", "workflow-control.js")
+        graalJs.eval(new InputStreamReader(new FileInputStream(Paths.get("src", "main", "resources", "workflow-control.js")
             .toFile())));
-        evalAddFailuresScript(nashorn);
-        return (Invocable) nashorn;
+        evalAddFailuresScript(graalJs);
+        return (Invocable) graalJs;
     }
 
     private static void evalAddFailuresScript(final ScriptEngine engine) throws IOException, ScriptException
@@ -90,55 +89,55 @@ public class WorkflowHelper
     }
 
     /**
-     * Utility method to create a Nashorn engine with a predefined set of actions and the workflow-control.js loaded. 
+     * Utility method to create a Javascript engine with a predefined set of actions and the workflow-control.js loaded.
      * This function will also eval any scripts passed to it as params.
      *
      * @param scripts variable number of scripts to eval
-     * @return an Invocable nashorn engine
+     * @return an Invocable Javascript engine
      * @throws IOException
      * @throws ScriptException
      */
-    public static Invocable createInvocableNashornEngineWithActionsAndWorkflowControl(final String... scripts)
+    public static Invocable createInvocableJavascriptEngineWithActionsAndWorkflowControl(final String... scripts)
         throws IOException, ScriptException
     {
-        final ScriptEngine nashorn = getScriptEngine();
-        nashorn.eval("var actionFamilyHashing = {name: \"family_hashing\", terminateOnFailure: false};\n"
+        final ScriptEngine graalJs = getScriptEngine();
+        graalJs.eval("var actionFamilyHashing = {name: \"family_hashing\", terminateOnFailure: false};\n"
             + "var actionBulkIndexer = {name: \"bulk_indexer\", terminateOnFailure: true};\n"
             + "var actionElastic = {name: \"elastic\", terminateOnFailure: false};\n"
             + "var ACTIONS = [actionFamilyHashing, actionBulkIndexer, actionElastic];");
-        nashorn.eval(new InputStreamReader(new FileInputStream(Paths.get("src", "main", "resources", "workflow-control.js")
+        graalJs.eval(new InputStreamReader(new FileInputStream(Paths.get("src", "main", "resources", "workflow-control.js")
             .toFile())));
-        evalAddFailuresScript(nashorn);
+        evalAddFailuresScript(graalJs);
         for(final String script : scripts){
-            nashorn.eval(script);
+            graalJs.eval(script);
         }
-        return (Invocable) nashorn;
+        return (Invocable) graalJs;
     }
 
     /**
-     * Utility method to create a Nashorn engine that accepts optional strings to be eval and/or paths to files to be eval as well.
+     * Utility method to create a Javascript engine that accepts optional strings to be eval and/or paths to files to be eval as well.
      *
      * @param codesToEval list of strings
      * @param filesToReadAndEval list of paths
-     * @return an Invocable nashorn engine
+     * @return an Invocable Javascript engine
      * @throws IOException
      * @throws ScriptException
      */
-    public static Invocable createInvocableNashornEngine(final List<String> codesToEval, final List<Path> filesToReadAndEval)
+    public static Invocable createInvocableJavascriptEngine(final List<String> codesToEval, final List<Path> filesToReadAndEval)
         throws IOException, ScriptException
     {
-        final ScriptEngine nashorn = getScriptEngine();
+        final ScriptEngine graalJs = getScriptEngine();
         if (CollectionUtils.isNotEmpty(codesToEval)) {
             for (final String code : codesToEval) {
-                nashorn.eval(code);
+                graalJs.eval(code);
             }
         }
         if (CollectionUtils.isNotEmpty(filesToReadAndEval)) {
             for (final Path inputFile : filesToReadAndEval) {
-                nashorn.eval(new InputStreamReader(new FileInputStream(inputFile.toFile())));
+                graalJs.eval(new InputStreamReader(new FileInputStream(inputFile.toFile())));
             }
         }
-        return (Invocable) nashorn;
+        return (Invocable) graalJs;
     }
 
     /**

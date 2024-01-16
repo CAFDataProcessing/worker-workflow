@@ -15,13 +15,13 @@
  */
 package com.github.cafdataprocessing.workflow;
 
+import com.github.cafdataprocessing.workflow.restclients.settings_service.api.SettingsApi;
 import com.github.cafdataprocessing.workflow.testing.ActionExpectationsBuilder;
 import com.github.cafdataprocessing.workflow.testing.WorkflowTestExecutor;
 import com.hpe.caf.api.ConfigurationException;
 import com.hpe.caf.api.worker.WorkerException;
 import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.testing.DocumentBuilder;
-import com.microfocus.darwin.settings.client.SettingsApi;
 import org.junit.Before;
 import org.junit.Test;
 

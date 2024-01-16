@@ -16,7 +16,7 @@
 package com.github.cafdataprocessing.workflow;
 
 import com.hpe.caf.api.Configuration;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Configuration specific to the workflow worker
