@@ -2,7 +2,7 @@
 ${version-number}
 
 #### New Features
-- **US857114**: Move RabbitMQ AMQP communication to use TLS
+- None
 
 #### Breaking Changes
 - **D854021**: Worker Framework V4 Format message support dropped  
