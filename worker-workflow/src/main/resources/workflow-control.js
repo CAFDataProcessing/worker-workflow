@@ -156,10 +156,30 @@ function routeTask(rootDocument) {
                 applyActionDetails(rootDocument, actionDetails, terminateOnFailure);
 
                 if (action.applyMessagePrioritization && isCafWmpEnabled()) {
-                    var messageRouterSingleton =
-                        Java.type("com.github.workerframework.workermessageprioritization.rerouting.MessageRouterSingleton");
-                    messageRouterSingleton.init();
-                    messageRouterSingleton.route(rootDocument);
+                    var originalQueueName = response.getSuccessQueue().getName();
+                    var reroutedSuffix = '';
+
+                    var tenantId = document.getCustomData("tenantId");
+                    if(tenantId !== null && tenantId !== '') {
+                        reroutedSuffix += "/" + tenantId;
+                    }
+
+                    var workflowName;
+                    var fieldWorkflowName = document.getField("CAF_WORKFLOW_NAME");
+                    if(fieldWorkflowName !== null && fieldWorkflowName.hasValues()) {
+                        workflowName = fieldWorkflowName.getStringValues().get(0);
+                    }
+                    else {
+                        workflowName = document.getCustomData("workflowName");
+                    }
+                    if(workflowName !== null && workflowName !== '') {
+                        reroutedSuffix += "/" + workflowName;
+                    }
+                    
+                    if(reroutedSuffix !== '') {
+                        var response = document.getTask().getResponse();
+                        response.getSuccessQueue.set(originalQueueName + "»" + reroutedSuffix);
+                    }
                 }
                 break;
             }
