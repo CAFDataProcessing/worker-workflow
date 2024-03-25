@@ -21,9 +21,11 @@ import com.github.cafdataprocessing.workflow.testing.WorkflowTestExecutor;
 import com.hpe.caf.api.ConfigurationException;
 import com.hpe.caf.api.worker.WorkerException;
 import com.hpe.caf.worker.document.model.Document;
+import com.hpe.caf.worker.document.testing.CustomDataBuilder;
 import com.hpe.caf.worker.document.testing.DocumentBuilder;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -202,5 +204,50 @@ public class WorkflowWorkerTest
         // Assert
         assertEquals("test-tenant", document.getTask().getResponse().getCustomData().get("tenantId"));
         assertNotNull(document.getTask().getResponse().getCustomData().get("correlationId"));
+    }
+
+    @Test
+    public void workflowOnlyRerouteTest() throws Exception {
+
+        final Document document = DocumentBuilder.configure().withFields()
+                .documentBuilder()
+                .build();
+
+        final ActionExpectationsBuilder actionExpectationsBuilder = new ActionExpectationsBuilder();
+        actionExpectationsBuilder
+                .withAction("action_1")
+                .successQueue(action_1_queueName + "»/sample-message-prioritization-workflow")
+                .failureQueue(action_1_queueName)
+                .withCustomData();
+
+        workflowTestExecutor.assertWorkflowActionsExecuted("sample-message-prioritization-workflow",
+                workflowWorker,
+                document,
+                null,
+                actionExpectationsBuilder.build());
+    }
+
+    @Test
+    public void tenantIdRerouteTest() throws Exception {
+
+        Map<String, String> customData = new HashMap<>();
+        customData.put("tenantId",  "1");
+        
+        final DocumentBuilder documentBuilder = DocumentBuilder.configure().withFields().documentBuilder();
+        final CustomDataBuilder customDataBuilder = new CustomDataBuilder(customData, documentBuilder);
+        final Document document = documentBuilder.build();
+
+        final ActionExpectationsBuilder actionExpectationsBuilder = new ActionExpectationsBuilder();
+        actionExpectationsBuilder
+                .withAction("action_1")
+                .successQueue(action_1_queueName + "»/1/sample-message-prioritization-workflow")
+                .failureQueue(action_1_queueName)
+                .withCustomData();
+
+        workflowTestExecutor.assertWorkflowActionsExecuted("sample-message-prioritization-workflow",
+                workflowWorker,
+                document,
+                customData,
+                actionExpectationsBuilder.build());
     }
 }

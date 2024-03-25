@@ -205,6 +205,9 @@
                     <systemPropertyVariables>
                         <polyglot.engine.WarnInterpreterOnly>false</polyglot.engine.WarnInterpreterOnly>
                     </systemPropertyVariables>
+                    <environmentVariables>
+                        <CAF_WMP_ENABLED>true</CAF_WMP_ENABLED>
+                    </environmentVariables>
                 </configuration>
             </plugin>
         </plugins>
