@@ -16,7 +16,6 @@
 package com.github.cafdataprocessing.workflow;
 
 import com.github.cafdataprocessing.workflow.model.Workflow;
-import com.github.workerframework.workermessageprioritization.rerouting.MessageRouterSingleton;
 import com.google.common.base.Strings;
 import com.hpe.caf.api.ConfigurationException;
 import com.hpe.caf.worker.document.exceptions.DocumentWorkerTransientException;
@@ -95,8 +94,6 @@ public final class WorkflowWorker implements DocumentWorker
             LOG.error("Problem encountered when contacting Settings Service to check health: ", e);
             healthMonitor.reportUnhealthy("Settings Service communication is unhealthy: " + e.getMessage());
         }
-
-        MessageRouterSingleton.checkHealth(healthMonitor);
     }
 
     /**

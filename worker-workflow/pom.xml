@@ -55,10 +55,6 @@
             <artifactId>worker-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.github.workerframework</groupId>
-            <artifactId>worker-message-prioritization-rerouting</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
         </dependency>
@@ -209,6 +205,9 @@
                     <systemPropertyVariables>
                         <polyglot.engine.WarnInterpreterOnly>false</polyglot.engine.WarnInterpreterOnly>
                     </systemPropertyVariables>
+                    <environmentVariables>
+                        <CAF_WMP_ENABLED>true</CAF_WMP_ENABLED>
+                    </environmentVariables>
                 </configuration>
             </plugin>
         </plugins>
