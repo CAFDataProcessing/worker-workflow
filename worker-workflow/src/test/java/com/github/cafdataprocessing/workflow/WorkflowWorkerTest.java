@@ -25,7 +25,6 @@ import com.hpe.caf.worker.document.testing.CustomDataBuilder;
 import com.hpe.caf.worker.document.testing.DocumentBuilder;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import java.util.HashMap;
 import java.util.Map;
