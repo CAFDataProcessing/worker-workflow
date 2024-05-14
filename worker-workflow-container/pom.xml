@@ -348,7 +348,7 @@
                             <alias>worker-workflow</alias>
                             <name>${worker-workflow.container.name}</name>
                             <build>
-                                <from>${dockerHubPublic}/cafapi/opensuse-jre17:1</from>
+                                <from>${dockerHubPublic}/cafapi/opensuse-jre17:4</from>
                                 <!-- The entry point will be the worker.sh executable. -->
                                 <cmd>
                                     <exec>
