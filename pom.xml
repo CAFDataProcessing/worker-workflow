@@ -1019,7 +1019,7 @@
                         <image>
                             <repository>${dockerHubPublic}/library/postgres</repository>
                             <tag>14</tag>
-                            <digest>sha256:d6850c40261fdc9a4fb33b9521d9d641c4a5dcb82145f7bcc32c9258f81e75a2</digest>
+                            <digest>sha256:73602f0cdabd8c8805d53b6f6a698f4fab5000896aae05549d71d7e7e8b6110d</digest>
                         </image>
                         <image>
                             <repository>${dockerHubPublic}/library/rabbitmq</repository>
