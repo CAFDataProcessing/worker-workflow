@@ -19,11 +19,14 @@ import com.github.cafdataprocessing.workflow.testing.utils.WorkflowHelper;
 import com.google.gson.Gson;
 import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.testing.DocumentBuilder;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
+
 import java.nio.file.Paths;
 import java.util.Objects;
 import javax.script.Invocable;
-import org.junit.Test;
 
 public final class FailureFieldsManagerTest
 {

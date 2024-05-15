@@ -28,6 +28,8 @@ import org.apache.commons.io.FileUtils;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.HostAccess;
 import org.graalvm.polyglot.io.IOAccess;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
@@ -38,8 +40,6 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 public class WorkflowTestExecutor {
 
@@ -92,15 +92,15 @@ public class WorkflowTestExecutor {
             //Process the document with the workflow worker to generate the arguments, attach scripts and set the first
             //target action.
             documentWorker.processDocument(documentForExecution);
-            assertEquals(failuresToString(documentForExecution), 0, documentForExecution.getFailures().size());
+            assertEquals(0, documentForExecution.getFailures().size(), failuresToString(documentForExecution));
             executeOnAfterProcessTaskScript(documentForExecution);
         } catch (DocumentWorkerTransientException | InterruptedException e) {
             throw new RuntimeException(e);
         }
 
         if(actionExpectations == null || actionExpectations.size() == 0){
-            assertEquals("No actions to execute was expected.", 0,
-                    documentForExecution.getField("CAF_WORKFLOW_ACTION").getValues().size());
+            assertEquals(0,
+                    documentForExecution.getField("CAF_WORKFLOW_ACTION").getValues().size(), "No actions to execute was expected.");
         }
 
         validateAction(actionExpectations.get(0), documentForExecution);
@@ -121,7 +121,7 @@ public class WorkflowTestExecutor {
                     }
 
                     documentWorker.processDocument(documentForExecution);
-                    assertEquals(failuresToString(documentForExecution), 0, documentForExecution.getFailures().size());
+                    assertEquals(0, documentForExecution.getFailures().size(), failuresToString(documentForExecution));
                     executeOnAfterProcessTaskScript(documentForExecution);
                 } catch (DocumentWorkerTransientException | InterruptedException e) {
                     throw new RuntimeException(e);
@@ -147,27 +147,27 @@ public class WorkflowTestExecutor {
 
     private void validateAction(final ActionExpectation actionExpectation, final Document document) {
         final Field actionToExecuteField = document.getField("CAF_WORKFLOW_ACTION");
-        assertEquals(actionExpectation.getAction() + " not marked for execution.", 1, actionToExecuteField.getValues().size());
-        assertEquals("Expected action not found.", actionExpectation.getAction(),
-                actionToExecuteField.getStringValues().get(0));
+        assertEquals(1, actionToExecuteField.getValues().size(), actionExpectation.getAction() + " not marked for execution.");
+        assertEquals(actionExpectation.getAction(),
+                actionToExecuteField.getStringValues().get(0), "Expected action not found.");
 
         final Response response = document.getTask().getResponse();
 
         if(actionExpectation.getCustomData() != null) {
 
             for(final Map.Entry<String, String> entry : actionExpectation.getCustomData().entrySet()){
-                assertEquals(String.format("Action [%s] argument [%s] not as expected.",
-                        actionExpectation.getAction(),
-                        entry.getKey()),
-                        entry.getValue(), response.getCustomData().get(entry.getKey()));
+                assertEquals(entry.getValue(), response.getCustomData().get(entry.getKey()),
+                        String.format("Action [%s] argument [%s] not as expected.",
+                                actionExpectation.getAction(),
+                                entry.getKey()));
             }
         }
 
-        assertEquals(actionExpectation.getAction() + " success queue not as expected.", actionExpectation.getSuccessQueue(),
-                response.getSuccessQueue().getName());
+        assertEquals(actionExpectation.getSuccessQueue(), response.getSuccessQueue().getName(),
+                actionExpectation.getAction() + " success queue not as expected.");
 
-        assertEquals(actionExpectation.getAction() + " failure queue not as expected.", actionExpectation.getFailureQueue(),
-                response.getFailureQueue().getName());
+        assertEquals(actionExpectation.getFailureQueue(), response.getFailureQueue().getName(),
+                actionExpectation.getAction() + " failure queue not as expected.");
 
     }
 

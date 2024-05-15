@@ -23,16 +23,16 @@ import com.hpe.caf.api.worker.WorkerException;
 import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.testing.CustomDataBuilder;
 import com.hpe.caf.worker.document.testing.DocumentBuilder;
-import org.junit.Before;
-import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import static org.mockito.Mockito.mock;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertNotNull;
 
 public class WorkflowWorkerTest
 {
@@ -42,7 +42,7 @@ public class WorkflowWorkerTest
     private String action_2_queueName;
     private String action_3_queueName;
 
-    @Before
+    @BeforeEach
     public void before() {
         workflowTestExecutor = new WorkflowTestExecutor();
 

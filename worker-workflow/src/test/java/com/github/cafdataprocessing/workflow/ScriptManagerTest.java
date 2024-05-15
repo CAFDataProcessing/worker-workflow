@@ -21,12 +21,11 @@ import com.hpe.caf.worker.document.model.Script;
 import com.hpe.caf.worker.document.model.Scripts;
 import com.hpe.caf.worker.document.testing.DocumentBuilder;
 import com.hpe.caf.worker.document.testing.TestServices;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
-
-import static org.junit.Assert.assertEquals;
 
 public class ScriptManagerTest {
 

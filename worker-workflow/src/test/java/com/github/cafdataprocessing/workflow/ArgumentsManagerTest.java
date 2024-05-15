@@ -23,7 +23,6 @@ import com.google.gson.reflect.TypeToken;
 import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.testing.DocumentBuilder;
 import com.hpe.caf.worker.document.testing.TestServices;
-import org.junit.Test;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -32,7 +31,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import org.slf4j.Logger;

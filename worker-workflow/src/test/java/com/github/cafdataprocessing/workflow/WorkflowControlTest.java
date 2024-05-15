@@ -54,9 +54,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.emptyString;
 import static org.hamcrest.core.IsNull.nullValue;
-
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import org.junit.jupiter.api.Test;
 
 public class WorkflowControlTest
 {
@@ -424,11 +426,11 @@ public class WorkflowControlTest
         } catch (final ScriptException e) {
             final String message = e.getMessage();
             //Error msg changes between java 8 and 11
-            Assert.assertTrue(message.contains("Index 0 out of bounds for length 0") ||
+            assertTrue(message.contains("Index 0 out of bounds for length 0") ||
                     message.contains("Index: 0, Size: 0"));
             return;
         }
-        Assert.fail("Exception not thrown");
+        fail("Exception not thrown");
     }
 
     @Test
@@ -456,14 +458,14 @@ public class WorkflowControlTest
             invocable.invokeFunction("processFailures", document);
         } catch (final ScriptException e) {
             final String message = e.getMessage();
-            Assert.fail("Exception thrown");
+            fail("Exception thrown");
         }
         final Field failuresField = document.getField("FAILURES");
-        Assert.assertTrue(failuresField.hasChanges());
+        assertTrue(failuresField.hasChanges());
         final List<String> failures = failuresField.getStringValues().stream().filter(s -> !s.isEmpty()).collect(toList());
-        Assert.assertEquals(2, failures.size());
-        Assert.assertTrue(failures.get(0).contains("error_id_1"));
-        Assert.assertTrue(failures.get(1).contains("error_id_2"));
+        assertEquals(2, failures.size());
+        assertTrue(failures.get(0).contains("error_id_1"));
+        assertTrue(failures.get(1).contains("error_id_2"));
     }
 
     @Test
@@ -1451,7 +1453,7 @@ public class WorkflowControlTest
 
         final boolean functionResult = (boolean) invocable.invokeFunction("fieldHasStringValue", document, "TYPE", value);
 
-        Assert.assertTrue(functionResult);
+        assertTrue(functionResult);
 
     }
 
@@ -1470,7 +1472,7 @@ public class WorkflowControlTest
 
         final boolean functionResult = (boolean) invocable.invokeFunction("fieldHasStringValue", document, "TYPE", value);
 
-        Assert.assertFalse(functionResult);
+        assertFalse(functionResult);
 
     }
 
@@ -1488,7 +1490,7 @@ public class WorkflowControlTest
 
         final boolean functionResult = (boolean) invocable.invokeFunction("fieldHasAnyStringValue", document, "TYPE", values);
 
-        Assert.assertTrue(functionResult);
+        assertTrue(functionResult);
 
     }
 
@@ -1508,7 +1510,7 @@ public class WorkflowControlTest
 
         final boolean functionResult = (boolean) invocable.invokeFunction("fieldHasAnyStringValue", document, "TYPE", values);
 
-        Assert.assertFalse(functionResult);
+        assertFalse(functionResult);
 
     }
 }
