@@ -236,7 +236,7 @@
                         <!-- WebDav -->
                         <image>
                             <alias>webdav</alias>
-                            <name>${dockerHubPublic}/cloudesire/webdav</name>
+                            <name>${projectDockerRegistry}/cloudesire/webdav</name>
                             <run>
                                 <volumes>
                                     <bind>
@@ -265,7 +265,7 @@
                         <!-- Run the RabbitMQ image. -->
                         <image>
                             <alias>rabbitmq</alias>
-                            <name>${dockerHubPublic}/library/rabbitmq:3-management</name>
+                            <name>${projectDockerRegistry}/library/rabbitmq</name>
                             <run>
                                 <ports>
                                     <port>${rabbitmq.ctrl.port}:15672</port>
@@ -288,7 +288,7 @@
                         <!-- Settings database -->
                         <image>
                             <alias>settings-db</alias>
-                            <name>${dockerHubPublic}/library/postgres:14</name>
+                            <name>${projectDockerRegistry}/library/postgres</name>
                             <run>
                                 <ports>
                                     <port>${settings.postgres.db.port}:5432</port>
@@ -312,7 +312,7 @@
                         <!-- Settings Service -->
                         <image>
                             <alias>settings-service</alias>
-                            <name>${settingsServiceContainerName}</name>
+                            <name>${projectDockerRegistry}/caf/settings-service</name>
                             <run>
                                 <ports>
                                     <port>${settings.service.port}:8080</port>
@@ -348,7 +348,7 @@
                             <alias>worker-workflow</alias>
                             <name>${worker-workflow.container.name}</name>
                             <build>
-                                <from>${dockerHubPublic}/cafapi/opensuse-jre17:4</from>
+                                <from>${projectDockerRegistry}/cafapi/opensuse-jre17</from>
                                 <!-- The entry point will be the worker.sh executable. -->
                                 <cmd>
                                     <exec>
