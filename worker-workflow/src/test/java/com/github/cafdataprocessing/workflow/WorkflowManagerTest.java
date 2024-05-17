@@ -29,17 +29,17 @@ import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
 import org.apache.commons.io.IOUtils;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.HostAccess;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
-import org.junit.Assert;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 public class WorkflowManagerTest {
 
@@ -127,9 +127,9 @@ public class WorkflowManagerTest {
         final List<Action> actions = workflow.getActions();
         assertEquals(2, actions.size());
         assertEquals("family_hashing", actions.get(0).getName());
-        Assert.assertFalse(actions.get(0).isTerminateOnFailure());
+        assertFalse(actions.get(0).isTerminateOnFailure());
         assertEquals("bulk_index", actions.get(1).getName());
-        Assert.assertTrue(actions.get(1).isTerminateOnFailure());
+        assertTrue(actions.get(1).isTerminateOnFailure());
 
     }
     

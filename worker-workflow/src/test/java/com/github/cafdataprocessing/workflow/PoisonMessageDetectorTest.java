@@ -17,8 +17,9 @@ package com.github.cafdataprocessing.workflow;
 
 import com.hpe.caf.worker.document.model.Document;
 import com.hpe.caf.worker.document.testing.DocumentBuilder;
-import static org.junit.Assert.*;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Test;
 
 public final class PoisonMessageDetectorTest
 {
