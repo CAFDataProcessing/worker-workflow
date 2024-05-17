@@ -169,6 +169,7 @@
                         <rabbitmq.node.port>${rabbitmq.node.port}</rabbitmq.node.port>
                         <rabbitmq.ctrl.port>${rabbitmq.ctrl.port}</rabbitmq.ctrl.port>
                         <testCaseGeneration>${test.case.generation}</testCaseGeneration>
+                        <worker.restport>${worker.restport}</worker.restport>
                         <worker.adminport>${worker.adminport}</worker.adminport>
                     </systemPropertyVariables>
                     <environmentVariables>
@@ -236,7 +237,7 @@
                         <!-- WebDav -->
                         <image>
                             <alias>webdav</alias>
-                            <name>${dockerHubPublic}/cloudesire/webdav</name>
+                            <name>${projectDockerRegistry}/cloudesire/webdav</name>
                             <run>
                                 <volumes>
                                     <bind>
@@ -265,7 +266,7 @@
                         <!-- Run the RabbitMQ image. -->
                         <image>
                             <alias>rabbitmq</alias>
-                            <name>${dockerHubPublic}/library/rabbitmq:3-management</name>
+                            <name>${projectDockerRegistry}/library/rabbitmq</name>
                             <run>
                                 <ports>
                                     <port>${rabbitmq.ctrl.port}:15672</port>
@@ -288,7 +289,7 @@
                         <!-- Settings database -->
                         <image>
                             <alias>settings-db</alias>
-                            <name>${dockerHubPublic}/library/postgres:14</name>
+                            <name>${projectDockerRegistry}/library/postgres</name>
                             <run>
                                 <ports>
                                     <port>${settings.postgres.db.port}:5432</port>
@@ -312,7 +313,7 @@
                         <!-- Settings Service -->
                         <image>
                             <alias>settings-service</alias>
-                            <name>${settingsServiceContainerName}</name>
+                            <name>${projectDockerRegistry}/caf/settings-service</name>
                             <run>
                                 <ports>
                                     <port>${settings.service.port}:8080</port>
@@ -348,7 +349,7 @@
                             <alias>worker-workflow</alias>
                             <name>${worker-workflow.container.name}</name>
                             <build>
-                                <from>${dockerHubPublic}/cafapi/opensuse-jre17:4</from>
+                                <from>${projectDockerRegistry}/cafapi/opensuse-jre17</from>
                                 <!-- The entry point will be the worker.sh executable. -->
                                 <cmd>
                                     <exec>
@@ -356,7 +357,7 @@
                                     </exec>
                                 </cmd>
                                 <healthCheck>
-                                    <cmd>curl -f http://localhost:8081/healthcheck || exit 1</cmd>
+                                    <cmd>curl -f http://localhost:8080/health-check?type=READY || exit 1</cmd>
                                 </healthCheck>
                                 <assembly>
                                     <mode>tar</mode>
@@ -397,6 +398,7 @@
                             </build>
                             <run>
                                 <ports>
+                                    <port>${worker.restport}:8080</port>
                                     <port>${worker.adminport}:8081</port>
                                     <port>${worker.debugport}:5005</port>
                                 </ports>
@@ -470,6 +472,7 @@
                 <settings.postgres.db.port>5532</settings.postgres.db.port>
                 <rabbitmq.ctrl.port>15672</rabbitmq.ctrl.port>
                 <rabbitmq.node.port>5672</rabbitmq.node.port>
+                <worker.restport>8080</worker.restport>
                 <worker.adminport>8081</worker.adminport>
                 <worker.debugport>5005</worker.debugport>
             </properties>
