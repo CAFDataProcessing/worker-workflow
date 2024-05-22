@@ -49,6 +49,12 @@ public final class WorkflowWorkerFactory implements DocumentWorkerFactory
             return new DocumentWorker()
             {
                 @Override
+                public void checkLiveness(HealthMonitor healthMonitor)
+                {
+                    healthMonitor.reportUnhealthy("Unable to load workflows");
+                }
+
+                @Override
                 public void checkHealth(HealthMonitor healthMonitor)
                 {
                     healthMonitor.reportUnhealthy("Unable to load workflows");
