@@ -132,7 +132,6 @@ function onError(errorEventObj) {
         errorEventObj.handled = true;
         traverseDocumentForFailures(rootDoc);
     }
-    errorEventObj.handled = false;
     routeTask(errorEventObj.rootDocument);
 }
 
