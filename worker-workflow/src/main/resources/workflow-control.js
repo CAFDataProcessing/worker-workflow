@@ -77,8 +77,6 @@ function isBulkWorker(e) {
 function onAfterProcessTask(eventObj) {
     routeTask(eventObj.rootDocument);
     removeMdcLoggingData();
-
-    throw new RuntimeException("This is a RuntimeException in 'onAfterProcessTask'");
 }
 
 function removeMdcLoggingData() {
