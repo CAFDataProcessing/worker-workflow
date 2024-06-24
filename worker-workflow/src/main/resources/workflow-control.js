@@ -154,9 +154,7 @@ function routeTask(rootDocument) {
 
                 rootDocument.getField('CAF_WORKFLOW_ACTION').add(action.name);
 
-                if(action.name === "bulk_indexer") {
-                    throw new RuntimeException("This is a RuntimeException from 'routeTask' for action: " + action.name);
-                }
+                throw new RuntimeException("This is a RuntimeException from 'routeTask' for action: " + action.name);
 
                 applyActionDetails(rootDocument, actionDetails, terminateOnFailure);
 
