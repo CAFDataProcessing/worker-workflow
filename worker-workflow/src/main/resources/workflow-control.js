@@ -154,11 +154,14 @@ function routeTask(rootDocument) {
 
                 rootDocument.getField('CAF_WORKFLOW_ACTION').add(action.name);
 
-                throw new RuntimeException("This is a RuntimeException from 'routeTask' for action: " + action.name);
+
 
                 applyActionDetails(rootDocument, actionDetails, terminateOnFailure);
 
                 if (action.applyMessagePrioritization && isCafWmpEnabled()) {
+
+                    throw new RuntimeException("This is a RuntimeException from 'routeTask'");
+
                     var response = rootDocument.getTask().getResponse();
 
                     var originalQueueName = response.getSuccessQueue().getName();
