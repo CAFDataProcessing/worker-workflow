@@ -160,7 +160,9 @@ function routeTask(rootDocument) {
 
                 if (action.applyMessagePrioritization && isCafWmpEnabled()) {
 
-                    throw new RuntimeException("This is a RuntimeException from 'routeTask'");
+                    if(action.name === "bulk_indexer") {
+                        throw new RuntimeException("This is a RuntimeException from 'routeTask'");
+                    }
 
                     var response = rootDocument.getTask().getResponse();
 
