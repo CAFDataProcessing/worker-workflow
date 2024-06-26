@@ -75,6 +75,7 @@ function isBulkWorker(e) {
 }
 
 function onAfterProcessTask(eventObj) {
+    console.log("JONNY --- workflow-control.js::onAfterProcessTask> L78 --- rootDoc.getReference()", eventObj.rootDocument.getReference());
     routeTask(eventObj.rootDocument);
     removeMdcLoggingData();
 }
@@ -127,6 +128,10 @@ function onError(errorEventObj) {
     var rootDoc = errorEventObj.rootDocument;
     var message = errorEventObj.error.getMessage();
     rootDoc.getFailures().add("UNHANDLED_ERROR", message, errorEventObj.error);
+
+    console.log("JONNY --- workflow-control.js::onError > L132 --- rootDoc.getReference()", rootDoc.getReference());
+    console.log("JONNY --- workflow-control.js::onError > L133 --- rootDoc.getFailures()", rootDoc.getFailures());
+
     var actionValues = errorEventObj.rootDocument.getField("CAF_WORKFLOW_ACTION").getStringValues();
     if (!actionValues.isEmpty() && !isLastAction(actionValues.get(0))) {
         errorEventObj.handled = true;
@@ -159,6 +164,9 @@ function routeTask(rootDocument) {
                 applyActionDetails(rootDocument, actionDetails, terminateOnFailure);
 
                 if (action.applyMessagePrioritization && isCafWmpEnabled()) {
+
+                    console.log("JONNY --- workflow-control.js::routeTask > L168 --- rootDoc.getReference()", rootDocument.getReference());
+                    console.log("JONNY --- workflow-control.js::routeTask > L169 --- action.name: " + action.name);
 
                     if(action.name === "bulk_indexer") {
                         throw new RuntimeException("This is a RuntimeException from 'routeTask'");
