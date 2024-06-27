@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 
 public final class PoisonMessageDetectorTest
 {
-    // @Test
+    @Test
     public void testNonPoisonDocument() throws Exception
     {
         final Document document = DocumentBuilder.configure()
@@ -38,7 +38,7 @@ public final class PoisonMessageDetectorTest
         assertFalse(PoisonMessageDetector.isPoisonDocument(document));
     }
 
-    // @Test
+    @Test
     public void testPoisonDocument() throws Exception
     {
         final Document document = DocumentBuilder.configure()

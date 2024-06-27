@@ -29,7 +29,7 @@ import java.nio.charset.StandardCharsets;
 
 public class ScriptManagerTest {
 
-    // @Test
+    @Test
     public void applyScriptsTest() throws Exception {
 
         final ScriptManager scriptManager = new ScriptManager();

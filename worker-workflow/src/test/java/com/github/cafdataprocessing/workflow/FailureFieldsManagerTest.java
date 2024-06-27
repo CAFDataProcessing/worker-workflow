@@ -33,7 +33,7 @@ public final class FailureFieldsManagerTest
     private final FailureFieldsManager failureFieldsManager = new FailureFieldsManager();
     private final Gson gson = new Gson();
 
-    // @Test
+    @Test
     public void testMultipleFailureSubFields() throws Exception
     {
         final Document document = DocumentBuilder.configure()
@@ -57,7 +57,7 @@ public final class FailureFieldsManagerTest
 
     }
 
-    // @Test
+    @Test
     public void testNoFailureSubFields() throws Exception
     {
         final Document document = DocumentBuilder.configure()
@@ -74,7 +74,7 @@ public final class FailureFieldsManagerTest
      * Simulating a poison message returning to the workflow worker for a second time due to a failure during processing.
      * The failure subfields should not be overwritten.
      */
-    // @Test
+    @Test
     public void testFailureSubFieldsAlreadyPresent() throws Exception
     {
         final Document document = DocumentBuilder.configure()
@@ -100,7 +100,7 @@ public final class FailureFieldsManagerTest
             .getStringValues().stream().findFirst().get().equals(verificationString));
     }
 
-    // @Test
+    @Test
     public void callingAddFailuresFromOutsideScript() throws Exception
     {
         final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl(
@@ -128,7 +128,7 @@ public final class FailureFieldsManagerTest
         assertEquals(failureRep, gson.fromJson(firstFailure, FailureRep.class));
     }
     
-    // @Test
+    @Test
     public void callingAddFailuresFromOutsideScriptForWarnings() throws Exception
     {
         final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl(

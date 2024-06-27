@@ -131,7 +131,7 @@ function onError(errorEventObj) {
     rootDoc.getFailures().add("UNHANDLED_ERROR", message, errorEventObj.error);
 
     console.log("JONNY --- workflow-control.js::onError > L133 --- rootDoc.getReference()", rootDoc.getReference());
-    console.log("JONNY --- workflow-control.js::onError > L134 --- rootDoc.getFailures()", rootDoc.getFailures().stream().forEach(System.out::println));
+    console.log("JONNY --- workflow-control.js::onError > L134 --- rootDoc.getFailures()", rootDoc.getFailures().stream().forEach(System.out.println()));
 
     var actionValues = errorEventObj.rootDocument.getField("CAF_WORKFLOW_ACTION").getStringValues();
     if (!actionValues.isEmpty() && !isLastAction(actionValues.get(0))) {
