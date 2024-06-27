@@ -130,7 +130,7 @@ function onError(errorEventObj) {
     rootDoc.getFailures().add("UNHANDLED_ERROR", message, errorEventObj.error);
 
     console.log("JONNY --- workflow-control.js::onError > L132 --- rootDoc.getReference()", rootDoc.getReference());
-    console.log("JONNY --- workflow-control.js::onError > L133 --- rootDoc.getFailures()", rootDoc.getFailures());
+    console.log("JONNY --- workflow-control.js::onError > L133 --- rootDoc.getFailures()", rootDoc.getFailures().stream().forEach(System.out::println));
 
     var actionValues = errorEventObj.rootDocument.getField("CAF_WORKFLOW_ACTION").getStringValues();
     if (!actionValues.isEmpty() && !isLastAction(actionValues.get(0))) {
@@ -168,7 +168,7 @@ function routeTask(rootDocument) {
                     console.log("JONNY --- workflow-control.js::routeTask > L168 --- rootDoc.getReference()", rootDocument.getReference());
                     console.log("JONNY --- workflow-control.js::routeTask > L169 --- action.name: " + action.name);
 
-                    if(action.name === "entity_extract") {
+                    if(action.name === "entity_extract" || action.name === "classification") {
                         throw new RuntimeException("This is a RuntimeException from 'routeTask'");
                     }
 
