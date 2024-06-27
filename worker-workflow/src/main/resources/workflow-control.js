@@ -75,7 +75,7 @@ function isBulkWorker(e) {
 }
 
 function onAfterProcessTask(eventObj) {
-    console.log("JONNY --- workflow-control.js::onAfterProcessTask> L78 --- BUILD 19");
+    console.log("JONNY --- workflow-control.js::onAfterProcessTask> L78 --- BUILD 20");
     console.log("JONNY --- workflow-control.js::onAfterProcessTask> L79 --- rootDoc.getReference()", eventObj.rootDocument.getReference());
     routeTask(eventObj.rootDocument);
     removeMdcLoggingData();
@@ -131,7 +131,6 @@ function onError(errorEventObj) {
     rootDoc.getFailures().add("UNHANDLED_ERROR", message, errorEventObj.error);
 
     console.log("JONNY --- workflow-control.js::onError > L133 --- rootDoc.getReference()", rootDoc.getReference());
-    console.log("JONNY --- workflow-control.js::onError > L134 --- rootDoc.getFailures()", rootDoc.getFailures().stream().forEach(System.out.println()));
 
     var actionValues = errorEventObj.rootDocument.getField("CAF_WORKFLOW_ACTION").getStringValues();
     if (!actionValues.isEmpty() && !isLastAction(actionValues.get(0))) {
