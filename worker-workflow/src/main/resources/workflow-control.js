@@ -168,7 +168,7 @@ function routeTask(rootDocument) {
                     console.log("JONNY --- workflow-control.js::routeTask > L168 --- rootDoc.getReference()", rootDocument.getReference());
                     console.log("JONNY --- workflow-control.js::routeTask > L169 --- action.name: " + action.name);
 
-                    if(action.name === "bulk_indexer") {
+                    if(action.name === "entity_extract") {
                         throw new RuntimeException("This is a RuntimeException from 'routeTask'");
                     }
 
