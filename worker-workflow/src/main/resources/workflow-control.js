@@ -75,7 +75,8 @@ function isBulkWorker(e) {
 }
 
 function onAfterProcessTask(eventObj) {
-    console.log("JONNY --- workflow-control.js::onAfterProcessTask> L78 --- rootDoc.getReference()", eventObj.rootDocument.getReference());
+    console.log("JONNY --- workflow-control.js::onAfterProcessTask> L78 --- BUILD 19");
+    console.log("JONNY --- workflow-control.js::onAfterProcessTask> L79 --- rootDoc.getReference()", eventObj.rootDocument.getReference());
     routeTask(eventObj.rootDocument);
     removeMdcLoggingData();
 }
@@ -129,8 +130,8 @@ function onError(errorEventObj) {
     var message = errorEventObj.error.getMessage();
     rootDoc.getFailures().add("UNHANDLED_ERROR", message, errorEventObj.error);
 
-    console.log("JONNY --- workflow-control.js::onError > L132 --- rootDoc.getReference()", rootDoc.getReference());
-    console.log("JONNY --- workflow-control.js::onError > L133 --- rootDoc.getFailures()", rootDoc.getFailures().stream().forEach(System.out::println));
+    console.log("JONNY --- workflow-control.js::onError > L133 --- rootDoc.getReference()", rootDoc.getReference());
+    console.log("JONNY --- workflow-control.js::onError > L134 --- rootDoc.getFailures()", rootDoc.getFailures().stream().forEach(System.out::println));
 
     var actionValues = errorEventObj.rootDocument.getField("CAF_WORKFLOW_ACTION").getStringValues();
     if (!actionValues.isEmpty() && !isLastAction(actionValues.get(0))) {
@@ -165,10 +166,11 @@ function routeTask(rootDocument) {
 
                 if (action.applyMessagePrioritization && isCafWmpEnabled()) {
 
-                    console.log("JONNY --- workflow-control.js::routeTask > L168 --- rootDoc.getReference()", rootDocument.getReference());
-                    console.log("JONNY --- workflow-control.js::routeTask > L169 --- action.name: " + action.name);
+                    console.log("JONNY --- workflow-control.js::routeTask > L169 --- rootDoc.getReference()", rootDocument.getReference());
+                    console.log("JONNY --- workflow-control.js::routeTask > L170 --- action.name: " + action.name);
 
                     if(action.name === "entity_extract" || action.name === "classification") {
+                        console.log("JONNY --- workflow-control.js::routeTask > L173 --- throwing RuntimeException on action: ", action.name);
                         throw new RuntimeException("This is a RuntimeException from 'routeTask'");
                     }
 
