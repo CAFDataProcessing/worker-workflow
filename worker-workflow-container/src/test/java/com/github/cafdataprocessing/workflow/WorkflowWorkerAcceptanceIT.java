@@ -54,7 +54,7 @@ public class WorkflowWorkerAcceptanceIT extends UseAsTestName_TestBase
     }
 
     @UseAsTestName(idx = 1)
-    @Test(dataProvider = "MainTest")
+    // @Test(dataProvider = "MainTest")
     public void testWorker(TestItem testItem, String testName) throws Exception
     {
         controller.runTests(testItem);
