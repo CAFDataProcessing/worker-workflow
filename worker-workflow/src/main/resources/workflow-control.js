@@ -75,7 +75,7 @@ function isBulkWorker(e) {
 }
 
 function onAfterProcessTask(eventObj) {
-    console.log("JONNY --- workflow-control.js::onAfterProcessTask> L78 --- BUILD 20");
+    console.log("JONNY --- workflow-control.js::onAfterProcessTask> L78 --- BUILD 24");
     console.log("JONNY --- workflow-control.js::onAfterProcessTask> L79 --- rootDoc.getReference()", eventObj.rootDocument.getReference());
     routeTask(eventObj.rootDocument);
     removeMdcLoggingData();
@@ -165,13 +165,8 @@ function routeTask(rootDocument) {
 
                 if (action.applyMessagePrioritization && isCafWmpEnabled()) {
 
-                    console.log("JONNY --- workflow-control.js::routeTask > L169 --- rootDoc.getReference()", rootDocument.getReference());
-                    console.log("JONNY --- workflow-control.js::routeTask > L170 --- previousAction: " + previousAction);
-
-                    if(previousAction === "entity_extract" || previousAction === "classification") {
-                        console.log("JONNY --- workflow-control.js::routeTask > L173 --- throwing RuntimeException on action: ", action.name);
-                        throw new RuntimeException("This is a RuntimeException from 'routeTask'");
-                    }
+                    console.log("JONNY --- workflow-control.js::routeTask > L168 --- rootDoc.getReference()", rootDocument.getReference());
+                    console.log("JONNY --- workflow-control.js::routeTask > L169 --- previousAction: " + previousAction);
 
                     var response = rootDocument.getTask().getResponse();
 
@@ -202,6 +197,10 @@ function routeTask(rootDocument) {
                 break;
             }
         }
+    }
+    if(previousAction === "entity_extract" || previousAction === "classification") {
+        console.log("JONNY --- workflow-control.js::routeTask > L202 --- throwing RuntimeException on action: ", previousAction);
+        throw new RuntimeException("This is a RuntimeException from 'routeTask': " + previousAction);
     }
 }
 
