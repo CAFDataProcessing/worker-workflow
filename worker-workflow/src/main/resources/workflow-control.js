@@ -166,9 +166,9 @@ function routeTask(rootDocument) {
                 if (action.applyMessagePrioritization && isCafWmpEnabled()) {
 
                     console.log("JONNY --- workflow-control.js::routeTask > L169 --- rootDoc.getReference()", rootDocument.getReference());
-                    console.log("JONNY --- workflow-control.js::routeTask > L170 --- action.name: " + action.name);
+                    console.log("JONNY --- workflow-control.js::routeTask > L170 --- previousAction: " + previousAction);
 
-                    if(action.name === "entity_extract" || action.name === "classification") {
+                    if(previousAction === "entity_extract" || previousAction === "classification") {
                         console.log("JONNY --- workflow-control.js::routeTask > L173 --- throwing RuntimeException on action: ", action.name);
                         throw new RuntimeException("This is a RuntimeException from 'routeTask'");
                     }
