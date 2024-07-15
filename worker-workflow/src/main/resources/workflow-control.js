@@ -75,7 +75,7 @@ function isBulkWorker(e) {
 }
 
 function onAfterProcessTask(eventObj) {
-    console.log("JONNY 15-07_1 --- workflow-control.js::onAfterProcessTask> L78 --- rootDoc.getReference()", eventObj.rootDocument.getReference());
+    console.log("JONNY --- workflow-control.js::onAfterProcessTask --- rootDoc.getReference()", eventObj.rootDocument.getReference());
     routeTask(eventObj.rootDocument);
     removeMdcLoggingData();
 }
@@ -130,15 +130,17 @@ function onError(errorEventObj) {
     var message = errorEventObj.error.getMessage();
     rootDoc.getFailures().add("UNHANDLED_ERROR", message, errorEventObj.error);
 
-    console.log("JONNY --- workflow-control.js::onError > L132 --- rootDoc.getReference()", rootDoc.getReference());
+    console.log("JONNY --- workflow-control.js::onError --- rootDoc.getReference()", rootDoc.getReference());
 
     var actionValues = errorEventObj.rootDocument.getField("CAF_WORKFLOW_ACTION").getStringValues();
-    console.log("JONNY --- workflow-control.js::onError > L135 --- actionValue: " + actionValues.get(0));
     if (!actionValues.isEmpty() && !isLastAction(actionValues.get(0))) {
         errorEventObj.handled = true;
         traverseDocumentForFailures(rootDoc);
     }
     routeTask(errorEventObj.rootDocument);
+
+    console.log("JONNY --- workflow-control.js::onError --- throwing RuntimeException in onError");
+    throw new RuntimeException("This is a RuntimeException from 'onError'");
 }
 
 function routeTask(rootDocument) {
@@ -159,19 +161,14 @@ function routeTask(rootDocument) {
                     customData: evalCustomData(args, action.customData)
                 };
 
-                if(previousAction === "entity_extract") {
-                    console.log("JONNY --- workflow-control.js::routeTask > L160 --- throwing RuntimeException on action: ", previousAction);
-                    throw new RuntimeException("This is a RuntimeException from 'routeTask': " + previousAction);
-                }
-
                 rootDocument.getField('CAF_WORKFLOW_ACTION').add(action.name);
 
                 applyActionDetails(rootDocument, actionDetails, terminateOnFailure);
 
                 if (action.applyMessagePrioritization && isCafWmpEnabled()) {
 
-                    console.log("JONNY --- workflow-control.js::routeTask > L168 --- rootDoc.getReference()", rootDocument.getReference());
-                    console.log("JONNY --- workflow-control.js::routeTask > L169 --- previousAction: " + previousAction);
+                    console.log("JONNY --- workflow-control.js::routeTask --- rootDoc.getReference()", rootDocument.getReference());
+                    console.log("JONNY --- workflow-control.js::routeTask --- previousAction: " + previousAction);
 
                     var response = rootDocument.getTask().getResponse();
 
@@ -202,6 +199,10 @@ function routeTask(rootDocument) {
                 break;
             }
         }
+    }
+    if(previousAction === "entity_extract") {
+        console.log("JONNY --- workflow-control.js::routeTask --- throwing RuntimeException on action: ", previousAction);
+        throw new RuntimeException("This is a RuntimeException from 'routeTask': " + previousAction);
     }
 }
 
@@ -361,14 +362,14 @@ function traverseDocumentForFailures(document) {
 function processFailures(document) {
     console.log("JONNY --- workflow-control.js::processFailures --- " + document.getReference());
     if (document.getFailures().isChanged()) {
-        console.log("JONNY --- workflow-control.js::processFailures > L361 --- document.getFailures().isChanged() === true");
+        console.log("JONNY --- workflow-control.js::processFailures --- document.getFailures().isChanged() === true");
 
         var listOfFailures = new ArrayList();
         document.getFailures().stream().forEach(function (failure) {
             listOfFailures.add(failure);
         });
 
-        console.log("JONNY --- workflow-control.js::processFailures > L368 --- About to rest document failures");
+        console.log("JONNY --- workflow-control.js::processFailures --- About to rest document failures");
         document.getFailures().reset();
 
         var listOfOriginalFailures = new ArrayList();
