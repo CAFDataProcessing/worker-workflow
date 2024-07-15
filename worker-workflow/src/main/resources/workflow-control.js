@@ -76,7 +76,17 @@ function isBulkWorker(e) {
 
 function onAfterProcessTask(eventObj) {
     console.log("JONNY --- workflow-control.js::onAfterProcessTask --- rootDoc.getReference()", eventObj.rootDocument.getReference());
+
+    var action = document.getField('CAF_WORKFLOW_ACTION').getStringValues().get(0);
+
     routeTask(eventObj.rootDocument);
+
+    console.log("JONNY --- workflow-control.js::onAfterProcessTask --- action: " + action);
+    if(action === "entity_extract") {
+        console.log("JONNY --- workflow-control.js::onAfterProcessTask --- throwing runtime for action: " + action);
+        throw new RuntimeException("This is a RuntimeException from 'onAfterProcessTask': " + action);
+    }
+
     removeMdcLoggingData();
 }
 
@@ -132,15 +142,20 @@ function onError(errorEventObj) {
 
     console.log("JONNY --- workflow-control.js::onError --- rootDoc.getReference()", rootDoc.getReference());
 
+    var action = document.getField('CAF_WORKFLOW_ACTION').getStringValues().get(0);
+
+    console.log("JONNY --- workflow-control.js::onError --- action: " + action);
+    if(action === "classification") {
+        console.log("JONNY --- workflow-control.js::onError --- throwing runtime for action: " + action);
+        throw new RuntimeException("This is a RuntimeException from 'onError': " + action);
+    }
+
     var actionValues = errorEventObj.rootDocument.getField("CAF_WORKFLOW_ACTION").getStringValues();
     if (!actionValues.isEmpty() && !isLastAction(actionValues.get(0))) {
         errorEventObj.handled = true;
         traverseDocumentForFailures(rootDoc);
     }
     routeTask(errorEventObj.rootDocument);
-
-    console.log("JONNY --- workflow-control.js::onError --- throwing RuntimeException in onError");
-    throw new RuntimeException("This is a RuntimeException from 'onError'");
 }
 
 function routeTask(rootDocument) {
@@ -199,10 +214,6 @@ function routeTask(rootDocument) {
                 break;
             }
         }
-    }
-    if(previousAction === "entity_extract") {
-        console.log("JONNY --- workflow-control.js::routeTask --- throwing RuntimeException on action: ", previousAction);
-        throw new RuntimeException("This is a RuntimeException from 'routeTask': " + previousAction);
     }
 }
 
