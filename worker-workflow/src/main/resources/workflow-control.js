@@ -124,6 +124,7 @@ function setWorkerVersion(document) {
 }
 
 function onError(errorEventObj) {
+    console.log("JONNY --- workflow-control.js::onError");
     thisScript.install();
     var rootDoc = errorEventObj.rootDocument;
     var message = errorEventObj.error.getMessage();
@@ -132,6 +133,7 @@ function onError(errorEventObj) {
     console.log("JONNY --- workflow-control.js::onError > L132 --- rootDoc.getReference()", rootDoc.getReference());
 
     var actionValues = errorEventObj.rootDocument.getField("CAF_WORKFLOW_ACTION").getStringValues();
+    console.log("JONNY --- workflow-control.js::onError > L135 --- actionValue: " + actionValues.get(0));
     if (!actionValues.isEmpty() && !isLastAction(actionValues.get(0))) {
         errorEventObj.handled = true;
         traverseDocumentForFailures(rootDoc);
@@ -140,6 +142,7 @@ function onError(errorEventObj) {
 }
 
 function routeTask(rootDocument) {
+    console.log("JONNY --- workflow-control.js::routeTask");
 
     var args = extractArguments(rootDocument);
 
@@ -356,13 +359,16 @@ function traverseDocumentForFailures(document) {
 }
 
 function processFailures(document) {
+    console.log("JONNY --- workflow-control.js::processFailures --- " + document.getReference());
     if (document.getFailures().isChanged()) {
+        console.log("JONNY --- workflow-control.js::processFailures > L361 --- document.getFailures().isChanged() === true");
 
         var listOfFailures = new ArrayList();
         document.getFailures().stream().forEach(function (failure) {
             listOfFailures.add(failure);
         });
 
+        console.log("JONNY --- workflow-control.js::processFailures > L368 --- About to rest document failures");
         document.getFailures().reset();
 
         var listOfOriginalFailures = new ArrayList();
