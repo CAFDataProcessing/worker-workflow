@@ -75,8 +75,7 @@ function isBulkWorker(e) {
 }
 
 function onAfterProcessTask(eventObj) {
-    console.log("JONNY --- workflow-control.js::onAfterProcessTask> L78 --- BUILD 24");
-    console.log("JONNY --- workflow-control.js::onAfterProcessTask> L79 --- rootDoc.getReference()", eventObj.rootDocument.getReference());
+    console.log("JONNY 15-07_1 --- workflow-control.js::onAfterProcessTask> L78 --- rootDoc.getReference()", eventObj.rootDocument.getReference());
     routeTask(eventObj.rootDocument);
     removeMdcLoggingData();
 }
@@ -130,7 +129,7 @@ function onError(errorEventObj) {
     var message = errorEventObj.error.getMessage();
     rootDoc.getFailures().add("UNHANDLED_ERROR", message, errorEventObj.error);
 
-    console.log("JONNY --- workflow-control.js::onError > L133 --- rootDoc.getReference()", rootDoc.getReference());
+    console.log("JONNY --- workflow-control.js::onError > L132 --- rootDoc.getReference()", rootDoc.getReference());
 
     var actionValues = errorEventObj.rootDocument.getField("CAF_WORKFLOW_ACTION").getStringValues();
     if (!actionValues.isEmpty() && !isLastAction(actionValues.get(0))) {
@@ -157,9 +156,12 @@ function routeTask(rootDocument) {
                     customData: evalCustomData(args, action.customData)
                 };
 
+                if(previousAction === "entity_extract") {
+                    console.log("JONNY --- workflow-control.js::routeTask > L160 --- throwing RuntimeException on action: ", previousAction);
+                    throw new RuntimeException("This is a RuntimeException from 'routeTask': " + previousAction);
+                }
+
                 rootDocument.getField('CAF_WORKFLOW_ACTION').add(action.name);
-
-
 
                 applyActionDetails(rootDocument, actionDetails, terminateOnFailure);
 
@@ -197,10 +199,6 @@ function routeTask(rootDocument) {
                 break;
             }
         }
-    }
-    if(previousAction === "entity_extract" || previousAction === "classification") {
-        console.log("JONNY --- workflow-control.js::routeTask > L202 --- throwing RuntimeException on action: ", previousAction);
-        throw new RuntimeException("This is a RuntimeException from 'routeTask': " + previousAction);
     }
 }
 
