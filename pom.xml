@@ -41,7 +41,7 @@
     <properties>
         <copyrightYear>2024</copyrightYear>
         <corePolicyElasticsearchContainerName>
-            dockerhub-public.orgartifactory.swinfra.net/cafdataprocessing/policy-admin-elasticsearch:1.2.0
+            ${dockerHubPublic}/cafdataprocessing/policy-admin-elasticsearch:1.2.0
         </corePolicyElasticsearchContainerName>
         <corporateRepositoryManager>orgartifactory.swinfra.net</corporateRepositoryManager>
         <dockerHubOrganization>cafdataprocessing</dockerHubOrganization>
@@ -52,7 +52,7 @@
         <homeDockerPrereleaseRegistry>saas-docker-prerelease.${corporateRepositoryManager}</homeDockerPrereleaseRegistry>
         <homeDockerReleaseRegistry>saas-docker-release.${corporateRepositoryManager}</homeDockerReleaseRegistry>
         <processingServiceContainerName>
-            dockerhub-public.orgartifactory.swinfra.net/cafdataprocessing/processing-service:1
+            ${dockerHubPublic}/cafdataprocessing/processing-service:1
         </processingServiceContainerName>
         <projectDockerRegistry>worker-workflow-${project.version}.project-registries.local</projectDockerRegistry>
     </properties>
@@ -1018,20 +1018,20 @@
                             <digest>sha256:3302c6b46df8a8776e060a66b0e303ff5f488d8f79c2c5c0802fc5a68b88a2e5</digest>
                         </image>
                         <image>
-                            <repository>dockerhub-public.orgartifactory.swinfra.net/cafapi/opensuse-jre17</repository>
+                            <repository>${dockerHubPublic}/cafapi/opensuse-jre17</repository>
                             <tag>4.1.0</tag>
                             <digest>sha256:ebb4816ac8b80c07f091f30104ae5710e5e624c985cfd41fafc3dbf4c631a5a9</digest>
                         </image>
                         <image>
-                            <repository>dockerhub-public.orgartifactory.swinfra.net/cloudesire/webdav</repository>
+                            <repository>${dockerHubPublic}/cloudesire/webdav</repository>
                             <tag>latest</tag>
                         </image>
                         <image>
-                            <repository>dockerhub-public.orgartifactory.swinfra.net/library/postgres</repository>
+                            <repository>${dockerHubPublic}/library/postgres</repository>
                             <tag>latest</tag>
                         </image>
                         <image>
-                            <repository>dockerhub-public.orgartifactory.swinfra.net/library/rabbitmq</repository>
+                            <repository>${dockerHubPublic}/library/rabbitmq</repository>
                             <tag>3-management</tag>
                         </image>
                     </imageManagement>
