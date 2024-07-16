@@ -77,7 +77,7 @@ function isBulkWorker(e) {
 function onAfterProcessTask(eventObj) {
     console.log("JONNY --- workflow-control.js::onAfterProcessTask --- rootDoc.getReference()", eventObj.rootDocument.getReference());
 
-    var action = document.getField('CAF_WORKFLOW_ACTION').getStringValues().get(0);
+    var action = eventObj.rootDocument.getField('CAF_WORKFLOW_ACTION').getStringValues().get(0);
 
     routeTask(eventObj.rootDocument);
 
@@ -142,7 +142,7 @@ function onError(errorEventObj) {
 
     console.log("JONNY --- workflow-control.js::onError --- rootDoc.getReference()", rootDoc.getReference());
 
-    var action = document.getField('CAF_WORKFLOW_ACTION').getStringValues().get(0);
+    var action = rootDoc.getField('CAF_WORKFLOW_ACTION').getStringValues().get(0);
 
     console.log("JONNY --- workflow-control.js::onError --- action: " + action);
     if(action === "classification") {
