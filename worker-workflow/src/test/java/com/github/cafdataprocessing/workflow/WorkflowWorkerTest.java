@@ -76,7 +76,7 @@ public class WorkflowWorkerTest
         }
     }
 
-    // @Test
+    @Test
     public void validateAllActionsTest() throws Exception {
 
         final Map<String, String[]> fields = new HashMap<>();
@@ -114,7 +114,7 @@ public class WorkflowWorkerTest
                 actionExpectationsBuilder.build());
     }
 
-    // @Test
+    @Test
     public void action2ConditionNotPassTest() throws Exception {
 
         final Map<String, String[]> fields = new HashMap<>();
@@ -137,7 +137,7 @@ public class WorkflowWorkerTest
                 actionExpectationsBuilder.build());
     }
 
-    // @Test
+    @Test
     public void subDocumentPassConditionTest() throws Exception {
 
         final Document document = DocumentBuilder.configure().withFields()
@@ -176,7 +176,7 @@ public class WorkflowWorkerTest
 
     }
 
-    // @Test
+    @Test
     public void mdcLoggingDataIsAddedToDocumentTaskResponseCustomDataTest() throws Exception {
         
         // On receiving a document with a tenantId provided via custom data, but no correlationId, verify that the workflow worker:
@@ -205,7 +205,7 @@ public class WorkflowWorkerTest
         assertNotNull(document.getTask().getResponse().getCustomData().get("correlationId"));
     }
 
-    // @Test
+    @Test
     public void workflowOnlyRerouteTest() throws Exception {
 
         final Document document = DocumentBuilder.configure().withFields()
@@ -226,7 +226,7 @@ public class WorkflowWorkerTest
                 actionExpectationsBuilder.build());
     }
 
-    // @Test
+    @Test
     public void tenantIdRerouteTest() throws Exception {
 
         Map<String, String> customData = new HashMap<>();

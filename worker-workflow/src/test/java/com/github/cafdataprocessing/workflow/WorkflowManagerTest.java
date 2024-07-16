@@ -43,7 +43,7 @@ import javax.script.ScriptException;
 
 public class WorkflowManagerTest {
 
-    // @Test
+    @Test
     public void getWorkflowTest() throws Exception {
         final TestServices testServices = TestServices.createDefault();
         final Document document = DocumentBuilder.configure().withServices(testServices)
@@ -81,7 +81,7 @@ public class WorkflowManagerTest {
         assertEquals("bulk_index", actions.get(2).getName());
     }
 
-    // @Test
+    @Test
     public void duplicateActionNameTest() throws WorkerException {
 
         final Document document = DocumentBuilder.configure().build();
@@ -96,7 +96,7 @@ public class WorkflowManagerTest {
 
     }
 
-    // @Test
+    @Test
     public void noActionNameTest() throws WorkerException {
 
         final Document document = DocumentBuilder.configure().build();
@@ -111,7 +111,7 @@ public class WorkflowManagerTest {
 
     }
     
-    // @Test
+    @Test
     public void terminateOnFailureValueTest() throws WorkerException, ConfigurationException {
 
         final Document document = getDocumentWithSubDocument();
@@ -133,7 +133,7 @@ public class WorkflowManagerTest {
 
     }
     
-    // @Test
+    @Test
     public void onBeforeProcessDocumentTest() throws Exception
     {
         final Document document = getDocumentWithSubDocument();

@@ -62,7 +62,7 @@ import org.junit.jupiter.api.Test;
 
 public class WorkflowControlTest
 {
-    // @Test
+    @Test
     public void processFailuresTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
         // test the processFailures() function with a single failure and no original ones
@@ -121,7 +121,7 @@ public class WorkflowControlTest
                    isJsonStringMatching(jsonObject().where("CORRELATION_ID", is(jsonMissing()))));
     }
 
-    // @Test
+    @Test
     public void processFailuresRemoveWarningSuffixTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
         // test the processFailures() function with a single failure and no original ones
@@ -173,7 +173,7 @@ public class WorkflowControlTest
     }
 
 
-    // @Test
+    @Test
     public void processFailuresWithExtraSubfieldsTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
         // test the processFailures() function with a single failure and no original ones
@@ -237,7 +237,7 @@ public class WorkflowControlTest
                    isJsonStringMatching(jsonObject().where("CORRELATION_ID", is(jsonMissing()))));
     }
 
-    // @Test
+    @Test
     public void multipleFailuresPositiveTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
         // test processFailures() function with multiple failures and no original ones
@@ -324,7 +324,7 @@ public class WorkflowControlTest
                    isJsonStringMatching(jsonObject().where("CORRELATION_ID", is(jsonText("cor_12345_id")))));
     }
 
-    // @Test
+    @Test
     public void noFailuresFieldTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
         // this method does not have the FAILURES field present
@@ -400,7 +400,7 @@ public class WorkflowControlTest
                    isJsonStringMatching(jsonObject().where("CORRELATION_ID", is(jsonMissing()))));
     }
 
-    // @Test
+    @Test
     public void failuresNegativeNoWorkflowNameFieldTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
         // this method fails because there is not the CAF_WORKFLOW_NAME field
@@ -433,7 +433,7 @@ public class WorkflowControlTest
         fail("Exception not thrown");
     }
 
-    // @Test
+    @Test
     public void failuresStillAddedIfNoWorkflowAction() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
         final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl();
@@ -468,7 +468,7 @@ public class WorkflowControlTest
         assertTrue(failures.get(1).contains("error_id_2"));
     }
 
-    // @Test
+    @Test
     public void failuresNegativeNoIdFieldTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
         // this method shows what happens when there is not an ID field
@@ -521,7 +521,7 @@ public class WorkflowControlTest
                    isJsonStringMatching(jsonObject().where("CORRELATION_ID", is(jsonMissing()))));
     }
 
-    // @Test
+    @Test
     public void failuresNegativeNoMessageFieldTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
         // this method shows what happens when there is not a MESSAGE field
@@ -574,7 +574,7 @@ public class WorkflowControlTest
                    isJsonStringMatching(jsonObject().where("CORRELATION_ID", is(jsonMissing()))));
     }
 
-    // @Test
+    @Test
     public void isFailureInOriginalTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
         // test for the isFailureInOriginal() function
@@ -600,7 +600,7 @@ public class WorkflowControlTest
         assertThat(invokeFunction, is(true));
     }
 
-    // @Test
+    @Test
     public void isFailureInOriginalFalseTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
         // the function return false, because the failure is not in the original list
@@ -641,7 +641,7 @@ public class WorkflowControlTest
         assertThat(invokeFunction, is(false));
     }
 
-    // @Test
+    @Test
     public void isFailureInOriginalFileIdComparisonTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
         // checks that isFailureInOriginal() returns false even if the ids are the same (but the messages are different)
@@ -695,7 +695,7 @@ public class WorkflowControlTest
         }
     }
 
-    // @Test
+    @Test
     public void isFailureInOriginalStackComparisonTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
         // checks that isFailureInOriginal() returns false even if the ids and the messages are the same (but the stacks are different)
@@ -729,7 +729,7 @@ public class WorkflowControlTest
         }
     }
 
-    // @Test
+    @Test
     public void onAfterProcessDocumentSingleDocTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
         // test onAfterProcessDocument() with a single document, no need to call processSubdocumentFailures() and a single failure
@@ -768,7 +768,7 @@ public class WorkflowControlTest
         assertThat(failureMessage.getCorrelationId(), is(nullValue()));
     }
 
-    // @Test
+    @Test
     public void onAfterProcessDocumentSingleDocWithOriginalFailuresTest() throws ScriptException, NoSuchMethodException,
                                                                                  WorkerException, IOException
     {
@@ -823,7 +823,7 @@ public class WorkflowControlTest
                    isJsonStringMatching(jsonObject().where("CORRELATION_ID", is(jsonMissing()))));
     }
 
-    // @Test
+    @Test
     public void onAfterProcessDocumentSubdocTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
         // test onAfterProcessDocument() with a document with subdocuments, no need to call processSubdocumentFailures(),
@@ -893,7 +893,7 @@ public class WorkflowControlTest
             .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((0L))));
     }
 
-    // @Test
+    @Test
     public void onAfterProcessDocumentMultipleLevelOfSubdocsTest() throws ScriptException, NoSuchMethodException,
                                                                           WorkerException, IOException
     {
@@ -1053,7 +1053,7 @@ public class WorkflowControlTest
             .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((0L))));
     }
 
-    // @Test
+    @Test
     public void onAfterProcessDocumentSubDocNotProcessedSeparatelyTest() throws ScriptException, NoSuchMethodException,
                                                                                 WorkerException, IOException
     {
@@ -1208,7 +1208,7 @@ public class WorkflowControlTest
         assertThat(sumField, is(equalTo(3)));
     }
 
-    // @Test
+    @Test
     public void onAfterProcessDocumentSubDocNotProcessedSeparatelyWithoutSubdocsTest() throws ScriptException, NoSuchMethodException,
                                                                                               WorkerException, IOException
     {
@@ -1262,7 +1262,7 @@ public class WorkflowControlTest
                    isJsonStringMatching(jsonObject().where("CORRELATION_ID", is(jsonMissing()))));
     }
 
-    // @Test
+    @Test
     public void getTerminateOnFailureTest() throws IOException, ScriptException, NoSuchMethodException
     {
         final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl();
@@ -1274,7 +1274,7 @@ public class WorkflowControlTest
         assertThat(result3, is(equalTo(true)));
     }
 
-    // @Test
+    @Test
     public void terminalActionTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
         // test that no FAILUES are added if the current worker has terminal action == true, 
@@ -1303,7 +1303,7 @@ public class WorkflowControlTest
             .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((0L))));
     }
 
-    // @Test
+    @Test
     public void failuresNegativeNoWorkflowActionFieldInOnAfterProcessDocumentTest() throws ScriptException, NoSuchMethodException,
                                                                                            WorkerException, IOException
     {
@@ -1336,7 +1336,7 @@ public class WorkflowControlTest
             .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((0L))));
     }
 
-    // @Test
+    @Test
     public void negativeIsLastActionTest() throws IOException, ScriptException, NoSuchMethodException
     {
         final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl();
@@ -1344,7 +1344,7 @@ public class WorkflowControlTest
         assertThat(result, is(equalTo(false)));
     }
 
-    // @Test
+    @Test
     public void isLastActionTest() throws IOException, ScriptException, NoSuchMethodException
     {
         final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl();
@@ -1356,7 +1356,7 @@ public class WorkflowControlTest
         assertThat(result3, is(equalTo(false)));
     }
 
-    // @Test
+    @Test
     public void lastActionTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
         // test that no FAILUES are added if the current worker is the last action
@@ -1385,7 +1385,7 @@ public class WorkflowControlTest
             .stream().filter(x -> !x.getStringValue().isEmpty()).count(), is(equalTo((0L))));
     }
 
-    // @Test
+    @Test
     public void getCurrentWorkerNameTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException,
                                                   ConfigurationException
     {
@@ -1412,7 +1412,7 @@ public class WorkflowControlTest
         assertThat(result2, is(equalTo(("worker-added"))));
     }
 
-    // @Test
+    @Test
     public void getCurrentWorkerVersionTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException,
                                                      ConfigurationException
     {
@@ -1439,7 +1439,7 @@ public class WorkflowControlTest
         assertThat(result2, is(equalTo(("5.6.2-SNAPSHOT"))));
     }
 
-    // @Test
+    @Test
     public void fieldHasStringValueTestReturnsTrue() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
         final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl();
@@ -1457,7 +1457,7 @@ public class WorkflowControlTest
 
     }
 
-    // @Test
+    @Test
     public void fieldHasStringValueTestReturnsFalse() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
 
@@ -1476,7 +1476,7 @@ public class WorkflowControlTest
 
     }
 
-    // @Test
+    @Test
     public void fieldHasAnyStringValueTestReturnsTrue() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
         final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl();
@@ -1494,7 +1494,7 @@ public class WorkflowControlTest
 
     }
 
-    // @Test
+    @Test
     public void fieldHasAnyStringValueTestReturnsFalse() throws ScriptException, NoSuchMethodException, WorkerException, IOException
     {
         // test processFailures() function with multiple failures and no original ones
