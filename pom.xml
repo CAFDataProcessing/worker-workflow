@@ -43,7 +43,7 @@
         <corePolicyElasticsearchContainerName>
             ${dockerHubPublic}/cafdataprocessing/policy-admin-elasticsearch:1.2.0
         </corePolicyElasticsearchContainerName>
-        <corporateRepositoryManager>orgartifactory.swinfra.net</corporateRepositoryManager>
+        <corporateRepositoryManager>svsartifactory.swinfra.net</corporateRepositoryManager>
         <dockerHubOrganization>cafdataprocessing</dockerHubOrganization>
         <dockerCafDataProcessingOrg>
             ${dockerImagePrefix}${dockerHubOrganization}${dockerOrgSeperator}
