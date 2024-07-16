@@ -77,14 +77,21 @@ function isBulkWorker(e) {
 function onAfterProcessTask(eventObj) {
     console.log("JONNY --- workflow-control.js::onAfterProcessTask --- rootDoc.getReference()", eventObj.rootDocument.getReference());
 
-    var action = eventObj.rootDocument.getField('CAF_WORKFLOW_ACTION').getStringValues().get(0);
+    var action = ""
+    if (eventObj.rootDocument.getField('CAF_WORKFLOW_ACTION').hasValues()) {
+        action = eventObj.rootDocument.getField('CAF_WORKFLOW_ACTION').getStringValues().get(0);
+    }
 
     routeTask(eventObj.rootDocument);
 
-    console.log("JONNY --- workflow-control.js::onAfterProcessTask --- action: " + action);
-    if(action === "entity_extract") {
-        console.log("JONNY --- workflow-control.js::onAfterProcessTask --- throwing runtime for action: " + action);
-        throw new RuntimeException("This is a RuntimeException from 'onAfterProcessTask': " + action);
+    if(action !== "") {
+        console.log("JONNY --- workflow-control.js::onAfterProcessTask --- action: " + action);
+        if(action === "entity_extract") {
+            console.log("JONNY --- workflow-control.js::onAfterProcessTask --- throwing runtime for action: " + action);
+            throw new RuntimeException("This is a RuntimeException from 'onAfterProcessTask': " + action);
+        }
+    } else {
+        console.log("JONNY --- workflow-control.js::onAfterProcessTask --- Action string is empty");
     }
 
     removeMdcLoggingData();
@@ -142,12 +149,15 @@ function onError(errorEventObj) {
 
     console.log("JONNY --- workflow-control.js::onError --- rootDoc.getReference()", rootDoc.getReference());
 
-    var action = rootDoc.getField('CAF_WORKFLOW_ACTION').getStringValues().get(0);
+    if (rootDoc.getField('CAF_WORKFLOW_ACTION').hasValues()) {
+        var action = rootDoc.getField('CAF_WORKFLOW_ACTION').getStringValues().get(0);
 
-    console.log("JONNY --- workflow-control.js::onError --- action: " + action);
-    if(action === "classification") {
-        console.log("JONNY --- workflow-control.js::onError --- throwing runtime for action: " + action);
-        throw new RuntimeException("This is a RuntimeException from 'onError': " + action);
+        console.log("JONNY --- workflow-control.js::onError --- action: " + action);
+
+        if(action === "classification") {
+            console.log("JONNY --- workflow-control.js::onError --- throwing runtime for action: " + action);
+            throw new RuntimeException("This is a RuntimeException from 'onError': " + action);
+        }
     }
 
     var actionValues = errorEventObj.rootDocument.getField("CAF_WORKFLOW_ACTION").getStringValues();
