@@ -171,6 +171,13 @@ function onError(errorEventObj) {
 function routeTask(rootDocument) {
     console.log("JONNY --- workflow-control.js::routeTask");
 
+    console.log("JONNY --- workflow-control.js::routeTask --- No. of failures on document" + rootDocument.getReference() + ": " + rootDocument.getFailures().stream().count());
+
+    rootDocument.getFailures().stream().forEach(function (failure) {
+        console.log("JONNY --- workflow-control.js::routeTask --- Failure ID: " + failure.getFailureId());
+        console.log("JONNY --- workflow-control.js::routeTask --- Failure Message: " + failure.getFailureMessage());
+    });
+
     var args = extractArguments(rootDocument);
 
     var previousAction = markPreviousActionAsCompleted(rootDocument);
