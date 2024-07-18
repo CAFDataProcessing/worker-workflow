@@ -74,8 +74,27 @@ function isBulkWorker(e) {
     return workflowActionField.getStringValues().get(0).indexOf("bulk") !== -1;
 }
 
-function onAfterProcessTask(eventObj) {
+function onAfterProcessTask(eventObj)
+{
+
+    console.log("JONNY --- workflow-control.js::onAfterProcessTask() --- Document Reference: " + eventObj.rootDocument.getReference());
+
+    var action = "";
+    if(eventObj.rootDocument.getField('CAF_WORKFLOW_ACTION').hasValues()) {
+        action = eventObj.rootDocument.getField('CAF_WORKFLOW_ACTION').getStringValues().get(0);
+    }
+
     routeTask(eventObj.rootDocument);
+
+    if(action !== "") {
+        console.log("JONNY --- workflow-control.js::onAfterProcessTask() --- action: " + action);
+
+        if(action === "entity_extract") {
+            console.log("JONNY --- workflow-control.js::onAfterProcessTask() --- Throwing RuntimeException");
+            throw new RuntimeException("This is a RuntimeException from 'onAfterProcessTask()': " + action);
+        }
+    }
+
     removeMdcLoggingData();
 }
 
@@ -126,7 +145,7 @@ function onError(errorEventObj) {
     thisScript.install();
     var rootDoc = errorEventObj.rootDocument;
     var message = errorEventObj.error.getMessage();
-    rootDoc.getFailures().add("UNHANDLED_ERROR", message, errorEventObj.error);
+    rootDoc.getFailures().add("LONG_ERROR_THAT_IS_LONGER_THAN_32_CHARS", message, errorEventObj.error);
     var actionValues = errorEventObj.rootDocument.getField("CAF_WORKFLOW_ACTION").getStringValues();
     if (!actionValues.isEmpty() && !isLastAction(actionValues.get(0))) {
         errorEventObj.handled = true;

@@ -47,6 +47,11 @@ function addFailures (document, failures, extractSourceCallback, action) {
         } else {
             isWarningFlag = (typeof isWarning === 'function') ? isWarning(f): false;
         }
+
+        if(failureId !== null && failureId.length > 32) {
+            failureId = failureId.substring(0, 32);
+        }
+
         var errorObject = {
             ID: failureId,
             WORKFLOW_ACTION: workflowAction,
