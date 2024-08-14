@@ -349,7 +349,7 @@
                             <alias>worker-workflow</alias>
                             <name>${worker-workflow.container.name}</name>
                             <build>
-                                <from>${projectDockerRegistry}/cafapi/opensuse-jre21</from>
+                                <from>${projectDockerRegistry}/cafapi/oraclelinux-jre21</from>
                                 <!-- The entry point will be the worker.sh executable. -->
                                 <cmd>
                                     <exec>
