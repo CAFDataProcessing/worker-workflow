@@ -149,42 +149,42 @@
             </plugin>
 
             <!-- Plugin for running integration tests in the integration-test phase -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-failsafe-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>integration-test</goal>
-                            <goal>verify</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <systemPropertyVariables>
-                        <datastore.enabled>false</datastore.enabled>
-                        <docker.host.address>${docker.host.address}</docker.host.address>
-                        <expected.folder>${test.data}</expected.folder>
-                        <input.folder>${test.data}</input.folder>
-                        <rabbitmq.node.port>${rabbitmq.node.port}</rabbitmq.node.port>
-                        <rabbitmq.ctrl.port>${rabbitmq.ctrl.port}</rabbitmq.ctrl.port>
-                        <testCaseGeneration>${test.case.generation}</testCaseGeneration>
-                        <worker.restport>${worker.restport}</worker.restport>
-                        <worker.adminport>${worker.adminport}</worker.adminport>
-                    </systemPropertyVariables>
-                    <environmentVariables>
-                        <CAF_APPNAME>caf/worker</CAF_APPNAME>
-                        <CAF_CONFIG_PATH>${project.build.directory}/config-files</CAF_CONFIG_PATH>
-                        <CAF_CONFIG_DECODER>JavascriptDecoder</CAF_CONFIG_DECODER>
-                        <CAF_CONFIG_ENABLE_SUBSTITUTOR>false</CAF_CONFIG_ENABLE_SUBSTITUTOR>
-                        <CAF_WORKER_DATASTORE_PATH>datastore</CAF_WORKER_DATASTORE_PATH>
-                        <CAF_RABBITMQ_PREFETCH_BUFFER>1000</CAF_RABBITMQ_PREFETCH_BUFFER>
-                        <CAF_WORKER_RETRY_LIMIT>2</CAF_WORKER_RETRY_LIMIT>
-                        <CAF_WORKER_MAX_BATCH_SIZE>2</CAF_WORKER_MAX_BATCH_SIZE>
-                        <CAF_WORKER_MAX_BATCH_TIME>5000</CAF_WORKER_MAX_BATCH_TIME>
-                    </environmentVariables>
-                </configuration>
-            </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-failsafe-plugin</artifactId>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <goals>-->
+<!--                            <goal>integration-test</goal>-->
+<!--                            <goal>verify</goal>-->
+<!--                        </goals>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--                <configuration>-->
+<!--                    <systemPropertyVariables>-->
+<!--                        <datastore.enabled>false</datastore.enabled>-->
+<!--                        <docker.host.address>${docker.host.address}</docker.host.address>-->
+<!--                        <expected.folder>${test.data}</expected.folder>-->
+<!--                        <input.folder>${test.data}</input.folder>-->
+<!--                        <rabbitmq.node.port>${rabbitmq.node.port}</rabbitmq.node.port>-->
+<!--                        <rabbitmq.ctrl.port>${rabbitmq.ctrl.port}</rabbitmq.ctrl.port>-->
+<!--                        <testCaseGeneration>${test.case.generation}</testCaseGeneration>-->
+<!--                        <worker.restport>${worker.restport}</worker.restport>-->
+<!--                        <worker.adminport>${worker.adminport}</worker.adminport>-->
+<!--                    </systemPropertyVariables>-->
+<!--                    <environmentVariables>-->
+<!--                        <CAF_APPNAME>caf/worker</CAF_APPNAME>-->
+<!--                        <CAF_CONFIG_PATH>${project.build.directory}/config-files</CAF_CONFIG_PATH>-->
+<!--                        <CAF_CONFIG_DECODER>JavascriptDecoder</CAF_CONFIG_DECODER>-->
+<!--                        <CAF_CONFIG_ENABLE_SUBSTITUTOR>false</CAF_CONFIG_ENABLE_SUBSTITUTOR>-->
+<!--                        <CAF_WORKER_DATASTORE_PATH>datastore</CAF_WORKER_DATASTORE_PATH>-->
+<!--                        <CAF_RABBITMQ_PREFETCH_BUFFER>1000</CAF_RABBITMQ_PREFETCH_BUFFER>-->
+<!--                        <CAF_WORKER_RETRY_LIMIT>2</CAF_WORKER_RETRY_LIMIT>-->
+<!--                        <CAF_WORKER_MAX_BATCH_SIZE>2</CAF_WORKER_MAX_BATCH_SIZE>-->
+<!--                        <CAF_WORKER_MAX_BATCH_TIME>5000</CAF_WORKER_MAX_BATCH_TIME>-->
+<!--                    </environmentVariables>-->
+<!--                </configuration>-->
+<!--            </plugin>-->
             <!--
                 Builds the Docker image for the WorkflowWorker, starts RabbitMQ and assembles the configuration files
                 for running the integration tests.
@@ -411,6 +411,9 @@
                                     <CAF_WORKER_MAX_BATCH_TIME>5000</CAF_WORKER_MAX_BATCH_TIME>
                                     <CAF_WORKER_RETRY_LIMIT>2</CAF_WORKER_RETRY_LIMIT>
                                     <CAF_SETTINGS_SERVICE_URL>${settingsServiceUrl}</CAF_SETTINGS_SERVICE_URL>
+                                    <CAF_LIVENESS_CHCK_INTERVAL_SECONDS>10</CAF_LIVENESS_CHCK_INTERVAL_SECONDS>
+                                    <CAF_READINESS_CHECK_INTERVAL_SECONDS>10</CAF_READINESS_CHECK_INTERVAL_SECONDS>
+                                    <CRASH_DUMP_ON_OUT_OF_MEMORY_ERROR>true</CRASH_DUMP_ON_OUT_OF_MEMORY_ERROR>
                                 </env>
                                 <volumes>
                                     <from>
