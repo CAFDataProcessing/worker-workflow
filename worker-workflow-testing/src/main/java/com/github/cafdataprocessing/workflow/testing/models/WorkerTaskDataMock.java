@@ -15,12 +15,13 @@
  */
 package com.github.cafdataprocessing.workflow.testing.models;
 
-import com.hpe.caf.api.worker.TaskMessage;
-import com.hpe.caf.api.worker.TaskSourceInfo;
-import com.hpe.caf.api.worker.TaskStatus;
-import com.hpe.caf.api.worker.TrackingInfo;
-import com.hpe.caf.api.worker.WorkerResponse;
-import com.hpe.caf.api.worker.WorkerTaskData;
+
+import com.github.workerframework.worker.api.TaskMessage;
+import com.github.workerframework.worker.api.TaskSourceInfo;
+import com.github.workerframework.worker.api.TaskStatus;
+import com.github.workerframework.worker.api.TrackingInfo;
+import com.github.workerframework.worker.api.WorkerResponse;
+import com.github.workerframework.worker.api.WorkerTaskData;
 
 public class WorkerTaskDataMock implements WorkerTaskData
 {

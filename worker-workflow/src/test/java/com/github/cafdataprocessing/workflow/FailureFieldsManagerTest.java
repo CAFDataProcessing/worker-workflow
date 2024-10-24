@@ -15,10 +15,10 @@
  */
 package com.github.cafdataprocessing.workflow;
 
+import com.github.cafdataprocessing.worker.document.model.Document;
+import com.github.cafdataprocessing.worker.document.testing.DocumentBuilder;
 import com.github.cafdataprocessing.workflow.testing.utils.WorkflowHelper;
 import com.google.gson.Gson;
-import com.hpe.caf.worker.document.model.Document;
-import com.hpe.caf.worker.document.testing.DocumentBuilder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;

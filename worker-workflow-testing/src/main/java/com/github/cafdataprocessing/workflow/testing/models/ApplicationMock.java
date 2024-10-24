@@ -15,11 +15,12 @@
  */
 package com.github.cafdataprocessing.workflow.testing.models;
 
-import com.hpe.caf.api.ConfigurationSource;
-import com.hpe.caf.worker.document.model.Application;
-import com.hpe.caf.worker.document.model.BatchSizeController;
-import com.hpe.caf.worker.document.model.InputMessageProcessor;
-import com.hpe.caf.worker.document.model.ServiceLocator;
+
+import com.github.cafapi.common.api.ConfigurationSource;
+import com.github.cafdataprocessing.worker.document.model.Application;
+import com.github.cafdataprocessing.worker.document.model.BatchSizeController;
+import com.github.cafdataprocessing.worker.document.model.InputMessageProcessor;
+import com.github.cafdataprocessing.worker.document.model.ServiceLocator;
 
 public class ApplicationMock implements Application
 {

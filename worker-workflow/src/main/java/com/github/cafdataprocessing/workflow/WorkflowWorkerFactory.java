@@ -15,14 +15,14 @@
  */
 package com.github.cafdataprocessing.workflow;
 
-import com.hpe.caf.api.ConfigurationException;
-import com.hpe.caf.api.ConfigurationSource;
-import com.hpe.caf.worker.document.exceptions.DocumentWorkerTransientException;
-import com.hpe.caf.worker.document.extensibility.DocumentWorker;
-import com.hpe.caf.worker.document.extensibility.DocumentWorkerFactory;
-import com.hpe.caf.worker.document.model.Application;
-import com.hpe.caf.worker.document.model.Document;
-import com.hpe.caf.worker.document.model.HealthMonitor;
+import com.github.cafapi.common.api.ConfigurationException;
+import com.github.cafapi.common.api.ConfigurationSource;
+import com.github.cafdataprocessing.worker.document.exceptions.DocumentWorkerTransientException;
+import com.github.cafdataprocessing.worker.document.extensibility.DocumentWorker;
+import com.github.cafdataprocessing.worker.document.extensibility.DocumentWorkerFactory;
+import com.github.cafdataprocessing.worker.document.model.Application;
+import com.github.cafdataprocessing.worker.document.model.Document;
+import com.github.cafdataprocessing.worker.document.model.HealthMonitor;
 
 /**
  * A factory to create workflow workers, passing them a configuration instance.

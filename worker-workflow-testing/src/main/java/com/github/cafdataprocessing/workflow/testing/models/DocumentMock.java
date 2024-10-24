@@ -15,13 +15,14 @@
  */
 package com.github.cafdataprocessing.workflow.testing.models;
 
-import com.hpe.caf.worker.document.model.Application;
-import com.hpe.caf.worker.document.model.Document;
-import com.hpe.caf.worker.document.model.Failures;
-import com.hpe.caf.worker.document.model.Field;
-import com.hpe.caf.worker.document.model.Fields;
-import com.hpe.caf.worker.document.model.Subdocuments;
-import com.hpe.caf.worker.document.model.Task;
+import com.github.cafdataprocessing.worker.document.model.Application;
+import com.github.cafdataprocessing.worker.document.model.Document;
+import com.github.cafdataprocessing.worker.document.model.Failures;
+import com.github.cafdataprocessing.worker.document.model.Field;
+import com.github.cafdataprocessing.worker.document.model.Fields;
+import com.github.cafdataprocessing.worker.document.model.Subdocuments;
+import com.github.cafdataprocessing.worker.document.model.Task;
+
 import java.util.Map;
 
 public class DocumentMock implements Document

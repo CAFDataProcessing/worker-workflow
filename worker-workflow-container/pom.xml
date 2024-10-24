@@ -45,7 +45,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.github.workerframework</groupId>
+            <groupId>com.github.workerframework.worker</groupId>
             <artifactId>standard-worker-container</artifactId>
             <type>pom</type>
         </dependency>
@@ -68,12 +68,12 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.github.workerframework.testing</groupId>
+            <groupId>com.github.workerframework.worker.testing</groupId>
             <artifactId>workerframework-testing-integration</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.github.workerframework.testing</groupId>
+            <groupId>com.github.workerframework.worker.testing</groupId>
             <artifactId>workerframework-testing-util</artifactId>
             <scope>test</scope>
         </dependency>
@@ -99,7 +99,7 @@
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>com.github.workerframework</groupId>
+                                    <groupId>com.github.workerframework.worker</groupId>
                                     <artifactId>worker-default-configs</artifactId>
                                     <outputDirectory>${project.build.directory}/config-files</outputDirectory>
                                     <excludes>META-INF/**</excludes>

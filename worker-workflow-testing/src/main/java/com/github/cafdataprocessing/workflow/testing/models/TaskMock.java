@@ -15,12 +15,13 @@
  */
 package com.github.cafdataprocessing.workflow.testing.models;
 
-import com.hpe.caf.api.worker.WorkerTaskData;
-import com.hpe.caf.worker.document.model.Application;
-import com.hpe.caf.worker.document.model.Document;
-import com.hpe.caf.worker.document.model.Response;
-import com.hpe.caf.worker.document.model.Scripts;
-import com.hpe.caf.worker.document.model.Task;
+import com.github.cafdataprocessing.worker.document.model.Application;
+import com.github.cafdataprocessing.worker.document.model.Document;
+import com.github.cafdataprocessing.worker.document.model.Response;
+import com.github.cafdataprocessing.worker.document.model.Scripts;
+import com.github.cafdataprocessing.worker.document.model.Task;
+import com.github.workerframework.worker.api.WorkerTaskData;
+
 import java.util.Map;
 
 public class TaskMock implements Task

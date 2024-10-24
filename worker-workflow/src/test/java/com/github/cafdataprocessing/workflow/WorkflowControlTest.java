@@ -16,22 +16,22 @@
 package com.github.cafdataprocessing.workflow;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.cafapi.common.api.ConfigurationException;
+import com.github.cafapi.common.api.ConfigurationSource;
+import com.github.cafdataprocessing.worker.document.config.DocumentWorkerConfiguration;
+import com.github.cafdataprocessing.worker.document.model.Document;
+import com.github.cafdataprocessing.worker.document.model.Failure;
+import com.github.cafdataprocessing.worker.document.model.Failures;
+import com.github.cafdataprocessing.worker.document.model.Field;
+import com.github.cafdataprocessing.worker.document.model.FieldValue;
+import com.github.cafdataprocessing.worker.document.model.Subdocument;
+import com.github.cafdataprocessing.worker.document.model.Subdocuments;
+import com.github.cafdataprocessing.worker.document.scripting.events.DocumentEventObject;
+import com.github.cafdataprocessing.worker.document.testing.DocumentBuilder;
 import com.github.cafdataprocessing.workflow.testing.models.NewFailure;
 import com.github.cafdataprocessing.workflow.testing.models.SubdocumentsMock;
 import com.github.cafdataprocessing.workflow.testing.utils.WorkflowHelper;
-import com.hpe.caf.api.ConfigurationException;
-import com.hpe.caf.api.ConfigurationSource;
-import com.hpe.caf.api.worker.WorkerException;
-import com.hpe.caf.worker.document.config.DocumentWorkerConfiguration;
-import com.hpe.caf.worker.document.model.Document;
-import com.hpe.caf.worker.document.model.Failure;
-import com.hpe.caf.worker.document.model.Failures;
-import com.hpe.caf.worker.document.model.Field;
-import com.hpe.caf.worker.document.model.FieldValue;
-import com.hpe.caf.worker.document.model.Subdocument;
-import com.hpe.caf.worker.document.model.Subdocuments;
-import com.hpe.caf.worker.document.scripting.events.DocumentEventObject;
-import com.hpe.caf.worker.document.testing.DocumentBuilder;
+import com.github.workerframework.worker.api.WorkerException;
 import static com.spotify.hamcrest.jackson.IsJsonMissing.jsonMissing;
 import static com.spotify.hamcrest.jackson.IsJsonNull.jsonNull;
 import static com.spotify.hamcrest.jackson.IsJsonObject.jsonObject;
@@ -1387,7 +1387,7 @@ public class WorkflowControlTest
 
     @Test
     public void getCurrentWorkerNameTest() throws ScriptException, NoSuchMethodException, WorkerException, IOException,
-                                                  ConfigurationException
+            ConfigurationException
     {
         final Invocable invocable = WorkflowHelper.createInvocableJavascriptEngineWithActionsAndWorkflowControl();
         final Document builderDoc = DocumentBuilder.fromFile(
