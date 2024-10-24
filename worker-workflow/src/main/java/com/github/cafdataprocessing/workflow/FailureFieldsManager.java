@@ -15,9 +15,9 @@
  */
 package com.github.cafdataprocessing.workflow;
 
+import com.github.cafdataprocessing.worker.document.model.Document;
+import com.github.cafdataprocessing.worker.document.model.Field;
 import com.google.gson.Gson;
-import com.hpe.caf.worker.document.model.Document;
-import com.hpe.caf.worker.document.model.Field;
 import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;

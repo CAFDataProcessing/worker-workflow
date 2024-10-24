@@ -13,4 +13,4 @@
 # limitations under the License.
 #
 
-com.hpe.caf.worker.document.DocumentWorkerTestControllerProvider
+com.github.cafdataprocessing.worker.document.DocumentWorkerTestControllerProvider

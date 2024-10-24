@@ -15,7 +15,8 @@
  */
 package com.github.cafdataprocessing.workflow.testing.models;
 
-import com.hpe.caf.worker.document.fieldvalues.NonReferenceFieldValue;
+import com.github.cafdataprocessing.worker.document.fieldvalues.NonReferenceFieldValue;
+
 import java.nio.charset.StandardCharsets;
 
 public class StringFieldMock extends NonReferenceFieldValue

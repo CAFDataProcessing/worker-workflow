@@ -15,10 +15,10 @@
  */
 package com.github.cafdataprocessing.workflow.testing.models;
 
-import com.hpe.caf.worker.document.model.Application;
-import com.hpe.caf.worker.document.model.Document;
-import com.hpe.caf.worker.document.model.Subdocument;
-import com.hpe.caf.worker.document.model.Subdocuments;
+import com.github.cafdataprocessing.worker.document.model.Application;
+import com.github.cafdataprocessing.worker.document.model.Document;
+import com.github.cafdataprocessing.worker.document.model.Subdocument;
+import com.github.cafdataprocessing.worker.document.model.Subdocuments;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;

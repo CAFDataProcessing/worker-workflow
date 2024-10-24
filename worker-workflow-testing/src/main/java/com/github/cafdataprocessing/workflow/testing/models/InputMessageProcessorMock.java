@@ -15,8 +15,9 @@
  */
 package com.github.cafdataprocessing.workflow.testing.models;
 
-import com.hpe.caf.worker.document.model.Application;
-import com.hpe.caf.worker.document.model.InputMessageProcessor;
+
+import com.github.cafdataprocessing.worker.document.model.Application;
+import com.github.cafdataprocessing.worker.document.model.InputMessageProcessor;
 
 public class InputMessageProcessorMock implements InputMessageProcessor
 {

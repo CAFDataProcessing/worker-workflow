@@ -15,6 +15,9 @@
  */
 package com.github.cafdataprocessing.workflow;
 
+import com.github.cafdataprocessing.worker.document.exceptions.DocumentWorkerTransientException;
+import com.github.cafdataprocessing.worker.document.model.Document;
+import com.github.cafdataprocessing.worker.document.model.Field;
 import com.github.cafdataprocessing.workflow.model.ArgumentDefinition;
 import com.github.cafdataprocessing.workflow.restclients.settings_service.api.SettingsApi;
 import com.github.cafdataprocessing.workflow.restclients.settings_service.client.ApiClient;
@@ -24,9 +27,6 @@ import com.github.cafdataprocessing.workflow.restclients.settings_service.model.
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
-import com.hpe.caf.worker.document.exceptions.DocumentWorkerTransientException;
-import com.hpe.caf.worker.document.model.Document;
-import com.hpe.caf.worker.document.model.Field;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;

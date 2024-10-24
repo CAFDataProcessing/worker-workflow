@@ -20,7 +20,7 @@ var ArrayList = Java.type("java.util.ArrayList");
 var URL = Java.type("java.net.URL");
 var MDC = Java.type("org.slf4j.MDC");
 var UUID = Java.type("java.util.UUID");
-var ScriptEngineType = Java.type("com.hpe.caf.worker.document.model.ScriptEngineType");
+var ScriptEngineType = Java.type("com.github.cafdataprocessing.worker.document.model.ScriptEngineType");
 var System = Java.type("java.lang.System");
 
 if(!ACTIONS){

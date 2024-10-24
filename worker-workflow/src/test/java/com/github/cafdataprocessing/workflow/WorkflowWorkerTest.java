@@ -15,18 +15,18 @@
  */
 package com.github.cafdataprocessing.workflow;
 
+import com.github.cafapi.common.api.ConfigurationException;
+import com.github.cafdataprocessing.worker.document.model.Document;
+import com.github.cafdataprocessing.worker.document.testing.CustomDataBuilder;
+import com.github.cafdataprocessing.worker.document.testing.DocumentBuilder;
 import com.github.cafdataprocessing.workflow.restclients.settings_service.api.SettingsApi;
 import com.github.cafdataprocessing.workflow.testing.ActionExpectationsBuilder;
 import com.github.cafdataprocessing.workflow.testing.WorkflowTestExecutor;
-import com.hpe.caf.api.ConfigurationException;
-import com.hpe.caf.api.worker.WorkerException;
-import com.hpe.caf.worker.document.model.Document;
-import com.hpe.caf.worker.document.testing.CustomDataBuilder;
-import com.hpe.caf.worker.document.testing.DocumentBuilder;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import com.github.workerframework.worker.api.WorkerException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;

@@ -15,14 +15,14 @@
  */
 package com.github.cafdataprocessing.workflow;
 
+import com.github.cafdataprocessing.worker.document.model.Document;
+import com.github.cafdataprocessing.worker.document.testing.DocumentBuilder;
+import com.github.cafdataprocessing.worker.document.testing.TestServices;
 import com.github.cafdataprocessing.workflow.model.ArgumentDefinition;
 import com.github.cafdataprocessing.workflow.restclients.settings_service.api.SettingsApi;
 import com.github.cafdataprocessing.workflow.restclients.settings_service.model.ResolvedSetting;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.hpe.caf.worker.document.model.Document;
-import com.hpe.caf.worker.document.testing.DocumentBuilder;
-import com.hpe.caf.worker.document.testing.TestServices;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;

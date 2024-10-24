@@ -15,16 +15,16 @@
  */
 package com.github.cafdataprocessing.workflow;
 
+import com.github.cafapi.common.api.ConfigurationException;
+import com.github.cafdataprocessing.worker.document.model.Document;
+import com.github.cafdataprocessing.worker.document.scripting.events.CancelableDocumentEventObject;
+import com.github.cafdataprocessing.worker.document.testing.DocumentBuilder;
+import com.github.cafdataprocessing.worker.document.testing.TestServices;
 import com.github.cafdataprocessing.workflow.model.Action;
 import com.github.cafdataprocessing.workflow.model.ArgumentDefinition;
 import com.github.cafdataprocessing.workflow.model.Workflow;
-import com.hpe.caf.api.ConfigurationException;
-import com.hpe.caf.api.worker.WorkerException;
-import com.hpe.caf.worker.document.model.Document;
-import com.hpe.caf.worker.document.testing.DocumentBuilder;
-import com.hpe.caf.worker.document.testing.TestServices;
+import com.github.workerframework.worker.api.WorkerException;
 import com.google.common.io.Resources;
-import com.hpe.caf.worker.document.scripting.events.CancelableDocumentEventObject;
 import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
 import org.apache.commons.io.IOUtils;
 import org.graalvm.polyglot.Context;

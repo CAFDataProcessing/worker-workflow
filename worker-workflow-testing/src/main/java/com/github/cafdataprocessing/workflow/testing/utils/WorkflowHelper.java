@@ -15,6 +15,14 @@
  */
 package com.github.cafdataprocessing.workflow.testing.utils;
 
+import com.github.cafdataprocessing.worker.document.config.DocumentWorkerConfiguration;
+import com.github.cafdataprocessing.worker.document.model.Application;
+import com.github.cafdataprocessing.worker.document.model.Document;
+import com.github.cafdataprocessing.worker.document.model.Failures;
+import com.github.cafdataprocessing.worker.document.model.Fields;
+import com.github.cafdataprocessing.worker.document.model.InputMessageProcessor;
+import com.github.cafdataprocessing.worker.document.model.Subdocument;
+import com.github.cafdataprocessing.worker.document.model.Subdocuments;
 import com.github.cafdataprocessing.workflow.testing.models.ApplicationMock;
 import com.github.cafdataprocessing.workflow.testing.models.ConfigurationSourceMock;
 import com.github.cafdataprocessing.workflow.testing.models.DocumentMock;
@@ -23,17 +31,6 @@ import com.github.cafdataprocessing.workflow.testing.models.InputMessageProcesso
 import com.github.cafdataprocessing.workflow.testing.models.SubdocumentMock;
 import com.github.cafdataprocessing.workflow.testing.models.TaskMock;
 import com.github.cafdataprocessing.workflow.testing.models.WorkerTaskDataMock;
-import com.hpe.caf.api.worker.TaskSourceInfo;
-import com.hpe.caf.api.worker.TaskStatus;
-import com.hpe.caf.api.worker.WorkerTaskData;
-import com.hpe.caf.worker.document.config.DocumentWorkerConfiguration;
-import com.hpe.caf.worker.document.model.Application;
-import com.hpe.caf.worker.document.model.Document;
-import com.hpe.caf.worker.document.model.Failures;
-import com.hpe.caf.worker.document.model.Fields;
-import com.hpe.caf.worker.document.model.InputMessageProcessor;
-import com.hpe.caf.worker.document.model.Subdocument;
-import com.hpe.caf.worker.document.model.Subdocuments;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -46,6 +43,9 @@ import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
+import com.github.workerframework.worker.api.TaskSourceInfo;
+import com.github.workerframework.worker.api.TaskStatus;
+import com.github.workerframework.worker.api.WorkerTaskData;
 import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;
@@ -155,7 +155,7 @@ public class WorkflowHelper
      * @return a Document
      */
     public static Document createDocument(final String reference, final Fields fields, final Failures failures,
-                                          final Map<String, String> customData, final Subdocuments subdocuments, 
+                                          final Map<String, String> customData, final Subdocuments subdocuments,
                                           final Document parentDoc, final Document rootDoc, final boolean includeApplication,
                                           final boolean inputMessageProcessor)
     {

@@ -15,9 +15,10 @@
  */
 package com.github.cafdataprocessing.workflow.testing.models;
 
-import com.hpe.caf.api.ConfigurationException;
-import com.hpe.caf.api.ConfigurationSource;
-import com.hpe.caf.worker.document.config.DocumentWorkerConfiguration;
+
+import com.github.cafapi.common.api.ConfigurationException;
+import com.github.cafapi.common.api.ConfigurationSource;
+import com.github.cafdataprocessing.worker.document.config.DocumentWorkerConfiguration;
 
 public class ConfigurationSourceMock implements ConfigurationSource
 {

@@ -15,7 +15,7 @@
  */
 package com.github.cafdataprocessing.workflow;
 
-import com.hpe.caf.worker.document.model.Document;
+import com.github.cafdataprocessing.worker.document.model.Document;
 
 public class PoisonMessageDetector
 {

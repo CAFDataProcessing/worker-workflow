@@ -31,7 +31,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.github.cafapi</groupId>
+            <groupId>com.github.cafapi.common.api</groupId>
             <artifactId>caf-api</artifactId>
         </dependency>
         <dependency>
@@ -51,7 +51,7 @@
             <artifactId>jakarta.validation-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.github.workerframework</groupId>
+            <groupId>com.github.workerframework.worker</groupId>
             <artifactId>worker-api</artifactId>
         </dependency>
         <dependency>

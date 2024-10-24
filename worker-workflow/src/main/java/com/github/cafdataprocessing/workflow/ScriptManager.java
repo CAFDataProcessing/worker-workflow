@@ -15,11 +15,11 @@
  */
 package com.github.cafdataprocessing.workflow;
 
+import com.github.cafdataprocessing.worker.document.model.Document;
+import com.github.cafdataprocessing.worker.document.model.Script;
+import com.github.cafdataprocessing.worker.document.model.ScriptEngineType;
+import com.github.cafdataprocessing.worker.document.model.Scripts;
 import com.github.cafdataprocessing.workflow.model.Workflow;
-import com.hpe.caf.worker.document.model.Document;
-import com.hpe.caf.worker.document.model.Script;
-import com.hpe.caf.worker.document.model.ScriptEngineType;
-import com.hpe.caf.worker.document.model.Scripts;
 
 import javax.script.ScriptException;
 
