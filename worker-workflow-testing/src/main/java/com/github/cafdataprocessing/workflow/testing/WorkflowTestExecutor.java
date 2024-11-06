@@ -26,7 +26,7 @@ import com.github.cafdataprocessing.worker.document.model.Scripts;
 import com.github.cafdataprocessing.worker.document.scripting.events.TaskEventObject;
 import com.github.cafdataprocessing.worker.document.testing.DocumentBuilder;
 import com.github.cafdataprocessing.worker.document.testing.FieldsBuilder;
-import com.github.workerframework.worker.api.WorkerException;
+import com.github.workerframework.api.WorkerException;
 import com.google.common.base.Strings;
 import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
 import org.apache.commons.io.FileUtils;

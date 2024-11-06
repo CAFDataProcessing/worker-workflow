@@ -16,12 +16,12 @@
 package com.github.cafdataprocessing.workflow.testing.models;
 
 
-import com.github.workerframework.worker.api.TaskMessage;
-import com.github.workerframework.worker.api.TaskSourceInfo;
-import com.github.workerframework.worker.api.TaskStatus;
-import com.github.workerframework.worker.api.TrackingInfo;
-import com.github.workerframework.worker.api.WorkerResponse;
-import com.github.workerframework.worker.api.WorkerTaskData;
+import com.github.workerframework.api.TaskMessage;
+import com.github.workerframework.api.TaskSourceInfo;
+import com.github.workerframework.api.TaskStatus;
+import com.github.workerframework.api.TrackingInfo;
+import com.github.workerframework.api.WorkerResponse;
+import com.github.workerframework.api.WorkerTaskData;
 
 public class WorkerTaskDataMock implements WorkerTaskData
 {

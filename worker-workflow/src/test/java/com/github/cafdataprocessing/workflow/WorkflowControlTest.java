@@ -31,7 +31,7 @@ import com.github.cafdataprocessing.worker.document.testing.DocumentBuilder;
 import com.github.cafdataprocessing.workflow.testing.models.NewFailure;
 import com.github.cafdataprocessing.workflow.testing.models.SubdocumentsMock;
 import com.github.cafdataprocessing.workflow.testing.utils.WorkflowHelper;
-import com.github.workerframework.worker.api.WorkerException;
+import com.github.workerframework.api.WorkerException;
 import static com.spotify.hamcrest.jackson.IsJsonMissing.jsonMissing;
 import static com.spotify.hamcrest.jackson.IsJsonNull.jsonNull;
 import static com.spotify.hamcrest.jackson.IsJsonObject.jsonObject;

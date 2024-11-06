@@ -26,7 +26,7 @@ import com.github.cafdataprocessing.workflow.testing.WorkflowTestExecutor;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.github.workerframework.worker.api.WorkerException;
+import com.github.workerframework.api.WorkerException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;

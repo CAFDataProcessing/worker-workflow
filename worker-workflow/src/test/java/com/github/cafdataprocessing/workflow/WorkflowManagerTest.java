@@ -23,7 +23,7 @@ import com.github.cafdataprocessing.worker.document.testing.TestServices;
 import com.github.cafdataprocessing.workflow.model.Action;
 import com.github.cafdataprocessing.workflow.model.ArgumentDefinition;
 import com.github.cafdataprocessing.workflow.model.Workflow;
-import com.github.workerframework.worker.api.WorkerException;
+import com.github.workerframework.api.WorkerException;
 import com.google.common.io.Resources;
 import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
 import org.apache.commons.io.IOUtils;

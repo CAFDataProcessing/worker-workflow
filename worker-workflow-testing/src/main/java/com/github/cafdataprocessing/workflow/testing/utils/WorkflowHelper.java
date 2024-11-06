@@ -43,9 +43,9 @@ import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptException;
 
-import com.github.workerframework.worker.api.TaskSourceInfo;
-import com.github.workerframework.worker.api.TaskStatus;
-import com.github.workerframework.worker.api.WorkerTaskData;
+import com.github.workerframework.api.TaskSourceInfo;
+import com.github.workerframework.api.TaskStatus;
+import com.github.workerframework.api.WorkerTaskData;
 import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.IOUtils;

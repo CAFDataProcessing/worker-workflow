@@ -20,7 +20,7 @@ import com.github.cafdataprocessing.worker.document.model.Document;
 import com.github.cafdataprocessing.worker.document.model.Response;
 import com.github.cafdataprocessing.worker.document.model.Scripts;
 import com.github.cafdataprocessing.worker.document.model.Task;
-import com.github.workerframework.worker.api.WorkerTaskData;
+import com.github.workerframework.api.WorkerTaskData;
 
 import java.util.Map;
 

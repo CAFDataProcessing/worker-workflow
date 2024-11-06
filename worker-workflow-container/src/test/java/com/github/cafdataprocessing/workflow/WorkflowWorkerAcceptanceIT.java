@@ -16,13 +16,13 @@
 package com.github.cafdataprocessing.workflow;
 
 import com.github.cafdataprocessing.worker.document.DocumentWorkerTestControllerProvider;
-import com.github.workerframework.worker.testing.TestControllerSingle;
-import com.github.workerframework.worker.testing.TestItem;
-import com.github.workerframework.worker.testing.UseAsTestName;
-import com.github.workerframework.worker.testing.UseAsTestName_TestBase;
-import com.github.workerframework.worker.testing.execution.TestControllerProvider;
-import com.github.workerframework.worker.testing.execution.TestRunnerSingle;
-import com.github.workerframework.worker.testing.util.SystemSettingsProvider;
+import com.github.workerframework.testing.TestControllerSingle;
+import com.github.workerframework.testing.TestItem;
+import com.github.workerframework.testing.UseAsTestName;
+import com.github.workerframework.testing.UseAsTestName_TestBase;
+import com.github.workerframework.testing.execution.TestControllerProvider;
+import com.github.workerframework.testing.execution.TestRunnerSingle;
+import com.github.workerframework.testing.util.SystemSettingsProvider;
 import org.testng.annotations.*;
 import java.util.Iterator;
 import java.util.Set;
