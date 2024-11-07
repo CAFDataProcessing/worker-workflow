@@ -22,7 +22,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.github.cafdataprocessing</groupId>
+        <groupId>com.github.cafdataprocessing.workers.workflow</groupId>
         <artifactId>worker-workflow-aggregator</artifactId>
         <version>7.3.0-SNAPSHOT</version>
     </parent>
@@ -35,11 +35,11 @@
             <artifactId>caf-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.github.cafdataprocessing</groupId>
+            <groupId>com.github.cafdataprocessing.workers.document</groupId>
             <artifactId>worker-document-interface</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.github.cafdataprocessing</groupId>
+            <groupId>com.github.cafdataprocessing.workers.workflow</groupId>
             <artifactId>worker-workflow-restclients</artifactId>
         </dependency>
         <dependency>
@@ -89,22 +89,22 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.github.cafdataprocessing</groupId>
+            <groupId>com.github.cafdataprocessing.workers.document</groupId>
             <artifactId>worker-document</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.github.cafdataprocessing</groupId>
+            <groupId>com.github.cafdataprocessing.workers.document</groupId>
             <artifactId>worker-document-testing-unit</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.github.cafdataprocessing</groupId>
+            <groupId>com.github.cafdataprocessing.workers.document</groupId>
             <artifactId>worker-document-shared</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.github.cafdataprocessing</groupId>
+            <groupId>com.github.cafdataprocessing.workers.workflow</groupId>
             <artifactId>worker-workflow-testing</artifactId>
             <scope>test</scope>
         </dependency>
