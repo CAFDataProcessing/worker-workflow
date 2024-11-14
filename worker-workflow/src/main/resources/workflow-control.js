@@ -384,14 +384,14 @@ function isLastAction(action) {
 
 function getCurrentWorkerName(document) {
     return document.getApplication().getName()
-            || document.getApplication().getService(com.hpe.caf.api.ConfigurationSource.class)
-            .getConfiguration(com.hpe.caf.worker.document.config.DocumentWorkerConfiguration.class).getWorkerName();
+            || document.getApplication().getService(com.github.cafapi.common.api.ConfigurationSource.class)
+            .getConfiguration(com.github.cafdataprocessing.workers.document.config.DocumentWorkerConfiguration.class).getWorkerName();
 }
 
 function getCurrentWorkerVersion(document) {
     return document.getApplication().getVersion()
-            || document.getApplication().getService(com.hpe.caf.api.ConfigurationSource.class)
-            .getConfiguration(com.hpe.caf.worker.document.config.DocumentWorkerConfiguration.class).getWorkerVersion();
+            || document.getApplication().getService(com.github.cafapi.common.api.ConfigurationSource.class)
+            .getConfiguration(com.github.cafdataprocessing.workers.document.config.DocumentWorkerConfiguration.class).getWorkerVersion();
 }
 
 //Field Conditions
