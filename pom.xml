@@ -29,7 +29,7 @@
 
     <groupId>com.github.cafdataprocessing.workers.workflow</groupId>
     <artifactId>worker-workflow-aggregator</artifactId>
-    <version>8.0.0-SNAPSHOT</version>
+    <version>8.1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Worker-Workflow</name>
@@ -290,17 +290,17 @@
             <dependency>
                 <groupId>com.github.cafdataprocessing.workers.workflow</groupId>
                 <artifactId>worker-workflow</artifactId>
-                <version>8.0.0-SNAPSHOT</version>
+                <version>8.1.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>com.github.cafdataprocessing.workers.workflow</groupId>
                 <artifactId>worker-workflow-restclients</artifactId>
-                <version>8.0.0-SNAPSHOT</version>
+                <version>8.1.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>com.github.cafdataprocessing.workers.workflow</groupId>
                 <artifactId>worker-workflow-testing</artifactId>
-                <version>8.0.0-SNAPSHOT</version>
+                <version>8.1.0-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>com.github.workerframework</groupId>
