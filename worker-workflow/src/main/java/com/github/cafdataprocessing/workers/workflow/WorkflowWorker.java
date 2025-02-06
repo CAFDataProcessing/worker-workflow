@@ -187,7 +187,7 @@ public final class WorkflowWorker implements DocumentWorker
         if (tenantId != null) {
            MDC.put(TENANT_ID_KEY, tenantId); 
         }
-        MDC.put(CORRELATION_ID_KEY, correlationId);
+        // MDC.put(CORRELATION_ID_KEY, correlationId);
 
         // Add MDC data to custom data so that its passed it onto the next worker.
         final ResponseCustomData responseCustomData = task.getResponse().getCustomData();
@@ -197,11 +197,13 @@ public final class WorkflowWorker implements DocumentWorker
     
     private static String getOrCreateCorrelationId(final Task task)
     {
-        final String correlationId = task.getCustomData(CORRELATION_ID_KEY);
+        String correlationId = MDC.get("correlationId");
+        if (correlationId == null) {
+            correlationId = UUID.randomUUID().toString();
+            LOG.error("correlationId not set in MDC context. Generating new correlationId: {}", correlationId);
+        }
 
-        return (correlationId == null)
-            ? UUID.randomUUID().toString()
-            : correlationId;
+        return correlationId;
     }
 
     private static Optional<Long> getSettingsServiceLastUpdateTimeMillis(final Document document) throws NumberFormatException
