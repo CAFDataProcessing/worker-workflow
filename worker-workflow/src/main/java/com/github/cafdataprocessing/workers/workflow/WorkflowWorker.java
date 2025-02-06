@@ -197,13 +197,11 @@ public final class WorkflowWorker implements DocumentWorker
     
     private static String getOrCreateCorrelationId(final Task task)
     {
-        String correlationId = MDC.get("correlationId");
-        if (correlationId == null) {
-            correlationId = UUID.randomUUID().toString();
-            LOG.error("correlationId not set in MDC context. Generating new correlationId: {}", correlationId);
-        }
+        final String correlationId = task.getCustomData(CORRELATION_ID_KEY);
 
-        return correlationId;
+        return (correlationId == null)
+            ? UUID.randomUUID().toString()
+            : correlationId;
     }
 
     private static Optional<Long> getSettingsServiceLastUpdateTimeMillis(final Document document) throws NumberFormatException
