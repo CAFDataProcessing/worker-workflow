@@ -179,15 +179,15 @@ public final class WorkflowWorker implements DocumentWorker
         // See also addMdcData in workflow-control.js, which performs similar logic to ensure log messages from *subsequent* workers in 
         // the workflow also contain these values. 
 
-        // Get MDC data from custom data, creating a correlationId if it doesn't yet exist.
+        // Get tenantId from custom data
         final String tenantId = task.getCustomData(TENANT_ID_KEY);
+        // Get correlationId from MDC
         final String correlationId = WorkflowWorker.getOrCreateCorrelationId(task);
 
-        // Add tenantId and correlationId to the MDC.
+        // Add tenantId to the MDC
         if (tenantId != null) {
            MDC.put(TENANT_ID_KEY, tenantId); 
         }
-        // MDC.put(CORRELATION_ID_KEY, correlationId);
 
         // Add MDC data to custom data so that its passed it onto the next worker.
         final ResponseCustomData responseCustomData = task.getResponse().getCustomData();
