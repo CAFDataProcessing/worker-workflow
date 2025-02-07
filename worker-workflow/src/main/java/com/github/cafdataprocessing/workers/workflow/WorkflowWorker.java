@@ -182,6 +182,7 @@ public final class WorkflowWorker implements DocumentWorker
         // Get tenantId from custom data
         final String tenantId = task.getCustomData(TENANT_ID_KEY);
         // Get correlationId from MDC
+        // worker-framework code gets correlationId from worker task and adds to the MDC
         final String correlationId = WorkflowWorker.getOrCreateCorrelationId(task);
 
         // Add tenantId to the MDC
