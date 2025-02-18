@@ -265,32 +265,32 @@
             <dependency>
                 <groupId>com.github.cafdataprocessing.workers.document</groupId>
                 <artifactId>worker-document</artifactId>
-                <version>7.0.0-1496</version>
+                <version>7.1.0-US990352-20250218.111039-3</version>
             </dependency>
             <dependency>
                 <groupId>com.github.cafdataprocessing.workers.document</groupId>
                 <artifactId>worker-document-interface</artifactId>
-                <version>7.0.0-1496</version>
+                <version>7.1.0-US990352-20250218.111039-3</version>
             </dependency>
             <dependency>
                 <groupId>com.github.cafdataprocessing.workers.document</groupId>
                 <artifactId>worker-document-shared</artifactId>
-                <version>7.0.0-1496</version>
+                <version>7.1.0-US990352-20250218.111039-3</version>
             </dependency>
             <dependency>
                 <groupId>com.github.cafdataprocessing.workers.document</groupId>
                 <artifactId>worker-document-testing</artifactId>
-                <version>7.0.0-1496</version>
+                <version>7.1.0-US990352-20250218.111039-3</version>
             </dependency>
             <dependency>
                 <groupId>com.github.cafdataprocessing.workers.document</groupId>
                 <artifactId>worker-document-testing-unit</artifactId>
-                <version>7.0.0-1496</version>
+                <version>7.1.0-US990352-20250218.111039-3</version>
             </dependency>
             <dependency>
                 <groupId>com.github.cafdataprocessing.workers.document</groupId>
                 <artifactId>worker-document-utility</artifactId>
-                <version>7.0.0-1496</version>
+                <version>7.1.0-US990352-20250218.111039-3</version>
             </dependency>
             <dependency>
                 <groupId>com.github.cafdataprocessing.workers.workflow</groupId>

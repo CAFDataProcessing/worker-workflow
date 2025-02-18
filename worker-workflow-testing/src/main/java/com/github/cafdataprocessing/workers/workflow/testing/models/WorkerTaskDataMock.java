@@ -33,9 +33,11 @@ public class WorkerTaskDataMock implements WorkerTaskData
     private final TrackingInfo trackingInfo;
     private final String to;
     private final TaskSourceInfo taskSourceInfo;
+    private final String correlationId;
 
     public WorkerTaskDataMock(final String classifier, final int version, final TaskStatus status, final byte[] data,
-                              final byte[] context, final TrackingInfo trackingInfo, final String to, final TaskSourceInfo taskSourceInfo)
+                              final byte[] context, final TrackingInfo trackingInfo, final String to,
+                              final TaskSourceInfo taskSourceInfo, final String correlationId)
     {
         this.classifier = classifier;
         this.version = version;
@@ -45,6 +47,7 @@ public class WorkerTaskDataMock implements WorkerTaskData
         this.trackingInfo = trackingInfo;
         this.to = to;
         this.taskSourceInfo = taskSourceInfo;
+        this.correlationId = correlationId;
     }
 
     @Override
@@ -79,7 +82,7 @@ public class WorkerTaskDataMock implements WorkerTaskData
 
     @Override
     public String getCorrelationId() {
-        return null;
+        return correlationId;
     }
 
     @Override

@@ -86,8 +86,9 @@ public class WorkflowControlTest
         builderDoc.addFailure("error_id_1", "message 1");
 
         // create the various mocked objects to create the document that will be processed
-        final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null,
-                                                                null, null, builderDoc, true, false);
+        final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(),
+                                                                null, null, null, builderDoc,
+                                                                true, false, null);
 
         invocable.invokeFunction("processFailures", document);
 
@@ -141,7 +142,7 @@ public class WorkflowControlTest
 
         // create the various mocked objects to create the document that will be processed
         final Document document = WorkflowHelper.createDocument("ref_2", builderDoc.getFields(), builderDoc.getFailures(), null,
-                null, null, builderDoc, true, false);
+                null, null, builderDoc, true, false, null);
 
         invocable.invokeFunction("processFailures", document);
 
@@ -198,8 +199,9 @@ public class WorkflowControlTest
         builderDoc.addFailure("error_id_1", "message 1");
 
         // create the various mocked objects to create the document that will be processed
-        final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null,
-                                                                null, null, builderDoc, true, false);
+        final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(),
+                                                                        null, null, null, builderDoc,
+                                                                        true, false, null);
 
         invocable.invokeFunction("processFailures", document);
 
@@ -259,13 +261,12 @@ public class WorkflowControlTest
         builderDoc.addFailure("error_id_1", "message 1");
         builderDoc.addFailure("error_id_2", "message 2");
         
-        //test correlation_ID if found in customData is processed or not
         final Map<String, String> customData = new HashMap<>();
         customData.put("tenantId", "tenant_1");
-        customData.put("correlationId", "cor_12345_id");
 
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), 
-                                                customData, null, builderDoc, builderDoc, true, true);
+                                                customData, null, builderDoc, builderDoc,
+                                                true, true, "cor_12345_id");
 
         invocable.invokeFunction("processFailures", document);
 
@@ -295,7 +296,7 @@ public class WorkflowControlTest
                    isJsonStringMatching(jsonObject().where("MESSAGE", is(jsonText("message 1")))));
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("DATE", is(not(jsonNull())))));
-        //test correlation_ID if found in customData is processed or not
+        //test correlation_ID if found in document task is processed or not
         assertThat(firstFailure,
                    isJsonStringMatching(jsonObject().where("CORRELATION_ID", is(jsonText("cor_12345_id"))))); 
         
@@ -343,8 +344,8 @@ public class WorkflowControlTest
         builderDoc.addFailure("error_id_1", "message 1");
         builderDoc.addFailure("error_id_2", "message 2");
 
-        final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null,
-                                                                null,  builderDoc, builderDoc, true, true);
+        final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null,
+                                                                builderDoc, builderDoc, true, true, null);
 
         invocable.invokeFunction("processFailures", document);
 
@@ -419,8 +420,9 @@ public class WorkflowControlTest
         builderDoc.addFailure("error_id_1", "message 1");
         builderDoc.addFailure("error_id_2", "message 2");
 
-        final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null,
-                                                                null, builderDoc, builderDoc, true, true);
+        final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(),
+                                                                    null, null, builderDoc, builderDoc,
+                                                                true, true, null);
         try {
             invocable.invokeFunction("processFailures", document);
         } catch (final ScriptException e) {
@@ -451,8 +453,9 @@ public class WorkflowControlTest
         builderDoc.addFailure("error_id_1", "message 1");
         builderDoc.addFailure("error_id_2", "message 2");
 
-        final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null,
-                                                                null, builderDoc, builderDoc, true, true);
+        final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(),
+                                                                    null, null, builderDoc, builderDoc,
+                                                                true, true, null);
 
         try {
             invocable.invokeFunction("processFailures", document);
@@ -487,8 +490,9 @@ public class WorkflowControlTest
             .build();
         builderDoc.addFailure(null, "message 1");
 
-        final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null,
-                                                                null, builderDoc, builderDoc, true, true);
+        final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(),
+                                                                null, null, builderDoc, builderDoc,
+                                                            true, true, null);
 
         invocable.invokeFunction("processFailures", document);
         assertThat(document.getFailures().size(), is(equalTo((0))));
@@ -540,8 +544,9 @@ public class WorkflowControlTest
             .build();
         builderDoc.addFailure("error_id_1", null);
 
-        final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null,
-                                                                null, builderDoc, builderDoc, true, true);
+        final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(),
+                                                                    null, null, builderDoc, builderDoc,
+                                                                    true, true, null);
 
         invocable.invokeFunction("processFailures", document);
         assertThat(document.getFailures().size(), is(equalTo((0))));
@@ -746,8 +751,8 @@ public class WorkflowControlTest
         builderDoc.addFailure("error_id_1", "message 1");
 
         // processSubdocumentFailures() not called
-        final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null,
-                                                                null, builderDoc, true, true);
+        final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null,
+                                                    null, null, builderDoc, true, true, null);
         final DocumentEventObject documentEventObject = new DocumentEventObject(document);
         invocable.invokeFunction("onAfterProcessDocument", documentEventObject);
 
@@ -781,8 +786,9 @@ public class WorkflowControlTest
             Paths.get("src", "test", "resources", "input-document-no-subdoc-with-stack.json").toString()).build();
         builderDoc.addFailure("error_id_1", "message 1");
 
-        final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null,
-                                                                null, builderDoc, builderDoc, true, true);
+        final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(),
+                                                                    null, null, builderDoc, builderDoc,
+                                                                        true, true, null);
         final DocumentEventObject documentEventObject = new DocumentEventObject(document);
         invocable.invokeFunction("onAfterProcessDocument", documentEventObject);
 
@@ -836,7 +842,8 @@ public class WorkflowControlTest
         builderDoc.addFailure("error_id_1", "message 1");
 
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(),
-                                                                null, builderDoc.getSubdocuments(), builderDoc, builderDoc, true, true);
+                                                                null, builderDoc.getSubdocuments(), builderDoc, builderDoc,
+                                                                    true, true, null);
         final DocumentEventObject documentEventObject = new DocumentEventObject(document);
         invocable.invokeFunction("onAfterProcessDocument", documentEventObject);
 
@@ -934,7 +941,8 @@ public class WorkflowControlTest
             .addFailure("level_2_id", "level 2 failure");
 
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(),
-                                                                null, subdocuments, builderDoc, builderDoc, true, true);
+                                                                null, subdocuments, builderDoc, builderDoc,
+                                                        true, true, null);
         final DocumentEventObject documentEventObject = new DocumentEventObject(document);
         invocable.invokeFunction("onAfterProcessDocument", documentEventObject);
 
@@ -1076,18 +1084,19 @@ public class WorkflowControlTest
 
         // create the subdocuments
         final Subdocument subdocOne = WorkflowHelper.createSubdocument("subd_ref_1", builderForFailuresOne.getFields(),
-                                                                       builderForFailuresOne.getFailures(), null,
-                                                                       null, builderDoc, true, false);
+                                                                       builderForFailuresOne.getFailures(), null, null,
+                                                                        builderDoc, true, false, null);
 
         final Subdocument subdocTwo = WorkflowHelper.createSubdocument("subd_ref_2", builderForFailuresTwo.getFields(),
-                                                                       builderForFailuresTwo.getFailures(), null,
-                                                                       null, builderDoc, true, false);
+                                                                       builderForFailuresTwo.getFailures(), null, null,
+                                                                        builderDoc, true, false, null);
 
         final Subdocuments subdocuments = new SubdocumentsMock(Arrays.asList(subdocOne, subdocTwo));
 
         // create the test document that wil contain subdocuments
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(),
-                                                                null, subdocuments, null, builderDoc, true, false);
+                                                                null, subdocuments, null, builderDoc,
+                                                                true, false, null);
 
         final DocumentEventObject documentEventObject = new DocumentEventObject(document);
         invocable.invokeFunction("onAfterProcessDocument", documentEventObject);
@@ -1223,7 +1232,7 @@ public class WorkflowControlTest
 
         // create the test document that will NOT contain subdocuments
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null,
-                                                                null, builderDoc, true, false);
+                                                                null, builderDoc, true, false, null);
 
         final DocumentEventObject documentEventObject = new DocumentEventObject(document);
         invocable.invokeFunction("onAfterProcessDocument", documentEventObject);
@@ -1291,7 +1300,8 @@ public class WorkflowControlTest
         builderDoc.addFailure("error_id_1", "message 1");
 
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(),
-                                                               null, null, null, null, true, true);
+                                                               null, null, null, null,
+                                                                true, true, null);
         final DocumentEventObject documentEventObject = new DocumentEventObject(document);
         invocable.invokeFunction("onAfterProcessDocument", documentEventObject);
 
@@ -1323,7 +1333,7 @@ public class WorkflowControlTest
         builderDoc.addFailure("error_id_1", "message 1");
 
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null,
-                                                                null, builderDoc, true, false);
+                                                                null, builderDoc, true, false, null);
 
         final DocumentEventObject documentEventObject = new DocumentEventObject(document);
         invocable.invokeFunction("onAfterProcessDocument", documentEventObject);
@@ -1373,7 +1383,7 @@ public class WorkflowControlTest
         builderDoc.addFailure("error_id_1", "message 1");
 
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null,
-                                                                null, null, true, true);
+                                                                null, null, true, true, null);
         final DocumentEventObject documentEventObject = new DocumentEventObject(document);
         invocable.invokeFunction("onAfterProcessDocument", documentEventObject);
 
@@ -1394,7 +1404,7 @@ public class WorkflowControlTest
             Paths.get("src", "test", "resources", "input-document-no-subdoc.json")
                 .toString()).build();
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null,
-                                                                null, builderDoc, true, false);
+                                                                null, builderDoc, true, false, null);
 
         final String result = (String) invocable.invokeFunction("getCurrentWorkerName", document);
         assertThat(result, is(equalTo(("application-worker-base"))));
@@ -1421,7 +1431,7 @@ public class WorkflowControlTest
             Paths.get("src", "test", "resources", "input-document-no-subdoc.json")
                 .toString()).build();
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(), null, null,
-                                                                null, builderDoc, true, false);
+                                                                null, builderDoc, true, false, null);
 
         final String result = (String) invocable.invokeFunction("getCurrentWorkerVersion", document);
         assertThat(result, is(equalTo(("1.0.0-SNAPSHOT-APPLICATION"))));
