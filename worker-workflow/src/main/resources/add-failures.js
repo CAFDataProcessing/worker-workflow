@@ -59,7 +59,7 @@ function addFailures (document, failures, extractSourceCallback, action) {
             WORKFLOW_NAME: document.getRootDocument().getField("CAF_WORKFLOW_NAME").getStringValues().get(0),
             MESSAGE: f.getFailureMessage(),
             DATE: new Date().toISOString(),
-            CORRELATION_ID: document.getCustomData("correlationId") || undefined
+            CORRELATION_ID: document.getTask().getCorrelationId() || undefined
         };
 
         if (!isWarningFlag) {
