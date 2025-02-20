@@ -52,6 +52,12 @@ function addFailures (document, failures, extractSourceCallback, action) {
             failureId = failureId.substring(0, 32);
         }
 
+        var correlationId;
+        var workerTaskData = document.getTask().getService(com.github.workerframework.api.WorkerTaskData.class);
+        if (workerTaskData !== null) {
+            correlationId = workerTaskData.getCorrelationId() || undefined;
+        }
+
         var errorObject = {
             ID: failureId,
             WORKFLOW_ACTION: workflowAction,
@@ -59,7 +65,7 @@ function addFailures (document, failures, extractSourceCallback, action) {
             WORKFLOW_NAME: document.getRootDocument().getField("CAF_WORKFLOW_NAME").getStringValues().get(0),
             MESSAGE: f.getFailureMessage(),
             DATE: new Date().toISOString(),
-            CORRELATION_ID: document.getCustomData("correlationId") || undefined
+            CORRELATION_ID: correlationId
         };
 
         if (!isWarningFlag) {

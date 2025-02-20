@@ -158,11 +158,11 @@ public class WorkflowHelper
     public static Document createDocument(final String reference, final Fields fields, final Failures failures,
                                           final Map<String, String> customData, final Subdocuments subdocuments,
                                           final Document parentDoc, final Document rootDoc, final boolean includeApplication,
-                                          final boolean inputMessageProcessor)
+                                          final boolean inputMessageProcessor, final String correlationId)
     {
         final TaskSourceInfo tsi = new TaskSourceInfo("source_name", "5");
         final WorkerTaskData wtd = new WorkerTaskDataMock("classifier", 2, TaskStatus.RESULT_SUCCESS, new byte[0], new byte[0], null,
-                                                          "to", tsi);
+                                                          "to", tsi, correlationId);
         final DocumentWorkerConfiguration dwc = new DocumentWorkerConfiguration();
         dwc.setWorkerName("worker-base");
         dwc.setWorkerVersion("1.0.0-SNAPSHOT");
@@ -204,11 +204,11 @@ public class WorkflowHelper
     public static Subdocument createSubdocument(final String reference, final Fields fields, final Failures failures,
                                                 final Subdocuments subdocuments,
                                                 final Document parentDoc, final Document rootDoc, final boolean includeApplication,
-                                                final boolean inputMessageProcessor)
+                                                final boolean inputMessageProcessor, final String correlationId)
     {
         final TaskSourceInfo tsi = new TaskSourceInfo("source_name", "5");
         final WorkerTaskData wtd = new WorkerTaskDataMock("classifier", 2, TaskStatus.RESULT_SUCCESS, new byte[0], new byte[0], null,
-                                                          "to", tsi);
+                                                          "to", tsi, correlationId);
         final DocumentWorkerConfiguration dwc = new DocumentWorkerConfiguration();
         dwc.setWorkerName("worker-base");
         dwc.setWorkerVersion("1.0.0-SNAPSHOT");

@@ -179,10 +179,9 @@ public class WorkflowWorkerTest
     @Test
     public void mdcLoggingDataIsAddedToDocumentTaskResponseCustomDataTest() throws Exception {
         
-        // On receiving a document with a tenantId provided via custom data, but no correlationId, verify that the workflow worker:
+        // On receiving a document with a tenantId provided via custom data verify that the workflow worker:
         //
         // 1. Adds the tenantId to the document task response custom data.
-        // 2. Generates a random correlationId, and also adds this to the document task response custom data.
         //
         // Adding these two values to the document task response custom data ensures that they will be available to subsequent workers
         // in the workflow.
@@ -195,14 +194,12 @@ public class WorkflowWorkerTest
             .build();
         
         assertNull(document.getTask().getResponse().getCustomData().get("tenantId"));
-        assertNull(document.getTask().getResponse().getCustomData().get("correlationId"));
-        
+
         // Act
         workflowWorker.processDocument(document);
         
         // Assert
         assertEquals("test-tenant", document.getTask().getResponse().getCustomData().get("tenantId"));
-        assertNotNull(document.getTask().getResponse().getCustomData().get("correlationId"));
     }
 
     @Test

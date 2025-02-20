@@ -26,7 +26,6 @@ import com.github.cafdataprocessing.workers.document.model.Task;
 import com.github.cafdataprocessing.workers.workflow.model.Workflow;
 import com.google.common.base.Strings;
 import java.util.Optional;
-import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +40,6 @@ public final class WorkflowWorker implements DocumentWorker
 {
     private static final Logger LOG = LoggerFactory.getLogger(WorkflowWorker.class);
     private static final String TENANT_ID_KEY = "tenantId";
-    private static final String CORRELATION_ID_KEY = "correlationId";
     private static final String SETTINGS_SERVICE_LAST_UPDATE_TIME_MILLIS_KEY = "settingsServiceLastUpdateTimeMillis";
     private final WorkflowManager workflowManager;
     private final ScriptManager scriptManager;
@@ -173,35 +171,24 @@ public final class WorkflowWorker implements DocumentWorker
         // https://github.com/CAFapi/caf-logging/tree/v1.0.0#pattern
         // https://github.com/CAFapi/caf-logging/blob/v1.0.0/src/main/resources/logback.xml#L27
         //
-        // This function adds a tenantId and correlationID to the MDC (http://logback.qos.ch/manual/mdc.html), so that log messages from 
+        // This function adds a tenantId to the MDC (http://logback.qos.ch/manual/mdc.html), so that log messages from
         // *this* worker (workflow-worker) will contain these values.
+        // Additionally, code in worker-framework adds the correlationId to the MDC context.
         //
         // See also addMdcData in workflow-control.js, which performs similar logic to ensure log messages from *subsequent* workers in 
         // the workflow also contain these values. 
 
-        // Get MDC data from custom data, creating a correlationId if it doesn't yet exist.
+        // Get tenantId from custom data
         final String tenantId = task.getCustomData(TENANT_ID_KEY);
-        final String correlationId = WorkflowWorker.getOrCreateCorrelationId(task);
 
-        // Add tenantId and correlationId to the MDC.
+        // Add tenantId to the MDC
         if (tenantId != null) {
            MDC.put(TENANT_ID_KEY, tenantId); 
         }
-        MDC.put(CORRELATION_ID_KEY, correlationId);
 
         // Add MDC data to custom data so that its passed it onto the next worker.
         final ResponseCustomData responseCustomData = task.getResponse().getCustomData();
         responseCustomData.put(TENANT_ID_KEY, tenantId);
-        responseCustomData.put(CORRELATION_ID_KEY, correlationId);
-    }
-    
-    private static String getOrCreateCorrelationId(final Task task)
-    {
-        final String correlationId = task.getCustomData(CORRELATION_ID_KEY);
-
-        return (correlationId == null)
-            ? UUID.randomUUID().toString()
-            : correlationId;
     }
 
     private static Optional<Long> getSettingsServiceLastUpdateTimeMillis(final Document document) throws NumberFormatException

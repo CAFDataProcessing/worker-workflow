@@ -112,7 +112,8 @@ public final class FailureFieldsManagerTest
             Paths.get("src", "test", "resources", "input-document-with-subdoc-with-stack.json").toString()).build();
 
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(),
-                                                                null, builderDoc.getSubdocuments(), builderDoc, builderDoc, true, true);
+                                                                null, builderDoc.getSubdocuments(), builderDoc, builderDoc,
+                                                                true, true, null);
         invocable.invokeFunction("testDocument", document, document.getFailures(), "on_premise");
 
         assertEquals(document.getField("FAILURES").getValues().stream().filter(x -> !x.getStringValue().isEmpty()).count(), 1L);
@@ -141,7 +142,8 @@ public final class FailureFieldsManagerTest
             Paths.get("src", "test", "resources", "input-document-with-subdoc-for-warning-test.json").toString()).build();
 
         final Document document = WorkflowHelper.createDocument("ref_1", builderDoc.getFields(), builderDoc.getFailures(),
-                                                                null, builderDoc.getSubdocuments(), builderDoc, builderDoc, true, true);
+                                                                null, builderDoc.getSubdocuments(), builderDoc, builderDoc,
+                                                                true, true, null);
         invocable.invokeFunction("testDocument", document, document.getFailures(), "on_premise");
 
         assertEquals(document.getField("WARNINGS").getValues().stream().filter(x -> !x.getStringValue().isEmpty()).count(), 1L);
