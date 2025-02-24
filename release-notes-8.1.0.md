@@ -2,7 +2,7 @@
 ${version-number}
 
 #### New Features
--US990352: Correlate audit events with documents that were affected by the audit event.
+-US990352: Include correlation id in custom data of outgoing worker task message.
 
 #### Known Issues
 - None
