@@ -2,7 +2,7 @@
 ${version-number}
 
 #### New Features
--US990352: Include correlation id in custom data of outgoing worker task message.
+-US990352: Get correlation id from worker task message instead of creating one.
 
 #### Known Issues
 - None
