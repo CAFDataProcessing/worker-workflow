@@ -1054,8 +1054,8 @@
                             <tag>3-management</tag>
                         </image>
                         <image>
-                            <repository>${dockerHubPublic}cafdataprocessing/prereleases</repository>
-                            <tag>worker-workflow-8.2.0-SNAPSHOT-1430.upstream</tag>
+                            <repository>${dockerHubPublic}/cafdataprocessing/prereleases</repository>
+                            <tag>worker-workflow-8.2.0-SNAPSHOT</tag>
                         </image>                        
                     </imageManagement>
                 </configuration>
