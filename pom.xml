@@ -55,7 +55,7 @@
             ${dockerHubPublic}/cafdataprocessing/processing-service:1
         </processingServiceContainerName>
         <projectDockerRegistry>worker-workflow-${project.version}.project-registries.local</projectDockerRegistry>
-	<license.skip>true</license.skip>
+	<skipLicenseHeadersCheck>true</skipLicenseHeadersCheck>
     </properties>
 
     <developers>
