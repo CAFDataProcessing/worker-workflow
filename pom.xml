@@ -1121,7 +1121,7 @@
 	                     <name>${targetDockerRegistryPath}/sepg-repo1:${project.version}</name>
 	                     <build>
 		                    <maintainer>amcveigh@opentext.com</maintainer>
-		                    <from>saas-docker-prerelease.svsartifactory.swinfra.net/sepg-testing/aj-mypathdemo:2.21.7-SNAPSHOT</from>
+		                    <from>saas-docker-prerelease.svsartifactory.swinfra.net/sepg-testing/demo-aj-img:2.21.7-SNAPSHOT</from>
 	                      </build>
                       </image>
                    </images>
