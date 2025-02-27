@@ -1054,8 +1054,9 @@
                             <tag>3-management</tag>
                         </image>
                         <image>
-                            <repository>${dockerHubPublic}/cafdataprocessing/prereleases</repository>
-                            <tag>worker-postgres-1.0.0-SNAPSHOT</tag>
+                            <repository>${dockerHubPublic}/cafdataprocessing/worker-postgres</repository>
+                            <tag>1.0.0</tag>
+                            <digest>sha256:4b5bed8ccecba7c54c007c8c0f76e4e26319cd894bf50a53a6f884ec9bf27e17</digest>
                         </image>                        
                     </imageManagement>
                 </configuration>
@@ -1127,7 +1128,7 @@
 	                     <name>${targetDockerRegistryPath}/sepg-repo1:${project.version}</name>
 	                     <build>
 		                    <maintainer>amcveigh@opentext.com</maintainer>
-		                    <from>dockerhub-public.svsartifactory.swinfra.net/cafdataprocessing/prereleases:worker-postgres-1.0.0-SNAPSHOT</from>
+		                    <from>dockerhub-public.svsartifactory.swinfra.net/cafdataprocessing/worker-postgres:1.0.0</from>
 	                      </build>
                       </image>
                    </images>
