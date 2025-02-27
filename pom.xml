@@ -1055,7 +1055,7 @@
                         </image>
                         <image>
                             <repository>${dockerHubPublic}/cafdataprocessing/prereleases</repository>
-                            <tag>worker-workflow-8.2.0-SNAPSHOT</tag>
+                            <tag>worker-postgres-1.0.0-SNAPSHOT</tag>
                         </image>                        
                     </imageManagement>
                 </configuration>
