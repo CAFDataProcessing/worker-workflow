@@ -1,3 +1,3 @@
-FROM dockerhub-public.svsartifactory.swinfra.net/cafdataprocessing/prereleases:worker-postgres-1.0.0-SNAPSHOT
+FROM dockerhub-public.orgartifactory.swinfra.net/cafdataprocessing/worker-postgres:1.0.0
 
 ENV NOTHING=/usr/local
