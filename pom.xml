@@ -1053,6 +1053,10 @@
                             <repository>${dockerHubPublic}/library/rabbitmq</repository>
                             <tag>3-management</tag>
                         </image>
+                        <image>
+                            <repository>${dockerHubPublic}cafdataprocessing/prereleases</repository>
+                            <tag>worker-workflow-8.2.0-SNAPSHOT-1430.upstream</tag>
+                        </image>                        
                     </imageManagement>
                 </configuration>
             </plugin>
