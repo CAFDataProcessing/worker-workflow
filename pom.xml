@@ -1048,8 +1048,8 @@
                             <tag>3-management</tag>
                         </image>
                         <image>
-                            <repository>saas-docker-prerelease.svsartifactory.swinfra.net/sepg-testing/demo-aj-img</repository>
-                            <tag>3.10.0-SNAPSHOT</tag>
+                            <repository>saas-docker-prerelease.svsartifactory.swinfra.net/sepg-testing/aj-mypathdemo</repository>
+                            <tag>2.21.7-SNAPSHOT</tag>
                         </image>                        
                     </imageManagement>
                 </configuration>
@@ -1121,7 +1121,7 @@
 	                     <name>${targetDockerRegistryPath}/sepg-repo1:${project.version}</name>
 	                     <build>
 		                    <maintainer>amcveigh@opentext.com</maintainer>
-		                    <from>saas-docker-prerelease.svsartifactory.swinfra.net/sepg-testing/demo-aj-img:3.10.0-SNAPSHOT</from>
+		                    <from>saas-docker-prerelease.svsartifactory.swinfra.net/sepg-testing/aj-mypathdemo:2.21.7-SNAPSHOT</from>
 	                      </build>
                       </image>
                    </images>
