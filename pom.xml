@@ -1048,7 +1048,7 @@
                             <tag>3-management</tag>
                         </image>
                         <image>
-                            <repository>saas-docker-prerelease.svsartifactory.swinfra.net/sepg-testing/aj-mypathdemo</repository>
+                            <repository>saas-docker-prerelease.svsartifactory.swinfra.net/sepg-testing/demo-aj-img:2.21.7-SNAPSHOT</repository>
                             <tag>2.21.7-SNAPSHOT</tag>
                         </image>                        
                     </imageManagement>
