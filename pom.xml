@@ -969,13 +969,6 @@
         </dependencies>
     </dependencyManagement>
 
-    <modules>
-        <module>worker-workflow</module>
-        <module>worker-workflow-container</module>
-        <module>worker-workflow-restclients</module>
-        <module>worker-workflow-testing</module>
-    </modules>
-
     <build>
         <pluginManagement>
             <plugins>
