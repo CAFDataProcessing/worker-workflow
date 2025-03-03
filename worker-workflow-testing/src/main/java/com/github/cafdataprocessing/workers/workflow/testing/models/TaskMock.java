@@ -33,7 +33,7 @@ public class TaskMock implements Task
     private final WorkerTaskData service;
     private final Response response;
     private final Application application;
-    private String correlationId;
+    private final String correlationId;
 
     public TaskMock(final Map<String, String> customData, final Document document, final Scripts scripts,
                     final WorkerTaskData service, final Response response, final Application application,
