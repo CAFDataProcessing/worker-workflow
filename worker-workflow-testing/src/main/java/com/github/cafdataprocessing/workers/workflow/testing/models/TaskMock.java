@@ -33,9 +33,11 @@ public class TaskMock implements Task
     private final WorkerTaskData service;
     private final Response response;
     private final Application application;
+    private String correlationId;
 
     public TaskMock(final Map<String, String> customData, final Document document, final Scripts scripts,
-                    final WorkerTaskData service, final Response response, final Application application)
+                    final WorkerTaskData service, final Response response, final Application application,
+                    final String correlationId)
     {
         this.customData = customData;
         this.document = document;
@@ -43,6 +45,7 @@ public class TaskMock implements Task
         this.service = service;
         this.response = response;
         this.application = application;
+        this.correlationId = correlationId;
     }
 
     @Override
@@ -79,6 +82,11 @@ public class TaskMock implements Task
     public Application getApplication()
     {
         return application;
+    }
+
+    @Override
+    public String getCorrelationId() {
+        return correlationId;
     }
 
     public void setDocument(final Document document)
