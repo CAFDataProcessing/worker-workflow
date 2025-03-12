@@ -171,12 +171,12 @@ public class WorkflowHelper
         final Application application;
         final Map<String, String> docCustomData = (customData!=null)? customData : new HashMap<>();
         if (!includeApplication) {
-            task = new TaskMock(docCustomData, rootDoc, null, wtd, null, null);
+            task = new TaskMock(docCustomData, rootDoc, null, wtd, null, null, correlationId);
             application = null;
         } else {
             final InputMessageProcessor inputMessageProcessorTest = new InputMessageProcessorMock(inputMessageProcessor);
             application = new ApplicationMock(inputMessageProcessorTest, csm);
-            task = new TaskMock(docCustomData, rootDoc, null, wtd, null, application);
+            task = new TaskMock(docCustomData, rootDoc, null, wtd, null, application, correlationId);
         }
         final DocumentMock temp
             = new DocumentMock(reference, fields, task, docCustomData, failures, subdocuments, application, parentDoc, rootDoc);
@@ -216,12 +216,12 @@ public class WorkflowHelper
         final TaskMock task;
         final Application application;
         if (!includeApplication) {
-            task = new TaskMock(new HashMap<>(), rootDoc, null, wtd, null, null);
+            task = new TaskMock(new HashMap<>(), rootDoc, null, wtd, null, null, correlationId);
             application = null;
         } else {
             final InputMessageProcessor inputMessageProcessorTest = new InputMessageProcessorMock(inputMessageProcessor);
             application = new ApplicationMock(inputMessageProcessorTest, csm);
-            task = new TaskMock(new HashMap<>(), rootDoc, null, wtd, null, application);
+            task = new TaskMock(new HashMap<>(), rootDoc, null, wtd, null, application, correlationId);
         }
         final Subdocument temp
             = new SubdocumentMock(reference, fields, task, new HashMap<>(), failures, subdocuments, application, parentDoc, rootDoc);
