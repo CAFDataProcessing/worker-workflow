@@ -54,7 +54,6 @@
         <processingServiceContainerName>
             ${dockerHubPublic}/cafdataprocessing/processing-service:1
         </processingServiceContainerName>
-        <projectDockerRegistry>worker-workflow-${project.version}.project-registries.local</projectDockerRegistry>
     </properties>
 
     <developers>
@@ -1025,6 +1024,7 @@
                 <artifactId>docker-versions-maven-plugin</artifactId>
                 <extensions>true</extensions>
                 <configuration>
+                    <projectDockerRegistry>worker-workflow-${project.version}.project-registries.local</projectDockerRegistry>
                     <imageManagement>
                         <image>
                             <repository>${homeDockerReleaseRegistry}/caf/settings-service</repository>
