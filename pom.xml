@@ -54,7 +54,6 @@
         <processingServiceContainerName>
             ${dockerHubPublic}/cafdataprocessing/processing-service:1
         </processingServiceContainerName>
-        <projectDockerRegistry>worker-workflow-${project.version}.project-registries.local</projectDockerRegistry>
     </properties>
 
     <developers>
@@ -976,7 +975,7 @@
                 <plugin>
                     <groupId>com.github.cafapi.plugins.docker.versions</groupId>
                     <artifactId>docker-versions-maven-plugin</artifactId>
-                    <version>1.0.0-29</version>
+                    <version>2.0.1-64</version>
                 </plugin>
                 <plugin>
                     <groupId>io.fabric8</groupId>
@@ -1025,6 +1024,7 @@
                 <artifactId>docker-versions-maven-plugin</artifactId>
                 <extensions>true</extensions>
                 <configuration>
+                    <projectDockerRegistry>worker-workflow-${project.version}.project-registries.local</projectDockerRegistry>
                     <imageManagement>
                         <image>
                             <repository>${homeDockerReleaseRegistry}/caf/settings-service</repository>
