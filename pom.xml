@@ -305,57 +305,57 @@
                 <groupId>com.github.workerframework</groupId>
                 <artifactId>standard-worker-container</artifactId>
                 <type>pom</type>
-                <version>9.1.0-1331</version>
+                <version>9.1.1-1334</version>
             </dependency>
             <dependency>
                 <groupId>com.github.workerframework</groupId>
                 <artifactId>util-rabbitmq</artifactId>
-                <version>9.1.0-1331</version>
+                <version>9.1.1-1334</version>
             </dependency>
             <dependency>
                 <groupId>com.github.workerframework</groupId>
                 <artifactId>worker-api</artifactId>
-                <version>9.1.0-1331</version>
+                <version>9.1.1-1334</version>
             </dependency>
             <dependency>
                 <groupId>com.github.workerframework</groupId>
                 <artifactId>worker-configs</artifactId>
-                <version>9.1.0-1331</version>
+                <version>9.1.1-1334</version>
             </dependency>
             <dependency>
                 <groupId>com.github.workerframework</groupId>
                 <artifactId>worker-core</artifactId>
-                <version>9.1.0-1331</version>
+                <version>9.1.1-1334</version>
             </dependency>
             <dependency>
                 <groupId>com.github.workerframework</groupId>
                 <artifactId>worker-default-configs</artifactId>
-                <version>9.1.0-1331</version>
+                <version>9.1.1-1334</version>
             </dependency>
             <dependency>
                 <groupId>com.github.workerframework</groupId>
                 <artifactId>worker-queue-rabbit</artifactId>
-                <version>9.1.0-1331</version>
+                <version>9.1.1-1334</version>
             </dependency>
             <dependency>
                 <groupId>com.github.workerframework</groupId>
                 <artifactId>worker-store-fs</artifactId>
-                <version>9.1.0-1331</version>
+                <version>9.1.1-1334</version>
             </dependency>
             <dependency>
                 <groupId>com.github.workerframework</groupId>
                 <artifactId>worker-store-http</artifactId>
-                <version>9.1.0-1331</version>
+                <version>9.1.1-1334</version>
             </dependency>
             <dependency>
                 <groupId>com.github.workerframework</groupId>
                 <artifactId>worker-store-mem</artifactId>
-                <version>9.1.0-1331</version>
+                <version>9.1.1-1334</version>
             </dependency>
             <dependency>
                 <groupId>com.github.workerframework</groupId>
                 <artifactId>worker-tracking-report</artifactId>
-                <version>9.1.0-1331</version>
+                <version>9.1.1-1334</version>
             </dependency>
             <dependency>
                 <groupId>com.github.workerframework.testing</groupId>
@@ -670,37 +670,37 @@
             <dependency>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-http</artifactId>
-                <version>12.0.19</version>
+                <version>12.0.20</version>
             </dependency>
             <dependency>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-io</artifactId>
-                <version>12.0.19</version>
+                <version>12.0.20</version>
             </dependency>
             <dependency>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-security</artifactId>
-                <version>12.0.19</version>
+                <version>12.0.20</version>
             </dependency>
             <dependency>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-server</artifactId>
-                <version>12.0.19</version>
+                <version>12.0.20</version>
             </dependency>
             <dependency>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-session</artifactId>
-                <version>12.0.19</version>
+                <version>12.0.20</version>
             </dependency>
             <dependency>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-util</artifactId>
-                <version>12.0.19</version>
+                <version>12.0.20</version>
             </dependency>
             <dependency>
                 <groupId>org.eclipse.jetty.ee10</groupId>
                 <artifactId>jetty-ee10-servlet</artifactId>
-                <version>12.0.19</version>
+                <version>12.0.20</version>
             </dependency>
             <dependency>
                 <groupId>org.eclipse.jetty.toolchain.setuid</groupId>
@@ -1028,13 +1028,13 @@
                     <imageManagement>
                         <image>
                             <repository>${homeDockerReleaseRegistry}/caf/settings-service</repository>
-                            <tag>3.2.3</tag>
-                            <digest>sha256:a8845f8f1defc56b0c3605a2f2677747c2207844b99b159d75afce72eac32ddc</digest>
+                            <tag>3.2.4</tag>
+                            <digest>sha256:15ff4778592131cbd234e6f05ec9c90fc2ef096d5efab49acc3cbb5b4412f32e</digest>
                         </image>
                         <image>
                             <repository>${dockerHubPublic}/cafapi/oraclelinux-jre21</repository>
-                            <tag>1.1.11</tag>
-                            <digest>sha256:dc3121ea4d101bdf87c5336079fbe5291ec741c50bbf36645b60546fd17d46fd</digest>
+                            <tag>1.1.12</tag>
+                            <digest>sha256:8eb5136a2ab064831c855eb4ebaf10e2c09f075aa8c2003b8644a9dbbcbe3ac5</digest>
                         </image>
                         <image>
                             <repository>${dockerHubPublic}/cloudesire/webdav</repository>
