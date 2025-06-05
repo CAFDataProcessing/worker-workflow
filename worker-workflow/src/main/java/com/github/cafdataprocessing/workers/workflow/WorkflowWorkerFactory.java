@@ -23,12 +23,16 @@ import com.github.cafdataprocessing.workers.document.extensibility.DocumentWorke
 import com.github.cafdataprocessing.workers.document.model.Application;
 import com.github.cafdataprocessing.workers.document.model.Document;
 import com.github.cafdataprocessing.workers.document.model.HealthMonitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A factory to create workflow workers, passing them a configuration instance.
  */
 public final class WorkflowWorkerFactory implements DocumentWorkerFactory
 {
+    private static final Logger LOG = LoggerFactory.getLogger(WorkflowWorkerFactory.class);
+
     @Override
     public DocumentWorker createDocumentWorker(final Application application)
     {
@@ -46,6 +50,7 @@ public final class WorkflowWorkerFactory implements DocumentWorkerFactory
                     new FailureFieldsManager());
 
         } catch(final ConfigurationException ex){
+            LOG.error("Configuration error", ex);
             return new DocumentWorker()
             {
                 @Override
