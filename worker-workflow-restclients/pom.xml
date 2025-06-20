@@ -28,6 +28,7 @@
     </parent>
 
     <artifactId>worker-workflow-restclients</artifactId>
+    <name>worker-workflow-restclients</name>
 
     <dependencies>
         <dependency>

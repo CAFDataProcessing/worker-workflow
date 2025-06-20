@@ -26,6 +26,7 @@
     </parent>
 
     <artifactId>worker-workflow-container</artifactId>
+    <name>worker-workflow-container</name>
     <packaging>pom</packaging>
 
     <!-- Properties for the worker. -->
