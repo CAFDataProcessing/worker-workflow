@@ -28,6 +28,7 @@
     </parent>
 
     <artifactId>worker-workflow</artifactId>
+    <name>worker-workflow</name>
 
     <dependencies>
         <dependency>
