@@ -19,8 +19,6 @@
     outputQueue: getenv("CAF_WORKER_OUTPUT_QUEUE")
             || (getenv("CAF_WORKER_BASE_QUEUE_NAME") || getenv("CAF_WORKER_NAME") || "worker") + "-out",
     failureQueue: getenv("CAF_WORKER_FAILURE_QUEUE") || undefined,
-    invalidQueue: getenv("CAF_WORKER_INVALID_QUEUE")
-        || (getenv("CAF_WORKER_BASE_QUEUE_NAME") || getenv("CAF_WORKER_NAME") || "worker") + "-invalid",
     threads: getenv("CAF_WORKFLOW_WORKER_THREADS") || getenv("CAF_WORKER_THREADS") || 1,
     inputMessageProcessing: {
         documentTasksAccepted: true,
