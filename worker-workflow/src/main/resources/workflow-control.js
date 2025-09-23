@@ -719,13 +719,13 @@ function applyActionDetails(document, actionDetails, terminateOnFailure) {
     console.log("Task response:", response);
 
     var successQueue = response.getSuccessQueue();
-    console.log("Success queue:", successQueue);
+    console.log("Success queue:", successQueue.getQueueName());
 
     successQueue.set(queueToSet);
     console.log("Set success queue to:", queueToSet);
 
     var failureQueue = response.getFailureQueue();
-    console.log("Current failure queue:", failureQueue);
+    console.log("Current failure queue:", failureQueue.getQueueName());
     if (!terminateOnFailure) {
         console.log("Not terminating on failure, setting failure queue");
 
