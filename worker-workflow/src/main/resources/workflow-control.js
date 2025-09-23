@@ -48,6 +48,7 @@ console.log("ACTIONS object exists:", ACTIONS);
 console.log("ACTIONS length:", ACTIONS.length);
 
 function onProcessTask(e) {
+    console.log("");
     console.log("=== onProcessTask STARTED ===");
     console.log("Event object:", e);
     console.log("Task:", e.task);
@@ -61,6 +62,7 @@ function onProcessTask(e) {
 }
 
 function addMdcLoggingData(e) {
+    console.log("");
     console.log("=== addMdcLoggingData STARTED ===");
     console.log("Event parameter:", e);
 
@@ -107,6 +109,7 @@ function addMdcLoggingData(e) {
 }
 
 function isBulkWorker(e) {
+    console.log("");
     console.log("=== isBulkWorker STARTED ===");
     console.log("Event parameter:", e);
     console.log("Root document:", e.rootDocument);
@@ -136,6 +139,7 @@ function isBulkWorker(e) {
 }
 
 function onAfterProcessTask(eventObj) {
+    console.log("");
     console.log("=== onAfterProcessTask STARTED ===");
     console.log("Event object:", eventObj);
     console.log("Root document:", eventObj.rootDocument);
@@ -149,6 +153,7 @@ function onAfterProcessTask(eventObj) {
 }
 
 function removeMdcLoggingData() {
+    console.log("");
     console.log("=== removeMdcLoggingData STARTED ===");
     MDC.remove("tenantId");
     console.log("Removed tenantId from MDC");
@@ -156,6 +161,7 @@ function removeMdcLoggingData() {
 }
 
 function onBeforeProcessDocument(e) {
+    console.log("");
     console.log("=== onBeforeProcessDocument STARTED ===");
     console.log("Event object:", e);
     console.log("Root document:", e.rootDocument);
@@ -211,6 +217,7 @@ function onBeforeProcessDocument(e) {
 }
 
 function onProcessDocument(e) {
+    console.log("");
     console.log("=== onProcessDocument STARTED ===");
     console.log("Event object:", e);
     console.log("Application:", e.application);
@@ -231,6 +238,7 @@ function onProcessDocument(e) {
 }
 
 function traverseDocumentForSettingWorkerVersion(document) {
+    console.log("");
     console.log("=== traverseDocumentForSettingWorkerVersion STARTED ===");
     console.log("Document:", document);
 
@@ -250,6 +258,7 @@ function traverseDocumentForSettingWorkerVersion(document) {
 }
 
 function setWorkerVersion(document) {
+    console.log("");
     console.log("=== setWorkerVersion STARTED ===");
     console.log("Document:", document);
 
@@ -271,6 +280,7 @@ function setWorkerVersion(document) {
 }
 
 function onError(errorEventObj) {
+    console.log("");
     console.log("=== onError STARTED ===");
     console.log("Error event object:", errorEventObj);
     console.log("Error:", errorEventObj.error);
@@ -321,6 +331,7 @@ function onError(errorEventObj) {
 }
 
 function routeTask(rootDocument) {
+    console.log("");
     console.log("=== routeTask STARTED ===");
     console.log("Root document:", rootDocument);
 
@@ -442,6 +453,7 @@ function routeTask(rootDocument) {
 }
 
 function getTerminateOnFailure(previousAction) {
+    console.log("");
     console.log("=== getTerminateOnFailure STARTED ===");
     console.log("Previous action:", previousAction);
 
@@ -469,6 +481,7 @@ function getTerminateOnFailure(previousAction) {
 }
 
 function extractArguments(document) {
+    console.log("");
     console.log("=== extractArguments STARTED ===");
     console.log("Document:", document);
 
@@ -507,6 +520,7 @@ function extractArguments(document) {
 }
 
 function extractFailureSubfields(document) {
+    console.log("");
     console.log("=== extractFailureSubfields STARTED ===");
     console.log("Document:", document);
 
@@ -532,6 +546,7 @@ function extractFailureSubfields(document) {
 }
 
 function anyDocumentMatches(conditionFunction, document, args) {
+    console.log("");
     console.log("=== anyDocumentMatches STARTED ===");
     console.log("Condition function:", conditionFunction);
     console.log("Document:", document);
@@ -581,6 +596,7 @@ function anyDocumentMatches(conditionFunction, document, args) {
 }
 
 function evalCustomData(args, customDataToEval) {
+    console.log("");
     console.log("=== evalCustomData STARTED ===");
     console.log("Arguments:", args);
     console.log("Custom data to eval:", customDataToEval);
@@ -632,6 +648,7 @@ function evalCustomData(args, customDataToEval) {
 }
 
 function markPreviousActionAsCompleted(document) {
+    console.log("");
     console.log("=== markPreviousActionAsCompleted STARTED ===");
     console.log("Document:", document);
 
@@ -666,6 +683,7 @@ function markPreviousActionAsCompleted(document) {
 }
 
 function isActionCompleted(document, actionId) {
+    console.log("");
     console.log("=== isActionCompleted STARTED ===");
     console.log("Document:", document);
     console.log("Action ID to check:", actionId);
@@ -683,6 +701,7 @@ function isActionCompleted(document, actionId) {
 }
 
 function applyActionDetails(document, actionDetails, terminateOnFailure) {
+    console.log("");
     console.log("=== applyActionDetails STARTED ===");
     console.log("Document:", document);
     console.log("Action details:", actionDetails);
@@ -705,15 +724,15 @@ function applyActionDetails(document, actionDetails, terminateOnFailure) {
     successQueue.set(queueToSet);
     console.log("Set success queue to:", queueToSet);
 
+    var failureQueue = response.getFailureQueue();
+    console.log("Current failure queue:", failureQueue);
     if (!terminateOnFailure) {
         console.log("Not terminating on failure, setting failure queue");
-        var failureQueue = response.getFailureQueue();
-        console.log("Failure queue:", failureQueue);
 
         failureQueue.set(queueToSet);
         console.log("Set failure queue to:", queueToSet);
     } else {
-        console.log("Terminating on failure, not setting failure queue");
+        console.log("Terminating on failure, not changing failure queue");
     }
 
     var responseCustomDataMap = response.getCustomData();
@@ -791,6 +810,7 @@ function applyActionDetails(document, actionDetails, terminateOnFailure) {
 }
 
 function isCafWmpEnabled() {
+    console.log("");
     console.log("=== isCafWmpEnabled STARTED ===");
 
     var cafWmpEnabledString = System.getenv("CAF_WMP_ENABLED");
@@ -803,6 +823,7 @@ function isCafWmpEnabled() {
 }
 
 function onAfterProcessDocument(e) {
+    console.log("");
     console.log("=== onAfterProcessDocument STARTED ===");
     console.log("Event object:", e);
     console.log("Root document:", e.rootDocument);
@@ -856,6 +877,7 @@ function onAfterProcessDocument(e) {
 }
 
 function traverseDocumentForFailures(document) {
+    console.log("");
     console.log("=== traverseDocumentForFailures STARTED ===");
     console.log("Document:", document);
 
@@ -875,6 +897,7 @@ function traverseDocumentForFailures(document) {
 }
 
 function processFailures(document) {
+    console.log("");
     console.log("=== processFailures STARTED ===");
     console.log("Document:", document);
 
@@ -946,6 +969,7 @@ function processFailures(document) {
 }
 
 function isFailureInOriginal(listOfOriginalFailures, newFailure) {
+    console.log("");
     console.log("=== isFailureInOriginal STARTED ===");
     console.log("Original failures list size:", listOfOriginalFailures.size());
     console.log("New failure:", newFailure);
@@ -980,6 +1004,7 @@ function isFailureInOriginal(listOfOriginalFailures, newFailure) {
 }
 
 function isLastAction(action) {
+    console.log("");
     console.log("=== isLastAction STARTED ===");
     console.log("Action to check:", action);
     console.log("Total actions:", ACTIONS.length);
@@ -1000,6 +1025,7 @@ function isLastAction(action) {
 }
 
 function getCurrentWorkerName(document) {
+    console.log("");
     console.log("=== getCurrentWorkerName STARTED ===");
     console.log("Document:", document);
 
@@ -1029,6 +1055,7 @@ function getCurrentWorkerName(document) {
 }
 
 function getCurrentWorkerVersion(document) {
+    console.log("");
     console.log("=== getCurrentWorkerVersion STARTED ===");
     console.log("Document:", document);
 
@@ -1060,6 +1087,7 @@ function getCurrentWorkerVersion(document) {
 //Field Conditions
 
 function fieldExists(document, fieldName) {
+    console.log("");
     console.log("=== fieldExists STARTED ===");
     console.log("Document:", document);
     console.log("Field name:", fieldName);
@@ -1074,6 +1102,7 @@ function fieldExists(document, fieldName) {
 }
 
 function isEmptyMap(mapValue) {
+    console.log("");
     console.log("=== isEmptyMap STARTED ===");
     console.log("Map value:", mapValue);
 
@@ -1093,6 +1122,7 @@ function isEmptyMap(mapValue) {
 }
 
 function isFieldValueEqualToValue(fieldValue, value) {
+    console.log("");
     console.log("=== isFieldValueEqualToValue STARTED ===");
     console.log("Field value:", fieldValue);
     console.log("Value to compare:", value);
@@ -1113,6 +1143,7 @@ function isFieldValueEqualToValue(fieldValue, value) {
 }
 
 function fieldHasStringValue(document, fieldName, value) {
+    console.log("");
     console.log("=== fieldHasStringValue STARTED ===");
     console.log("Document:", document);
     console.log("Field name:", fieldName);
@@ -1143,6 +1174,7 @@ function fieldHasStringValue(document, fieldName, value) {
 }
 
 function fieldHasAnyStringValue(document, fieldName, values) {
+    console.log("");
     console.log("=== fieldHasAnyStringValue STARTED ===");
     console.log("Document:", document);
     console.log("Field name:", fieldName);
