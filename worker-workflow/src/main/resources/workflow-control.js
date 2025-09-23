@@ -315,6 +315,14 @@ function onError(errorEventObj) {
         var isLast = isLastAction(firstActionValue);
         console.log("Is last action:", isLast);
 
+        var terminateOnFailure = getTerminateOnFailure(firstActionValue);
+        console.log("terminateOnFailure:", terminateOnFailure);
+
+        if (terminateOnFailure) {
+            console.log("Terminate on failure is true, returning");
+            return;
+        }
+
         if (!isLast) {
             console.log("Not last action, setting handled to true");
             errorEventObj.handled = true;
