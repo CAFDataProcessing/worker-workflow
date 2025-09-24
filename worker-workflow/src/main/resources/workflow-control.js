@@ -119,10 +119,39 @@ function onError(errorEventObj) {
     var message = errorEventObj.error.getMessage();
     rootDoc.getFailures().add("UNHANDLED_ERROR", message, errorEventObj.error);
     var actionValues = errorEventObj.rootDocument.getField("CAF_WORKFLOW_ACTION").getStringValues();
-    if (!actionValues.isEmpty() && !isLastAction(actionValues.get(0))) {
-        errorEventObj.handled = true;
-        traverseDocumentForFailures(rootDoc);
+    if (!actionValues.isEmpty()) {
+        var actionValue = actionValues.get(0);
+
+        // If terminateOnFailure is true, we want to send the document to the action's failure queue.
+        if (getTerminateOnFailure(actionValue)) {
+            // The document will already have a failure added to it, so setting handled=true informs
+            // the Worker Framework not to rethrow the error, which would result in a duplicate error
+            // on the document (albeit with a different failureId, but with the same failureMessage).
+            errorEventObj.handled = true;
+
+            // Do NOT call traverseDocumentForFailures here, as that calls:
+            //
+            // document.getFailures().reset()
+            //
+            // resulting in the Worker Document Framework NOT setting the output queue to the failure queue (see the
+            // following code in the Worker Document Framework for more details):
+            //
+            // final boolean hasFailures = ChangeLogFunctions.hasFailures(changes);
+            // final String outputQueue = response.getOutputQueue(hasFailures);
+
+            // Return to ensure no further actions/routing will be invoked.
+            return;
+        }
+
+        // If this is the last action in the chain DO NOT mark the error as handled because this results in the
+        // tracking message being dispatched stating that the job completed successfully even though no information
+        // was indexed and the document was actually discarded.
+        if (!isLastAction(actionValue)) {
+            errorEventObj.handled = true;
+            traverseDocumentForFailures(rootDoc);
+        }
     }
+
     routeTask(errorEventObj.rootDocument);
 }
 
