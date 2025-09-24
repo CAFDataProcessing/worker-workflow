@@ -122,13 +122,17 @@ function onError(errorEventObj) {
     if (!actionValues.isEmpty()) {
         var actionValue = actionValues.get(0);
 
-        // If terminateOnFailure is true, we want to send the document to the action's failure queue.
         if (getTerminateOnFailure(actionValue)) {
-            // The document will already have a failure added to it, so setting handled=true informs
-            // the Worker Framework not to rethrow the error, which would result in a duplicate error
-            // on the document (albeit with a different failureId, but with the same failureMessage).
-            errorEventObj.handled = true;
+            // If terminateOnFailure is true, we want to send the document to the action's failure queue.
 
+            // 1)
+            //
+            // DO NOT mark the error as handled because this results in the tracking message being dispatched
+            // stating that the job completed successfully even though the document was discarded (aka sent to the
+            // action's error queue).
+
+            // 2)
+            //
             // Do NOT call traverseDocumentForFailures here, as that calls:
             //
             // document.getFailures().reset()
@@ -139,14 +143,18 @@ function onError(errorEventObj) {
             // final boolean hasFailures = ChangeLogFunctions.hasFailures(changes);
             // final String outputQueue = response.getOutputQueue(hasFailures);
 
+            // 3)
+            //
             // Return to ensure no further actions/routing will be invoked.
             return;
         }
 
-        // If this is the last action in the chain DO NOT mark the error as handled because this results in the
-        // tracking message being dispatched stating that the job completed successfully even though no information
-        // was indexed and the document was actually discarded.
         if (!isLastAction(actionValue)) {
+            // We only want to invoke the following operations if this is NOT the last action in the workflow.
+            //
+            // If it is the last action, we do not want to handle the error, and we do not want to call
+            // traverseDocumentForFailures for the same reasons as described in the
+            // getTerminateOnFailure(actionValue) block above.
             errorEventObj.handled = true;
             traverseDocumentForFailures(rootDoc);
         }
