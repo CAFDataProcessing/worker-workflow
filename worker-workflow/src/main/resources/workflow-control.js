@@ -119,47 +119,40 @@ function onError(errorEventObj) {
     var message = errorEventObj.error.getMessage();
     rootDoc.getFailures().add("UNHANDLED_ERROR", message, errorEventObj.error);
     var actionValues = errorEventObj.rootDocument.getField("CAF_WORKFLOW_ACTION").getStringValues();
-    if (!actionValues.isEmpty()) {
-        var actionValue = actionValues.get(0);
 
-        if (getTerminateOnFailure(actionValue)) {
-            // If terminateOnFailure is true, we want to send the document to the action's failure queue.
-
-            // 1)
-            //
-            // DO NOT mark the error as handled because this results in the tracking message being dispatched
-            // stating that the job completed successfully even though the document was discarded (aka sent to the
-            // action's error queue).
-
-            // 2)
-            //
-            // Do NOT call traverseDocumentForFailures here, as that calls:
-            //
-            // document.getFailures().reset()
-            //
-            // resulting in the Worker Document Framework NOT setting the output queue to the failure queue (see the
-            // following code in the Worker Document Framework for more details):
-            //
-            // final boolean hasFailures = ChangeLogFunctions.hasFailures(changes);
-            // final String outputQueue = response.getOutputQueue(hasFailures);
-
-            // 3)
-            //
-            // Return to ensure no further actions/routing will be invoked.
-            return;
-        }
-
-        if (!isLastAction(actionValue)) {
-            // We only want to invoke the following operations if this is NOT the last action in the workflow.
-            //
-            // If it is the last action, we do not want to handle the error, and we do not want to call
-            // traverseDocumentForFailures for the same reasons as described in the
-            // getTerminateOnFailure(actionValue) block above.
-            errorEventObj.handled = true;
-            traverseDocumentForFailures(rootDoc);
-        }
+    if (actionValues.isEmpty()) {
+        routeTask(errorEventObj.rootDocument);
+        return;
     }
 
+    var actionValue = actionValues.get(0);
+
+    if (getTerminateOnFailure(actionValue)) {
+        // Return to ensure the document will be sent to the action's failure queue.
+        return;
+    }
+
+    if (isLastAction(actionValue)) {
+        // Return to ensure the document will be sent to the action's failure queue.
+        return;
+    }
+
+    // Mark the error as handled
+    errorEventObj.handled = true;
+
+    // Note we only call traverseDocumentForFailures when we want to route the document to further actions in the
+    // workflow, as traverseDocumentForFailures calls:
+    //
+    // document.getFailures().reset()
+    //
+    // resulting in the Worker Document Framework NOT setting the output queue to the failure queue (see the
+    // following code in the Worker Document Framework for more details):
+    //
+    // final boolean hasFailures = ChangeLogFunctions.hasFailures(changes);
+    // final String outputQueue = response.getOutputQueue(hasFailures);
+    traverseDocumentForFailures(rootDoc);
+
+    // Route to the next action
     routeTask(errorEventObj.rootDocument);
 }
 
