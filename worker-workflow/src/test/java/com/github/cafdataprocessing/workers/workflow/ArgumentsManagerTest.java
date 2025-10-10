@@ -366,6 +366,32 @@ public class ArgumentsManagerTest {
         assertEquals("testPreValFromSettingsService", arguments.get("example"));
     }
 
+//    @Test
+//    @SetEnvironmentVariable(key = "TEST_ENV_VAR", value = "envValue")
+//    public void argumentFromEnvironmentVariableTest() throws Exception {
+//        // Create an ArgumentDefinition with ENVIRONMENT_VARIABLE source
+//        ArgumentDefinition argumentDefinition = new ArgumentDefinition();
+//        argumentDefinition.setName("envExample");
+//        ArgumentDefinition.Source envSource = new ArgumentDefinition.Source();
+//        envSource.setName("TEST_ENV_VAR");
+//        envSource.setType(ArgumentDefinition.SourceType.ENVIRONMENT_VARIABLE);
+//        argumentDefinition.setSources(Collections.singletonList(envSource));
+//
+//        final SettingsApi settingsApi = mock(SettingsApi.class);
+//        final Document document = DocumentBuilder.configure().withServices(TestServices.createDefault()).build();
+//
+//        final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, settingsApi, "");
+//        argumentsManager.addArgumentsToDocument(Collections.singletonList(argumentDefinition), document, Optional.empty());
+//
+//        final Gson gson = new Gson();
+//        final Type type = new TypeToken<Map<String, String>>() {}.getType();
+//        final Map<String, String> arguments = gson.fromJson(
+//                document.getField("CAF_WORKFLOW_SETTINGS").getStringValues().stream().findFirst().get(), type);
+//
+//        // Assert that the environment variable value is correctly resolved
+//        assertEquals("envValue", arguments.get("envExample"));
+//    }
+
     @Test
     public void poisonDocumentHandlingTest() throws Exception {
         
@@ -494,6 +520,13 @@ public class ArgumentsManagerTest {
             settingsServiceSource
                     .setOptions("not-a-repo1,not-a-repo2");
             argumentDefinition.getSources().add(settingsServiceSource);
+        }
+
+        {
+            final ArgumentDefinition.Source envVarSource = new ArgumentDefinition.Source();
+            envVarSource.setName("TEST_ENV_VAR"); // Name of the environment variable to use
+            envVarSource.setType(ArgumentDefinition.SourceType.ENVIRONMENT_VARIABLE);
+            argumentDefinition.getSources().add(envVarSource);
         }
 
         argumentDefinitions.add(argumentDefinition);

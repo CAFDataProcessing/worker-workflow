@@ -77,6 +77,6 @@ public class ArgumentDefinition {
     }
 
     public enum SourceType {
-        FIELD, CUSTOM_DATA, SETTINGS_SERVICE
+        FIELD, CUSTOM_DATA, SETTINGS_SERVICE, ENVIRONMENT_VARIABLE
     }
 }

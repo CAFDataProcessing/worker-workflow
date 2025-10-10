@@ -208,6 +208,10 @@ public class ArgumentsManager {
                                 source.getName(), source.getOptions(), document, settingsServiceLastUpdateTimeMillisOpt);
                             break;
                         }
+                        case ENVIRONMENT_VARIABLE: {
+                            value = System.getenv(source.getName());
+                            break;
+                        }
                         default: {
                             throw new UnsupportedOperationException(String.format("Invalid source type [%s].",
                                     source.getType()));
