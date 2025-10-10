@@ -15,7 +15,7 @@
  */
 package com.github.cafdataprocessing.workers.workflow;
 
-public interface EnvironmentVariableProvider {
+public interface EnvironmentVariableProvider
+{
     String get(String name);
 }
-

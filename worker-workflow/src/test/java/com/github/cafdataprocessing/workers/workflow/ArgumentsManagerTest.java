@@ -367,8 +367,10 @@ public class ArgumentsManagerTest {
     }
 
     @Test
-    public void argumentFromEnvironmentVariableTest() throws Exception {
+    public void argumentFromEnvironmentVariableTest() throws Exception
+    {
         LOG.info("Running argumentFromEnvironmentVariableTest...");
+        
         // Create an ArgumentDefinition with ENVIRONMENT_VARIABLE source
         ArgumentDefinition argumentDefinition = new ArgumentDefinition();
         argumentDefinition.setName("envVarTest");
@@ -390,11 +392,11 @@ public class ArgumentsManagerTest {
 
         final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, settingsApi, "", mockEnvProvider);
         argumentsManager.addArgumentsToDocument(Collections.singletonList(argumentDefinition), document, Optional.empty());
-        
+
         final Gson gson = new Gson();
         final Type type = new TypeToken<Map<String, String>>() {}.getType();
         final Map<String, String> arguments = gson.fromJson(
-                document.getField("CAF_WORKFLOW_SETTINGS").getStringValues().stream().findFirst().get(), type);
+            document.getField("CAF_WORKFLOW_SETTINGS").getStringValues().stream().findFirst().get(), type);
 
         // Assert that the environment variable value is correctly resolved
         LOG.info("argumentFromEnvironmentVariableTest arguments: {}", arguments);

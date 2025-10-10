@@ -47,7 +47,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.jodah.expiringmap.ExpiringMap;
 
-
 public class ArgumentsManager {
 
     private final static Logger LOG = LoggerFactory.getLogger(ArgumentsManager.class);
@@ -61,22 +60,24 @@ public class ArgumentsManager {
     private final Map<SettingsServiceLastAccessTimeMapKey, Long> settingsServiceLastAccessTimeMap;
     private final EnvironmentVariableProvider envProvider;
 
-    public ArgumentsManager(final String settingsServiceUrl) {
+    public ArgumentsManager(final String settingsServiceUrl)
+    {
         this(new SettingsApi(), new SettingsApi(), settingsServiceUrl, System::getenv);
     }
 
     public ArgumentsManager(
         final SettingsApi settingsApi,
         final SettingsApi forceCacheRefreshSettingsApi,
-        final String settingsServiceUrl) {
+        final String settingsServiceUrl){
         this(settingsApi, forceCacheRefreshSettingsApi, settingsServiceUrl, System::getenv);
     }
 
-    public ArgumentsManager(
+    ArgumentsManager(
         final SettingsApi settingsApi,
         final SettingsApi forceCacheRefreshSettingsApi,
         final String settingsServiceUrl,
-        final EnvironmentVariableProvider envProvider) {
+        final EnvironmentVariableProvider envProvider)
+    {
         Objects.requireNonNull(settingsApi);
         Objects.requireNonNull(forceCacheRefreshSettingsApi);
         Objects.requireNonNull(settingsServiceUrl);
