@@ -367,6 +367,43 @@ public class ArgumentsManagerTest {
     }
 
     @Test
+    public void argumentFromEnvironmentVariableTest() throws Exception
+    {
+        LOG.info("Running argumentFromEnvironmentVariableTest...");
+        
+        // Create an ArgumentDefinition with ENVIRONMENT_VARIABLE source
+        ArgumentDefinition argumentDefinition = new ArgumentDefinition();
+        argumentDefinition.setName("envVarTest");
+        ArgumentDefinition.Source envSource = new ArgumentDefinition.Source();
+        envSource.setName("ENV_VAR_TEST");
+        envSource.setType(ArgumentDefinition.SourceType.ENVIRONMENT_VARIABLE);
+        argumentDefinition.setSources(Collections.singletonList(envSource));
+
+        final SettingsApi settingsApi = mock(SettingsApi.class);
+        final Document document = DocumentBuilder.configure().withServices(TestServices.createDefault()).build();
+
+        // Provide a mock EnvironmentVariableProvider
+        EnvironmentVariableProvider mockEnvProvider = name -> {
+            if ("ENV_VAR_TEST".equals(name)) {
+                return "180";
+            }
+            return null;
+        };
+
+        final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, settingsApi, "", mockEnvProvider);
+        argumentsManager.addArgumentsToDocument(Collections.singletonList(argumentDefinition), document, Optional.empty());
+
+        final Gson gson = new Gson();
+        final Type type = new TypeToken<Map<String, String>>() {}.getType();
+        final Map<String, String> arguments = gson.fromJson(
+            document.getField("CAF_WORKFLOW_SETTINGS").getStringValues().stream().findFirst().get(), type);
+
+        // Assert that the environment variable value is correctly resolved
+        LOG.info("argumentFromEnvironmentVariableTest arguments: {}", arguments);
+        assertEquals("180", arguments.get("envVarTest"));
+    }
+
+    @Test
     public void poisonDocumentHandlingTest() throws Exception {
         
         // If processing a poison document (a document that a downstream worker has redirected

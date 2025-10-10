@@ -58,19 +58,30 @@ public class ArgumentsManager {
     private final SettingsApi settingsApi;
     private final SettingsApi forceCacheRefreshSettingsApi;
     private final Map<SettingsServiceLastAccessTimeMapKey, Long> settingsServiceLastAccessTimeMap;
+    private final EnvironmentVariableProvider envProvider;
 
     public ArgumentsManager(final String settingsServiceUrl)
     {
-        this(new SettingsApi(), new SettingsApi(), settingsServiceUrl);
+        this(new SettingsApi(), new SettingsApi(), settingsServiceUrl, System::getenv);
     }
 
     public ArgumentsManager(
         final SettingsApi settingsApi,
         final SettingsApi forceCacheRefreshSettingsApi,
         final String settingsServiceUrl){
+        this(settingsApi, forceCacheRefreshSettingsApi, settingsServiceUrl, System::getenv);
+    }
+
+    ArgumentsManager(
+        final SettingsApi settingsApi,
+        final SettingsApi forceCacheRefreshSettingsApi,
+        final String settingsServiceUrl,
+        final EnvironmentVariableProvider envProvider)
+    {
         Objects.requireNonNull(settingsApi);
         Objects.requireNonNull(forceCacheRefreshSettingsApi);
         Objects.requireNonNull(settingsServiceUrl);
+        Objects.requireNonNull(envProvider);
 
         // Client that will cache responses
         this.settingsApi = settingsApi;
@@ -90,6 +101,7 @@ public class ArgumentsManager {
                 .builder()
                 .expiration(SETTINGS_SERVICE_CACHE_EXPIRATION_TIME_MINUTES, TimeUnit.MINUTES)
                 .build();
+        this.envProvider = envProvider;
     }
 
     private OkHttpClient createOkHttpClient() throws RuntimeException
@@ -206,6 +218,10 @@ public class ArgumentsManager {
                         case SETTINGS_SERVICE: {
                             value = getFromSettingService(
                                 source.getName(), source.getOptions(), document, settingsServiceLastUpdateTimeMillisOpt);
+                            break;
+                        }
+                        case ENVIRONMENT_VARIABLE: {
+                            value = envProvider.get(source.getName());
                             break;
                         }
                         default: {
