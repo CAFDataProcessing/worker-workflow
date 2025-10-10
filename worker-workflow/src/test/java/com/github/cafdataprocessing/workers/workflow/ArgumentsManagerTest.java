@@ -368,6 +368,7 @@ public class ArgumentsManagerTest {
 
     @Test
     public void argumentFromEnvironmentVariableTest() throws Exception {
+        LOG.info("Running argumentFromEnvironmentVariableTest...");
         // Create an ArgumentDefinition with ENVIRONMENT_VARIABLE source
         ArgumentDefinition argumentDefinition = new ArgumentDefinition();
         argumentDefinition.setName("tableFormats");
@@ -396,6 +397,7 @@ public class ArgumentsManagerTest {
                 document.getField("CAF_WORKFLOW_SETTINGS").getStringValues().stream().findFirst().get(), type);
 
         // Assert that the environment variable value is correctly resolved
+        LOG.info("argumentFromEnvironmentVariableTest arguments: {}", arguments);
         assertEquals("180", arguments.get("tableFormats"));
     }
 
@@ -527,13 +529,6 @@ public class ArgumentsManagerTest {
             settingsServiceSource
                     .setOptions("not-a-repo1,not-a-repo2");
             argumentDefinition.getSources().add(settingsServiceSource);
-        }
-
-        {
-            final ArgumentDefinition.Source envVarSource = new ArgumentDefinition.Source();
-            envVarSource.setName("TEST_ENV_VAR"); // Name of the environment variable to use
-            envVarSource.setType(ArgumentDefinition.SourceType.ENVIRONMENT_VARIABLE);
-            argumentDefinition.getSources().add(envVarSource);
         }
 
         argumentDefinitions.add(argumentDefinition);
