@@ -47,6 +47,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import net.jodah.expiringmap.ExpiringMap;
 
+
 public class ArgumentsManager {
 
     private final static Logger LOG = LoggerFactory.getLogger(ArgumentsManager.class);
@@ -58,19 +59,28 @@ public class ArgumentsManager {
     private final SettingsApi settingsApi;
     private final SettingsApi forceCacheRefreshSettingsApi;
     private final Map<SettingsServiceLastAccessTimeMapKey, Long> settingsServiceLastAccessTimeMap;
+    private final EnvironmentVariableProvider envProvider;
 
-    public ArgumentsManager(final String settingsServiceUrl)
-    {
-        this(new SettingsApi(), new SettingsApi(), settingsServiceUrl);
+    public ArgumentsManager(final String settingsServiceUrl) {
+        this(new SettingsApi(), new SettingsApi(), settingsServiceUrl, System::getenv);
     }
 
     public ArgumentsManager(
         final SettingsApi settingsApi,
         final SettingsApi forceCacheRefreshSettingsApi,
-        final String settingsServiceUrl){
+        final String settingsServiceUrl) {
+        this(settingsApi, forceCacheRefreshSettingsApi, settingsServiceUrl, System::getenv);
+    }
+
+    public ArgumentsManager(
+        final SettingsApi settingsApi,
+        final SettingsApi forceCacheRefreshSettingsApi,
+        final String settingsServiceUrl,
+        final EnvironmentVariableProvider envProvider) {
         Objects.requireNonNull(settingsApi);
         Objects.requireNonNull(forceCacheRefreshSettingsApi);
         Objects.requireNonNull(settingsServiceUrl);
+        Objects.requireNonNull(envProvider);
 
         // Client that will cache responses
         this.settingsApi = settingsApi;
@@ -90,6 +100,7 @@ public class ArgumentsManager {
                 .builder()
                 .expiration(SETTINGS_SERVICE_CACHE_EXPIRATION_TIME_MINUTES, TimeUnit.MINUTES)
                 .build();
+        this.envProvider = envProvider;
     }
 
     private OkHttpClient createOkHttpClient() throws RuntimeException
@@ -209,7 +220,7 @@ public class ArgumentsManager {
                             break;
                         }
                         case ENVIRONMENT_VARIABLE: {
-                            value = System.getenv(source.getName());
+                            value = envProvider.get(source.getName());
                             break;
                         }
                         default: {

@@ -366,31 +366,38 @@ public class ArgumentsManagerTest {
         assertEquals("testPreValFromSettingsService", arguments.get("example"));
     }
 
-//    @Test
-//    @SetEnvironmentVariable(key = "TEST_ENV_VAR", value = "envValue")
-//    public void argumentFromEnvironmentVariableTest() throws Exception {
-//        // Create an ArgumentDefinition with ENVIRONMENT_VARIABLE source
-//        ArgumentDefinition argumentDefinition = new ArgumentDefinition();
-//        argumentDefinition.setName("envExample");
-//        ArgumentDefinition.Source envSource = new ArgumentDefinition.Source();
-//        envSource.setName("TEST_ENV_VAR");
-//        envSource.setType(ArgumentDefinition.SourceType.ENVIRONMENT_VARIABLE);
-//        argumentDefinition.setSources(Collections.singletonList(envSource));
-//
-//        final SettingsApi settingsApi = mock(SettingsApi.class);
-//        final Document document = DocumentBuilder.configure().withServices(TestServices.createDefault()).build();
-//
-//        final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, settingsApi, "");
-//        argumentsManager.addArgumentsToDocument(Collections.singletonList(argumentDefinition), document, Optional.empty());
-//
-//        final Gson gson = new Gson();
-//        final Type type = new TypeToken<Map<String, String>>() {}.getType();
-//        final Map<String, String> arguments = gson.fromJson(
-//                document.getField("CAF_WORKFLOW_SETTINGS").getStringValues().stream().findFirst().get(), type);
-//
-//        // Assert that the environment variable value is correctly resolved
-//        assertEquals("envValue", arguments.get("envExample"));
-//    }
+    @Test
+    public void argumentFromEnvironmentVariableTest() throws Exception {
+        // Create an ArgumentDefinition with ENVIRONMENT_VARIABLE source
+        ArgumentDefinition argumentDefinition = new ArgumentDefinition();
+        argumentDefinition.setName("tableFormats");
+        ArgumentDefinition.Source envSource = new ArgumentDefinition.Source();
+        envSource.setName("ENTITY_EXTRACT_TABLE_FORMATS");
+        envSource.setType(ArgumentDefinition.SourceType.ENVIRONMENT_VARIABLE);
+        argumentDefinition.setSources(Collections.singletonList(envSource));
+
+        final SettingsApi settingsApi = mock(SettingsApi.class);
+        final Document document = DocumentBuilder.configure().withServices(TestServices.createDefault()).build();
+
+        // Provide a mock EnvironmentVariableProvider
+        EnvironmentVariableProvider mockEnvProvider = name -> {
+            if ("ENTITY_EXTRACT_TABLE_FORMATS".equals(name)) {
+                return "180";
+            }
+            return null;
+        };
+
+        final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, settingsApi, "", mockEnvProvider);
+        argumentsManager.addArgumentsToDocument(Collections.singletonList(argumentDefinition), document, Optional.empty());
+        
+        final Gson gson = new Gson();
+        final Type type = new TypeToken<Map<String, String>>() {}.getType();
+        final Map<String, String> arguments = gson.fromJson(
+                document.getField("CAF_WORKFLOW_SETTINGS").getStringValues().stream().findFirst().get(), type);
+
+        // Assert that the environment variable value is correctly resolved
+        assertEquals("180", arguments.get("tableFormats"));
+    }
 
     @Test
     public void poisonDocumentHandlingTest() throws Exception {
