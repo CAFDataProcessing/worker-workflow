@@ -371,9 +371,9 @@ public class ArgumentsManagerTest {
         LOG.info("Running argumentFromEnvironmentVariableTest...");
         // Create an ArgumentDefinition with ENVIRONMENT_VARIABLE source
         ArgumentDefinition argumentDefinition = new ArgumentDefinition();
-        argumentDefinition.setName("tableFormats");
+        argumentDefinition.setName("envVarTest");
         ArgumentDefinition.Source envSource = new ArgumentDefinition.Source();
-        envSource.setName("ENTITY_EXTRACT_TABLE_FORMATS");
+        envSource.setName("ENV_VAR_TEST");
         envSource.setType(ArgumentDefinition.SourceType.ENVIRONMENT_VARIABLE);
         argumentDefinition.setSources(Collections.singletonList(envSource));
 
@@ -382,7 +382,7 @@ public class ArgumentsManagerTest {
 
         // Provide a mock EnvironmentVariableProvider
         EnvironmentVariableProvider mockEnvProvider = name -> {
-            if ("ENTITY_EXTRACT_TABLE_FORMATS".equals(name)) {
+            if ("ENV_VAR_TEST".equals(name)) {
                 return "180";
             }
             return null;
@@ -398,7 +398,7 @@ public class ArgumentsManagerTest {
 
         // Assert that the environment variable value is correctly resolved
         LOG.info("argumentFromEnvironmentVariableTest arguments: {}", arguments);
-        assertEquals("180", arguments.get("tableFormats"));
+        assertEquals("180", arguments.get("envVarTest"));
     }
 
     @Test
