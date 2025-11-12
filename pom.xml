@@ -305,7 +305,7 @@
                 <groupId>com.github.workerframework</groupId>
                 <artifactId>standard-worker-container</artifactId>
                 <type>pom</type>
-                <version>10.0.0-1379</version>
+                <version>10.0.1-1380</version>
             </dependency>
             <dependency>
                 <groupId>com.github.workerframework</groupId>
@@ -315,7 +315,7 @@
             <dependency>
                 <groupId>com.github.workerframework</groupId>
                 <artifactId>worker-api</artifactId>
-                <version>10.0.0-1379</version>
+                <version>10.0.1-1380</version>
             </dependency>
             <dependency>
                 <groupId>com.github.workerframework</groupId>
@@ -325,32 +325,32 @@
             <dependency>
                 <groupId>com.github.workerframework</groupId>
                 <artifactId>worker-core</artifactId>
-                <version>10.0.0-1379</version>
+                <version>10.0.1-1380</version>
             </dependency>
             <dependency>
                 <groupId>com.github.workerframework</groupId>
                 <artifactId>worker-default-configs</artifactId>
-                <version>10.0.0-1379</version>
+                <version>10.0.1-1380</version>
             </dependency>
             <dependency>
                 <groupId>com.github.workerframework</groupId>
                 <artifactId>worker-queue-rabbit</artifactId>
-                <version>10.0.0-1379</version>
+                <version>10.0.1-1380</version>
             </dependency>
             <dependency>
                 <groupId>com.github.workerframework</groupId>
                 <artifactId>worker-store-fs</artifactId>
-                <version>10.0.0-1379</version>
+                <version>10.0.1-1380</version>
             </dependency>
             <dependency>
                 <groupId>com.github.workerframework</groupId>
                 <artifactId>worker-store-http</artifactId>
-                <version>10.0.0-1379</version>
+                <version>10.0.1-1380</version>
             </dependency>
             <dependency>
                 <groupId>com.github.workerframework</groupId>
                 <artifactId>worker-store-mem</artifactId>
-                <version>10.0.0-1379</version>
+                <version>10.0.1-1380</version>
             </dependency>
             <dependency>
                 <groupId>com.github.workerframework</groupId>
