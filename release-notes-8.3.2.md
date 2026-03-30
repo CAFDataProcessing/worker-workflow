@@ -5,8 +5,7 @@ ${version-number}
 - None
 
 #### Patch Fixes Included
-- Third-party dependency updates to resolve CVEs
-- Operating System package updates to resolve CVEs
+- This release includes OS package updates only.
 
 #### Known Issues
 - None
