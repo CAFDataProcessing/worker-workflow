@@ -241,6 +241,9 @@ public class ArgumentsManager {
 
             if(!Strings.isNullOrEmpty(value)){
                 arguments.put(argumentDefinition.getName(), value);
+            } else {
+                // TODO: scope not resolved, no default value set
+                LOG.warn("Unresolved argument {}", argumentDefinition.getName());
             }
         }
 
@@ -297,6 +300,11 @@ public class ArgumentsManager {
                 priorities.add(String.valueOf(priority));
                 priority++;
             }
+        }
+
+        if (scopes.isEmpty()) {
+            LOG.warn("Empty scope for property {}", name);
+            return null;
         }
 
         final ResolvedSetting resolvedSetting;
