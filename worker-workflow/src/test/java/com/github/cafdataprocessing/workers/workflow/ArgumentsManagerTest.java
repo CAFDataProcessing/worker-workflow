@@ -20,6 +20,7 @@ import com.github.cafdataprocessing.workers.document.testing.DocumentBuilder;
 import com.github.cafdataprocessing.workers.document.testing.TestServices;
 import com.github.cafdataprocessing.workers.workflow.model.ArgumentDefinition;
 import com.github.cafdataprocessing.workers.workflow.restclients.settings_service.api.SettingsApi;
+import com.github.cafdataprocessing.workers.workflow.restclients.settings_service.client.ApiException;
 import com.github.cafdataprocessing.workers.workflow.restclients.settings_service.model.ResolvedSetting;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -32,6 +33,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.Test;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -187,6 +189,80 @@ public class ArgumentsManagerTest {
                 document.getField("CAF_WORKFLOW_SETTINGS").getStringValues().stream().findFirst().get(), type);
 
         assertEquals("valueFromSettingsService", arguments.get("example"));
+    }
+
+    @Test
+    public void argumentFromSettingsServiceUsingMissingFieldTest() throws Exception {
+
+        LOG.info("Running argumentFromSettingsServiceUsingMissingFieldTest...");
+        final List<ArgumentDefinition> argumentDefinitions = getEVArgumentDefinitions();
+
+        final SettingsApi settingsApi = mock(SettingsApi.class);
+
+        final List<String> scopes = new ArrayList<>();
+        final String scopesStr = String.join(",", scopes);
+
+        when(settingsApi.getResolvedSetting("entityValidateSetting", scopesStr, ""))
+                .thenThrow(new ApiException(500,
+                    Map.of(
+                        "caf-correlation-id", List.of("c2bb4d45-2103-4390-a4fb-298ddc6eed2a"),
+                        "connection", List.of("close"),
+                        "content-type",List.of("application/json"),
+                        "date", List.of("Fri, 26 Jun 2026 04:38:03 GMT"),
+                        "transfer-encoding", List.of("chunked")
+                        ),
+                    "{\"timestamp\":\"2026-06-26T04:38:03.706Z\",\"status\":500,\"error\":\"Internal Server Error\",\"path\":\"/settings/ENTITY_VALIDATE_REPOSITORY_ENABLED/resolved\"}"
+                    )
+                );
+
+        final Document document = DocumentBuilder.configure().withServices(TestServices.createDefault())
+                .withCustomData()
+                .add("workflowName", "sample-workflow")
+                .add("tenantId", "tId")
+                .documentBuilder()
+                .withFields()
+                .addFieldValue("someFld", "someFldValue")
+                .documentBuilder()
+                .build();
+
+        final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, settingsApi, "");
+        argumentsManager.addArgumentsToDocument(argumentDefinitions, document, Optional.empty());
+
+        final Gson gson = new Gson();
+        final Type type = new TypeToken<Map<String, String>>() {}.getType();
+        final Map<String, String> arguments = gson.fromJson(
+                document.getField("CAF_WORKFLOW_SETTINGS").getStringValues().stream().findFirst().get(), type);
+
+        assertNull(arguments.get("entityValidate"));
+    }
+
+    @Test
+    public void argumentFromSettingsServiceUsingMissingFieldHasDefaultTest() throws Exception {
+
+        LOG.info("Running argumentFromSettingsServiceUsingMissingFieldHasDefaultTest...");
+        final List<ArgumentDefinition> argumentDefinitions = getEVWithDefaultArgumentDefinitions();
+
+        final SettingsApi settingsApi = mock(SettingsApi.class);
+
+        final Document document = DocumentBuilder.configure().withServices(TestServices.createDefault())
+                .withCustomData()
+                .add("workflowName", "sample-workflow")
+                .add("tenantId", "tId")
+                .documentBuilder()
+                .withFields()
+                .addFieldValue("someFld", "someFldValue")
+                .documentBuilder()
+                .build();
+
+        final ArgumentsManager argumentsManager = new ArgumentsManager(settingsApi, settingsApi, "");
+        argumentsManager.addArgumentsToDocument(argumentDefinitions, document, Optional.empty());
+
+        final Gson gson = new Gson();
+        final Type type = new TypeToken<Map<String, String>>() {}.getType();
+        final Map<String, String> arguments = gson.fromJson(
+                document.getField("CAF_WORKFLOW_SETTINGS").getStringValues().stream().findFirst().get(), type);
+
+        assertEquals("defaultEVValue", arguments.get("entityValidate"));
     }
 
     @Test
@@ -540,6 +616,52 @@ public class ArgumentsManagerTest {
         argumentDefinitionWithDefault.setDefaultValue("A default value");
 
         argumentDefinitions.add(argumentDefinitionWithDefault);
+
+        final ArgumentDefinition argumentDefinition2 = new ArgumentDefinition();
+        argumentDefinition2.setName("entityValidate");
+        argumentDefinition2.setSources(new ArrayList<>());
+        final ArgumentDefinition.Source settingsServiceSource = new ArgumentDefinition.Source();
+        settingsServiceSource.setName("entityValidateSetting");
+        settingsServiceSource.setType(ArgumentDefinition.SourceType.SETTINGS_SERVICE);
+        settingsServiceSource
+                .setOptions("repository-%f:repositoryId%");
+        argumentDefinition2.getSources().add(settingsServiceSource);
+        argumentDefinitions.add(argumentDefinition2);
+
+        return argumentDefinitions;
+    }
+
+    private List<ArgumentDefinition> getEVArgumentDefinitions() {
+        final List<ArgumentDefinition> argumentDefinitions = new ArrayList<>();
+        ArgumentDefinition argumentDefinition = new ArgumentDefinition();
+        argumentDefinition.setName("entityValidate");
+        argumentDefinition.setSources(new ArrayList<>());
+
+        final ArgumentDefinition.Source settingsServiceSource = new ArgumentDefinition.Source();
+        settingsServiceSource.setName("entityValidateSetting");
+        settingsServiceSource.setType(ArgumentDefinition.SourceType.SETTINGS_SERVICE);
+        settingsServiceSource
+                .setOptions("repository-%f:repositoryId%");
+        argumentDefinition.getSources().add(settingsServiceSource);
+        argumentDefinitions.add(argumentDefinition);
+
+        return argumentDefinitions;
+    }
+
+    private List<ArgumentDefinition> getEVWithDefaultArgumentDefinitions() {
+        final List<ArgumentDefinition> argumentDefinitions = new ArrayList<>();
+        ArgumentDefinition argumentDefinition = new ArgumentDefinition();
+        argumentDefinition.setName("entityValidate");
+        argumentDefinition.setDefaultValue("defaultEVValue");
+        argumentDefinition.setSources(new ArrayList<>());
+
+        final ArgumentDefinition.Source settingsServiceSource = new ArgumentDefinition.Source();
+        settingsServiceSource.setName("entityValidateSetting");
+        settingsServiceSource.setType(ArgumentDefinition.SourceType.SETTINGS_SERVICE);
+        settingsServiceSource
+                .setOptions("repository-%f:repositoryId%");
+        argumentDefinition.getSources().add(settingsServiceSource);
+        argumentDefinitions.add(argumentDefinition);
 
         return argumentDefinitions;
     }

@@ -299,6 +299,11 @@ public class ArgumentsManager {
             }
         }
 
+        if (scopes.isEmpty()) {
+            LOG.warn("Empty scope for property {}", name);
+            return null;
+        }
+
         final ResolvedSetting resolvedSetting;
         try {
             resolvedSetting = (shouldForceCacheRefresh(name, scopes, priorities, settingsServiceLastUpdateTimeMillisOpt)
