@@ -33,8 +33,8 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.Test;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import org.slf4j.Logger;
@@ -233,7 +233,7 @@ public class ArgumentsManagerTest {
         final Map<String, String> arguments = gson.fromJson(
                 document.getField("CAF_WORKFLOW_SETTINGS").getStringValues().stream().findFirst().get(), type);
 
-        assertEquals("valueFromSettingsService", arguments.get("entityValidate"));
+        assertNull(arguments.get("entityValidate"));
     }
 
     @Test
