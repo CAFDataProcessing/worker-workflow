@@ -241,9 +241,6 @@ public class ArgumentsManager {
 
             if(!Strings.isNullOrEmpty(value)){
                 arguments.put(argumentDefinition.getName(), value);
-            } else {
-                // TODO: scope not resolved, no default value set
-                LOG.warn("Unresolved argument {}", argumentDefinition.getName());
             }
         }
 
