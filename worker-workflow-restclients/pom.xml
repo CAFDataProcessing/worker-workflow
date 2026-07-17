@@ -67,7 +67,7 @@
                     <dependency>
                         <groupId>com.microfocus.darwin</groupId>
                         <artifactId>settings-service-contract</artifactId>
-                        <version>3.5.0-SNAPSHOT</version>
+                        <version>3.5.0-1337</version>
                     </dependency>
                 </dependencies>
                 <executions>
