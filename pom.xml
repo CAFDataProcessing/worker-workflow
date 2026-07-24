@@ -1093,9 +1093,9 @@
                             <digest>sha256:9487a42b12d0560ca7e31920b2da312935bc37ec88cbb7612637d1db41f4cb98</digest>
                         </image>
                         <image>
-                            <repository>${dockerHubPublic}/cafapi/oraclelinux-jre21</repository>
+                            <repository>${dockerHubPublic}/cafapi/oraclelinux-jre25</repository>
                             <tag>2.2.6</tag>
-                            <digest>sha256:64c05cf2405ff5875d1c95a39d4bccf0b883d68c77573fd09cf06d361304aa3b</digest>
+                            <digest>sha256:587641af277adbba9bbeb6b1e34df8687af5b6e0d37d0dbea687e387e8d79cd7</digest>
                         </image>
                         <image>
                             <repository>${dockerHubPublic}/cloudesire/webdav</repository>
