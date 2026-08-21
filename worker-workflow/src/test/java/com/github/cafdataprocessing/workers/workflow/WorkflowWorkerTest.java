@@ -17,6 +17,7 @@ package com.github.cafdataprocessing.workers.workflow;
 
 import com.github.cafapi.common.api.ConfigurationException;
 import com.github.cafdataprocessing.workers.document.model.Document;
+import com.github.cafdataprocessing.workers.document.model.Task;
 import com.github.cafdataprocessing.workers.document.testing.CustomDataBuilder;
 import com.github.cafdataprocessing.workers.document.testing.DocumentBuilder;
 import com.github.cafdataprocessing.workers.workflow.restclients.settings_service.api.SettingsApi;
@@ -25,14 +26,17 @@ import com.github.cafdataprocessing.workers.workflow.testing.WorkflowTestExecuto
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import com.github.workerframework.api.WorkerException;
+import com.github.workerframework.api.WorkerTaskData;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import java.nio.charset.StandardCharsets;
 
 public class WorkflowWorkerTest
 {
@@ -245,5 +249,34 @@ public class WorkflowWorkerTest
                 document,
                 customData,
                 actionExpectationsBuilder.build());
+    }
+
+    @Test
+    public void incomingMessageBodyIsReadFromWorkerTaskDataTest()
+    {
+        final String expectedPayload = "{\"workflowName\":\"sample-workflow\"}";
+        final Task task = mock(Task.class);
+        final WorkerTaskData workerTaskData = mock(WorkerTaskData.class);
+
+        when(task.getService(WorkerTaskData.class)).thenReturn(workerTaskData);
+        when(workerTaskData.getData()).thenReturn(expectedPayload.getBytes(StandardCharsets.UTF_8));
+
+        assertEquals(Optional.of(expectedPayload), WorkflowWorker.getIncomingMessageBody(task));
+    }
+
+    @Test
+    public void incomingMessageBodyIsTruncatedToMaxLengthTest()
+    {
+        final String oversizedPayload = "a".repeat(WorkflowWorker.MAX_CAPTURED_MESSAGE_BODY_BYTES + 32);
+        final String expectedPayload = "a".repeat(WorkflowWorker.MAX_CAPTURED_MESSAGE_BODY_BYTES);
+        final Task task = mock(Task.class);
+        final WorkerTaskData workerTaskData = mock(WorkerTaskData.class);
+
+        when(task.getService(WorkerTaskData.class)).thenReturn(workerTaskData);
+        when(workerTaskData.getData()).thenReturn(oversizedPayload.getBytes(StandardCharsets.UTF_8));
+
+        final Optional<String> capturedPayload = WorkflowWorker.getIncomingMessageBody(task);
+
+        assertEquals(Optional.of(expectedPayload), capturedPayload);
     }
 }
