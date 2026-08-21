@@ -105,7 +105,8 @@ public final class WorkflowWorker implements DocumentWorker
     @Override
     public void processDocument(final Document document) throws DocumentWorkerTransientException
     {
-        addMdcLoggingData(document.getTask());
+        final Task task = document.getTask();
+        addMdcLoggingData(task);
         
         // Get the workflow specification passed in
         final String customDataWorkflowName = document.getCustomData("workflowName");

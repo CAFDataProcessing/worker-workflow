@@ -52,6 +52,11 @@
         </dependency>
         <dependency>
             <groupId>com.github.cafdataprocessing.workers.workflow</groupId>
+            <artifactId>worker-workflow-otel-extension</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.cafdataprocessing.workers.workflow</groupId>
             <artifactId>worker-workflow</artifactId>
         </dependency>
         <dependency>

@@ -69,7 +69,16 @@ then
 fi
 
 cd /maven
-exec java $CAF_WORKER_JAVA_OPTS \
+
+# Locate the OTel body-capture extension agent JAR. It is always loaded; when the OTel Java agent
+# is absent the agent self-disables (the classloader guard in OtelRabbitBodyAgent skips
+# instrumentation if io.opentelemetry.api.trace.Span is not resolvable).
+OTEL_EXTENSION_JAR=$(ls /maven/worker-workflow-otel-extension-*.jar 2>/dev/null | head -1)
+if [ -n "$OTEL_EXTENSION_JAR" ]; then
+  OTEL_EXTENSION_AGENT_ARG="-javaagent:${OTEL_EXTENSION_JAR}"
+fi
+
+exec java $OTEL_EXTENSION_AGENT_ARG $CAF_WORKER_JAVA_OPTS \
     -Dpolyglot.engine.WarnInterpreterOnly=false \
     -cp "*" \
     com.github.workerframework.core.WorkerApplication \
