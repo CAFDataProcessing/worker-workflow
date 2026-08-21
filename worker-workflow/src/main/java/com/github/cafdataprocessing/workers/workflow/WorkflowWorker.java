@@ -24,10 +24,7 @@ import com.github.cafdataprocessing.workers.document.model.HealthMonitor;
 import com.github.cafdataprocessing.workers.document.model.ResponseCustomData;
 import com.github.cafdataprocessing.workers.document.model.Task;
 import com.github.cafdataprocessing.workers.workflow.model.Workflow;
-import com.github.workerframework.api.WorkerTaskData;
 import com.google.common.base.Strings;
-import io.opentelemetry.api.trace.Span;
-import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,8 +39,6 @@ import org.slf4j.MDC;
 public final class WorkflowWorker implements DocumentWorker
 {
     private static final Logger LOG = LoggerFactory.getLogger(WorkflowWorker.class);
-    static final String RABBITMQ_MESSAGE_BODY_ATTRIBUTE = "messaging.rabbitmq.message.body";
-    static final int MAX_CAPTURED_MESSAGE_BODY_BYTES = 4096;
     private static final String TENANT_ID_KEY = "tenantId";
     private static final String SETTINGS_SERVICE_LAST_UPDATE_TIME_MILLIS_KEY = "settingsServiceLastUpdateTimeMillis";
     private final WorkflowManager workflowManager;
@@ -112,7 +107,6 @@ public final class WorkflowWorker implements DocumentWorker
     {
         final Task task = document.getTask();
         addMdcLoggingData(task);
-        captureIncomingMessageBody(task);
         
         // Get the workflow specification passed in
         final String customDataWorkflowName = document.getCustomData("workflowName");
@@ -196,28 +190,6 @@ public final class WorkflowWorker implements DocumentWorker
         // Add MDC data to custom data so that its passed it onto the next worker.
         final ResponseCustomData responseCustomData = task.getResponse().getCustomData();
         responseCustomData.put(TENANT_ID_KEY, tenantId);
-    }
-
-    static Optional<String> getIncomingMessageBody(final Task task)
-    {
-        final WorkerTaskData workerTaskData = task.getService(WorkerTaskData.class);
-        if (workerTaskData == null) {
-            return Optional.empty();
-        }
-
-        final byte[] messageBody = workerTaskData.getData();
-        if (messageBody == null || messageBody.length == 0) {
-            return Optional.empty();
-        }
-
-        return Optional.of(new String(messageBody, 0, Math.min(messageBody.length, MAX_CAPTURED_MESSAGE_BODY_BYTES),
-                StandardCharsets.UTF_8));
-    }
-
-    private static void captureIncomingMessageBody(final Task task)
-    {
-        getIncomingMessageBody(task).ifPresent(messageBody ->
-                Span.current().setAttribute(RABBITMQ_MESSAGE_BODY_ATTRIBUTE, messageBody));
     }
 
     private static Optional<Long> getSettingsServiceLastUpdateTimeMillis(final Document document) throws NumberFormatException
