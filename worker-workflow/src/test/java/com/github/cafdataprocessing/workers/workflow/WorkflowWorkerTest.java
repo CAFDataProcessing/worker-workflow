@@ -17,6 +17,7 @@ package com.github.cafdataprocessing.workers.workflow;
 
 import com.github.cafapi.common.api.ConfigurationException;
 import com.github.cafdataprocessing.workers.document.model.Document;
+import com.github.cafdataprocessing.workers.document.model.Task;
 import com.github.cafdataprocessing.workers.document.testing.CustomDataBuilder;
 import com.github.cafdataprocessing.workers.document.testing.DocumentBuilder;
 import com.github.cafdataprocessing.workers.workflow.restclients.settings_service.api.SettingsApi;
@@ -28,7 +29,6 @@ import java.util.Map;
 
 import com.github.workerframework.api.WorkerException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

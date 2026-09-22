@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright 2017-2026 Open Text.
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+         http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.github.cafdataprocessing.workers.workflow</groupId>
+        <artifactId>worker-workflow-aggregator</artifactId>
+        <version>8.6.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>worker-workflow-otel-extension</artifactId>
+    <name>worker-workflow-otel-extension</name>
+    <description>
+        Java premain agent that captures the raw RabbitMQ message body on the OTel consumer span.
+        Instruments DefaultRabbitConsumer.getDeliverEvent(), which is called synchronously inside
+        the TracedDelegatingConsumer.handleDelivery() window while the consumer span is active.
+    </description>
+
+    <dependencies>
+        <!--
+            ByteBuddy is used to instrument DefaultRabbitConsumer.getDeliverEvent() at agent load
+            time. It is shaded into the fat JAR to avoid version conflicts with the app classpath.
+        -->
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
+        </dependency>
+
+        <!--
+            OTel API: provided at runtime by the OTel Java agent (bootstrap classloader).
+            Not included in the fat JAR.
+        -->
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-api</artifactId>
+            <version>1.64.0</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!--
+                Build a self-contained fat JAR with ByteBuddy shaded to avoid classpath conflicts.
+                The Premain-Class manifest entry makes this usable as a -javaagent.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.6.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <shadedArtifactAttached>false</shadedArtifactAttached>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <relocations>
+                                <relocation>
+                                    <pattern>net.bytebuddy</pattern>
+                                    <shadedPattern>
+                                        com.github.cafdataprocessing.workers.workflow.otel.shaded.bytebuddy
+                                    </shadedPattern>
+                                </relocation>
+                            </relocations>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <manifestEntries>
+                                        <Premain-Class>
+                                            com.github.cafdataprocessing.workers.workflow.otel.OtelRabbitBodyAgent
+                                        </Premain-Class>
+                                        <Can-Redefine-Classes>true</Can-Redefine-Classes>
+                                        <Can-Retransform-Classes>true</Can-Retransform-Classes>
+                                    </manifestEntries>
+                                </transformer>
+                            </transformers>
+                            <filters>
+                                <filter>
+                                    <artifact>net.bytebuddy:byte-buddy</artifact>
+                                    <!--
+                                        The jdk5 artifact includes multi-release entries targeting
+                                        Java 24 (class file major version 68). The shade plugin
+                                        cannot process these, so exclude them — the base classes
+                                        contain all functionality needed here.
+                                    -->
+                                    <excludes>
+                                        <exclude>META-INF/versions/**</exclude>
+                                    </excludes>
+                                </filter>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
